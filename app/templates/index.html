@@ -1,0 +1,72 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %} Charge calculation {% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <form method=post enctype=multipart/form-data >
+    <div class="row">
+        <div class="col">
+            <h1>Charge calculation</h1>
+        </div>
+    </div>
+    <div class="row bg-light mt-1">
+        <div class="col">
+            <div class="form-group">
+                <label class="font-weight-bold" for="fileinput">Input file (SDF)</label>
+                <input type="file" class="form-control-file" id="fileinput" name="file">
+            </div>
+        </div>
+    </div>
+    <div class="row bg-light mt-1">
+        <div class="col">
+            <div class="form-group">
+                    <label class="font-weight-bold" for="methodselection">Method</label>
+                    <select class="form-control" name="select" id="methodselection" style="width:auto;">
+                    </select>
+            </div>
+        </div>
+        <div class="col">
+                    <label class="font-weight-bold">Full name</label>
+                    <div id="full_name"></div>
+                    <label class="font-weight-bold">Description</label>
+                    <div id="description"></div>
+                    <label class="font-weight-bold">Publication</label>
+                    <div id="paper"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button type="submit" class="btn btn-primary" id="calculate">Calculate</button>
+        </div>
+    </div>
+    </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </div>
+  </button>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+{% endblock %}
+
+
+{% block  scripts %}
+
+{{ super() }}
+
+<script>
+var method_data = $.parseJSON('{{ methods | tojson | safe }}');
+</script>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+
+{% endblock %}
+
