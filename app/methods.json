@@ -2,25 +2,19 @@
     {
         "name": "EEM",
         "full_name": "Electronegativity Equalization Method",
-        "description": "Full Electronegativity Equalization, 3D",
-        "paper" : "10.1021/ja00275a013",
-        "_name": "eem",
-        "_parameters": "yes"
+        "publication" : "10.1021/ja00275a013",
+        "has_parameters": true
     },
     {
         "name": "PEOE",
         "full_name": "Partial Equalization of Atomic Electronegativity",
-        "description": "Iterative 2D scheme",
-        "paper" : "10.1016/0040-4020(80)80168-2",
-        "_name": "peoe",
-        "_parameters": "peoe.json"
+        "publication" : "10.1016/0040-4020(80)80168-2",
+        "has_parameters": true
     },
     {
         "name": "Formal",
         "full_name": "Formal charges",
-        "description": "Assign formal charges from the SDF",
-        "paper" : null,
-        "_name" : "formal",
-        "_parameters" : null
+        "publication" : null,
+        "has_parameters" : false
     }
 ]

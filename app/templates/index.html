@@ -1,9 +1,12 @@
-{% extends "bootstrap/base.html" %}
+<html>
+<head>
+<title>Charge calculation</title>
 
-{% block title %} Charge calculation {% endblock %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
+</head>
 
-
-{% block content %}
+<body>
 <div class="container">
     <form method=post enctype=multipart/form-data >
     <div class="row">
@@ -11,29 +14,40 @@
             <h1>Charge calculation</h1>
         </div>
     </div>
-    <div class="row bg-light mt-1">
+    <div class="row bg-light m-1 p-1">
         <div class="col">
             <div class="form-group">
-                <label class="font-weight-bold" for="fileinput">Input file (SDF)</label>
-                <input type="file" class="form-control-file" id="fileinput" name="file">
+                <label class="font-weight-bold" for="file_input">Input file (SDF)</label>
+                <input type="file" class="form-control-file" id="file_input" name="file">
             </div>
         </div>
     </div>
-    <div class="row bg-light mt-1">
+    <div class="row bg-light m-1 p-1">
         <div class="col">
             <div class="form-group">
-                    <label class="font-weight-bold" for="methodselection">Method</label>
-                    <select class="form-control" name="select" id="methodselection" style="width:auto;">
+                    <label class="font-weight-bold" for="method_selection">Method</label>
+                    <select class="form-control" name="method_select" id="method_selection" style="width:auto;">
                     </select>
             </div>
         </div>
         <div class="col">
                     <label class="font-weight-bold">Full name</label>
-                    <div id="full_name"></div>
-                    <label class="font-weight-bold">Description</label>
-                    <div id="description"></div>
+                    <div id="method_name"></div>
                     <label class="font-weight-bold">Publication</label>
-                    <div id="paper"></div>
+                    <div id="method_paper"></div>
+        </div>
+    </div>
+	<div class="row bg-light m-1 p-1">
+        <div class="col">
+            <div class="form-group">
+                    <label class="font-weight-bold" for="parameters_selection">Parameters</label>
+                    <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
+                    </select>
+            </div>
+        </div>
+        <div class="col">
+                    <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
+                    <div id="parameters_paper"></div>
         </div>
     </div>
     <div class="row">
@@ -55,18 +69,15 @@
     {% endwith %}
 </div>
 
-{% endblock %}
-
-
-{% block  scripts %}
-
-{{ super() }}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 <script>
 var method_data = $.parseJSON('{{ methods | tojson | safe }}');
+var parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
 </script>
-
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 
-{% endblock %}
-
+</body>
+</html>
