@@ -6,6 +6,7 @@ import tempfile
 from app.method import method_data, parameter_data
 from app.calculation import calculate
 
+
 @application.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -24,6 +25,7 @@ def upload_file():
             if res.returncode:
                 flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
             else:
-                return send_from_directory(f'{tmp_dir}', 'charges', as_attachment=True, attachment_filename=f'{method_name}_charges.txt')
-            
+                return send_from_directory(f'{tmp_dir}', 'charges', as_attachment=True,
+                                           attachment_filename=f'{method_name}_charges.txt')
+
     return render_template('index.html', methods=method_data, parameters=parameter_data)
