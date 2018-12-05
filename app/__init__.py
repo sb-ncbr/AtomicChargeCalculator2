@@ -1,8 +1,10 @@
 from flask import Flask
-import os
+
+from config import CONFIG_FILE
 
 application = Flask(__name__)
-application.secret_key = os.environ.get('SECRET_KEY')
+
+with open(CONFIG_FILE) as f:
+    application.config['SECRET_KEY'] = f.read().strip()
 
 from app import routes
-
