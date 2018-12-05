@@ -1,17 +1,17 @@
 'use strict';
 
-function fill_paper(element, doi) {
-    element.html('<i class="fa fa-spinner fa-spin fa-2x fa-fw margin-bottom"></i>');
+function fill_paper($element, doi) {
+    $element.html('<i class="fa fa-spinner fa-spin fa-2x fa-fw margin-bottom"></i>');
     $.ajax({
         url: 'https://doi.org/' + doi,
         headers: {'Accept': 'text/x-bibliography;style=apa'},
         type: 'GET',
         success: function(result) {
             result = result.replace(/doi:(.*)/,'<a href="https://doi.org/$1">doi:$1</a>');
-            element.html(result);
+            $element.html(result);
         },
         error: function(error) {
-            element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
+            $element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
         }
     });
 }
@@ -102,5 +102,14 @@ $(function() {
         } else {
             $submit.prop('disabled', true);
         }
-    })
+    });
+
+    /* Check file size */
+    $submit.on('click', function () {
+        if($input[0].files[0].size > 20 * 1024 * 1024) {
+            alert('Cannot upload file larger than 20 MB');
+            $submit.prop('disabled', true);
+        }
+    });
+
 });
