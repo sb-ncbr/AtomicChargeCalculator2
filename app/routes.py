@@ -1,7 +1,8 @@
-from flask import render_template, flash, redirect, request, send_from_directory
+from flask import render_template, flash, request, send_from_directory
 from app import application
 
 import tempfile
+import magic
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
@@ -10,15 +11,13 @@ from app.calculation import calculate
 @application.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            return redirect(request.url)
         file = request.files['file']
-        if file.filename == '':
-            flash('no selected file')
-            return redirect(request.url)
-        if file:
-            tmp_dir = tempfile.mkdtemp(prefix='compute_')
-            file.save(f'{tmp_dir}/structure.sdf')
+        tmp_dir = tempfile.mkdtemp(prefix='compute_')
+        file.save(f'{tmp_dir}/structure.sdf')
+        filetype = magic.from_file(f'{tmp_dir}/structure.sdf')
+        if magic.from_file(f'{tmp_dir}/structure.sdf') != 'ASCII text':
+            flash(f'Invalid file type: {filetype}. Use only SDF.', 'error')
+        else:
             method_name = request.form.get('method_select')
             parameters_name = request.form.get('parameters_select')
             res = calculate(method_name, parameters_name, f'{tmp_dir}/structure.sdf', f'{tmp_dir}/charges')
