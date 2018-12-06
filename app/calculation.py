@@ -16,6 +16,6 @@ def calculate(method_name, parameters_name, source, charges):
                 if parameters_name != 'default':
                     args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
 
-    calculation = subprocess.run(args, stderr=subprocess.PIPE, env=env)
+    calculation = subprocess.run(args, stderr=subprocess.PIPE, env=env, stdout=subprocess.PIPE)
     print(' '.join(calculation.args))
     return calculation
