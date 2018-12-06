@@ -67,7 +67,9 @@ $(function() {
         if(e.has_parameters) {
             let p_options = '';
             $p_select.prop('disabled', false);
-            $p_select.append('<option value="default">Select best (default)</option>');
+            if(parameter_data[m_name].length > 1) {
+                $p_select.append('<option value="default">Select best (default)</option>');
+            }
             $.each(parameter_data[m_name], function(key, parameter_set) {
                 p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
             });
