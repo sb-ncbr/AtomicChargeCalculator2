@@ -13,9 +13,7 @@ def calculate(method_name, parameters_name, source, charges):
     for method in method_data:
         if method['name'] == method_name:
             if method['has_parameters']:
-                if parameters_name == 'default':
-                    args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, f'{method_name.lower()}.json')])
-                else:
+                if parameters_name != 'default':
                     args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
 
     calculation = subprocess.run(args, stderr=subprocess.PIPE, env=env)
