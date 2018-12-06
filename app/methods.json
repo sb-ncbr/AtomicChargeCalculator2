@@ -6,6 +6,12 @@
         "has_parameters": true
     },
     {
+        "name": "SFKEEM",
+        "full_name":  "Selfconsistent Functional Kernel Equalized Electronegativity Method",
+        "publication": "10.1021/ci050505e",
+        "has_parameters": true
+    },
+    {
         "name": "PEOE",
         "full_name": "Partial Equalization of Atomic Electronegativity",
         "publication" : "10.1016/0040-4020(80)80168-2",
