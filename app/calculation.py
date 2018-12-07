@@ -6,8 +6,8 @@ from config import MKL_PATH, PARAMETERS_DIRECTORY, CHARGEFW2_DIR
 
 
 def calculate(method_name, parameters_name, source, charges):
-    args = [f'{CHARGEFW2_DIR}/bin/chargefw2', '--mode', 'charges', '--method', method_name.lower(), '--sdf-file', source, '--chg-file',
-            charges]
+    args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'charges', '--method', method_name.lower(),
+            '--sdf-file', source, '--chg-file', charges]
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = MKL_PATH
     for method in method_data:
