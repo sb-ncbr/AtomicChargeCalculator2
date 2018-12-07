@@ -107,9 +107,13 @@ $(function() {
     });
 
     /* Check file size */
-    $submit.on('click', function () {
-        if($input[0].files[0].size > 20 * 1024 * 1024) {
-            alert('Cannot upload file larger than 20 MB');
+    $('form').submit(function (e) {
+        if($input[0].files[0].size > 10 * 1024 * 1024) {
+            alert('Cannot upload file larger than 10 MB');
+            $submit.prop('disabled', true);
+            e.preventDefault();
+        } else {
+            $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Calculating...');
             $submit.prop('disabled', true);
         }
     });
