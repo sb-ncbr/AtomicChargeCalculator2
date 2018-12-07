@@ -4,76 +4,89 @@
     <meta charset="UTF-8">
     <title>Charge calculation</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+          crossorigin="anonymous">
 </head>
 
 <body>
-<div class="container">
-    <form method=post enctype=multipart/form-data >
-    <div class="row">
-        <div class="col">
-            <h1>Charge calculation</h1>
-        </div>
-    </div>
-    <div class="row bg-light m-1 p-1">
-        <div class="col">
-            <div class="form-group">
-                <label class="font-weight-bold" for="file_input">Input file (SDF)</label>
-                <input type="file" class="form-control-file" id="file_input" name="file">
+<div class="container mt-5 p-3">
+    <form method=post enctype=multipart/form-data>
+        <div class="row">
+            <div class="col">
+                <h1>Charge calculation</h1>
             </div>
         </div>
-    </div>
-    <div class="row bg-light m-1 p-1">
-        <div class="col">
-            <div class="form-group">
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label class="font-weight-bold" for="file_input">Input file</label>
+                    <input type="file" class="form-control-file" id="file_input" name="file">
+                    <small class="form-text text-muted">
+                        Single sdf file or archive (zip, tar.gz) of sdf files. Maximum file size: 10 MB
+                    </small>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
                     <label class="font-weight-bold" for="method_selection">Method</label>
                     <select class="form-control" name="method_select" id="method_selection" style="width:auto;">
                     </select>
+                </div>
+            </div>
+            <div class="col">
+                <label class="font-weight-bold">Full name</label>
+                <div id="method_name"></div>
+                <label class="font-weight-bold">Publication</label>
+                <div id="method_paper"></div>
             </div>
         </div>
-        <div class="col">
-                    <label class="font-weight-bold">Full name</label>
-                    <div id="method_name"></div>
-                    <label class="font-weight-bold">Publication</label>
-                    <div id="method_paper"></div>
-        </div>
-    </div>
-	<div class="row bg-light m-1 p-1">
-        <div class="col">
-            <div class="form-group">
+        <hr>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
                     <label class="font-weight-bold" for="parameters_selection">Parameters</label>
                     <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
                     </select>
+                </div>
+            </div>
+            <div class="col">
+                <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
+                <div id="parameters_paper"></div>
             </div>
         </div>
-        <div class="col">
-                    <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
-                    <div id="parameters_paper"></div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                <button type="submit" class="btn btn-primary" id="calculate">Calculate</button>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <button type="submit" class="btn btn-primary" id="calculate">Calculate</button>
-        </div>
-    </div>
     </form>
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
 </div>
 
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"> </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 
 <script>
     const method_data = $.parseJSON('{{ methods | tojson | safe }}');
