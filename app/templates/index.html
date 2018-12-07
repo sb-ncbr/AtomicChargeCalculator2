@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Charge calculation</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
@@ -11,7 +12,8 @@
 </head>
 
 <body>
-<div class="container mt-5 p-3">
+<div class="container p-3">
+    <div class="d-none mt-5 d-lg-block"></div>
     <form method=post enctype=multipart/form-data>
         <div class="row">
             <div class="col">
@@ -31,14 +33,14 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label class="font-weight-bold" for="method_selection">Method</label>
                     <select class="form-control" name="method_select" id="method_selection" style="width:auto;">
                     </select>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-12 col-md-6">
                 <label class="font-weight-bold">Full name</label>
                 <div id="method_name"></div>
                 <label class="font-weight-bold">Publication</label>
@@ -47,14 +49,14 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col">
+            <div class="col-12 col-lg-6">
                 <div class="form-group">
                     <label class="font-weight-bold" for="parameters_selection">Parameters</label>
                     <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
                     </select>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-12 col-lg-6">
                 <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
                 <div id="parameters_paper"></div>
             </div>
