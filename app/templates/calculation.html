@@ -21,9 +21,33 @@
         <div class="col">Method: {{ method_name }} </div>
     </div>
     <div class="row">
-        <div class="col">
-            <pre>{{ output }}</pre>
+        <div class="col">Parameters: {{ parameters_name }} </div>
+    </div>
+    <div class="row">
+        <div class="col">Number of molecules: {{ n_molecules }} </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4 p-3">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Number of atoms</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for element in counts %}
+                    <tr>
+                        <td>{{ element }}</td>
+                        <td>{{ counts[element] }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
+    <div class="row">
+        <div class="col">Computation took {{ time }} seconds</div>
     </div>
     <hr>
     <div class="row">
@@ -45,6 +69,10 @@
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
+<script>
+    const method_data = $.parseJSON('{{ methods | tojson | safe }}');
+    const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
+</script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>

@@ -6,6 +6,7 @@ import magic
 import uuid
 import shutil
 import os
+import re
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
@@ -54,7 +55,8 @@ def main_site():
             flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
         else:
             output = res.stdout.decode('utf-8')
-            request_data[comp_id] = {'tmpdir': tmp_dir, 'method_name': method_name, 'output': output}
+            request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'output': output,
+                                     'parameters': parameters_name}
             return redirect(url_for('results', r=comp_id))
 
     return render_template('index.html', methods=method_data, parameters=parameter_data)
@@ -64,8 +66,27 @@ def main_site():
 def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
-    return render_template('calculation.html', method_name=comp_data["method_name"], comp_id=comp_id,
-                           output=comp_data['output'])
+    m = re.search('Number of molecules: (.*?)\n', comp_data['output'])
+    n_molecules = m.group(1)
+    m = re.search('Computation took (.*?) seconds\n', comp_data['output'])
+    time = m.group(1)
+
+    info = False
+    c = {}
+    for line in comp_data['output'].split('\n'):
+        if 'Number of molecules' in line:
+            info = True
+        elif line == '':
+            break
+        elif info:
+            m = re.search('(.*?) plain \*: (\d+)', line)
+            element = m.group(1)
+            element_count = int(m.group(2))
+            c[element] = element_count
+
+    return render_template('calculation.html', method_name=comp_data['method'], comp_id=comp_id,
+                           n_molecules=n_molecules, time=time, counts=c, methods=method_data, parameters=parameter_data,
+                           parameters_name=comp_data['parameters'])
 
 
 @application.route('/download')
