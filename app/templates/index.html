@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Charge calculation</title>
+    <title>ChargeCompute</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
           integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -17,7 +17,7 @@
     <form method=post enctype=multipart/form-data>
         <div class="row">
             <div class="col">
-                <h1>Charge calculation</h1>
+                <h1>ChargeCompute</h1>
             </div>
         </div>
         <div class="row">
@@ -49,14 +49,14 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label class="font-weight-bold" for="parameters_selection">Parameters</label>
                     <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-md-6">
                 <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
                 <div id="parameters_paper"></div>
             </div>
@@ -79,7 +79,42 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
+
+    <hr>
+    <p style="text-align: center">
+        <img src="https://webchem.ncbr.muni.cz/Platform/Images/elixirlogo.png" alt="ELIXIR logo"
+             style="height: 70px"><br>
+        <small>
+            ChargeCompute is a part of services provided by <a href="https://www.elixir-czech.cz/" target="_blank">ELIXIR</a>
+            –
+            European research infrastructure for biological information.
+            For other services provided by ELIXIR's Czech Republic Node visit <a
+                href="https://www.elixir-czech.cz/services" target="_blank">www.elixir-czech.cz/services</a>.
+        </small>
+    </p>
+    <hr>
+    <p style="text-align: justify">
+        <small>
+            Licence conditions in accordance with § 11 of Act No. 130/2002 Coll. The owner of the software is Masaryk
+            University, a public university, ID: 00216224. Masaryk University allows other companies and individuals to
+            use this software free of charge and without territorial restrictions in usual way, that does not depreciate
+            its value. This permission is granted for the duration of property rights. This software is not subject to
+            special information treatment according to Act No. 412/2005 Coll., as amended. In case that a person who
+            will use the software under this licence offer violates the licence terms, the permission to use the
+            software terminates.
+        </small>
+    </p>
+
+    <hr>
+    <footer>
+        <p style="text-align: right; color: gray">
+            <small>© 2018 Tomáš Raček | <a href="https://webchem.ncbr.muni.cz/Platform/Home/TermsOfUse">Terms of Use
+                &amp; GDPR</a></small>
+        </p>
+        <br>
+    </footer>
 </div>
+
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
