@@ -94,4 +94,4 @@ def download_charges():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
     return send_from_directory(f'{comp_data["tmpdir"]}', 'charges', as_attachment=True,
-                               attachment_filename=f'{comp_data["method_name"]}_charges.txt')
+                               attachment_filename=f'{comp_data["method"]}_charges.txt')
