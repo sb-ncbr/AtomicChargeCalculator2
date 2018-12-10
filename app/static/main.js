@@ -1,19 +1,24 @@
 'use strict';
 
 function fill_paper($element, doi) {
-    $element.html('<i class="fa fa-spinner fa-spin fa-2x fa-fw margin-bottom"></i>');
-    $.ajax({
-        url: 'https://doi.org/' + doi,
-        headers: {'Accept': 'text/x-bibliography;style=apa'},
-        type: 'GET',
-        success: function(result) {
-            result = result.replace(/doi:(.*)/,'<a href="https://doi.org/$1">doi:$1</a>');
-            $element.html(result);
-        },
-        error: function(error) {
-            $element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
-        }
-    });
+    if (localStorage.getItem(doi) != null) {
+        $element.html(localStorage[doi]);
+    } else {
+        $element.html('<i class="fa fa-spinner fa-spin fa-2x fa-fw margin-bottom"></i>');
+        $.ajax({
+            url: 'https://doi.org/' + doi,
+            headers: {'Accept': 'text/x-bibliography;style=apa'},
+            type: 'GET',
+            success: function (result) {
+                result = result.replace(/doi:(.*)/, '<a href="https://doi.org/$1">doi:$1</a>');
+                localStorage[doi] = result;
+                $element.html(result);
+            },
+            error: function (e) {
+                $element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
+            }
+        });
+    }
 }
 
 function hide_parameters_publication(val) {
