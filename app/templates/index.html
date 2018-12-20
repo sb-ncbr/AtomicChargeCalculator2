@@ -47,6 +47,38 @@
                 <div id="method_paper"></div>
             </div>
         </div>
+        <div class="row" id="method-options-row">
+            <div class="col-md-6">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-options"
+                        aria-expanded="false" aria-controls="collapse-options">Method options
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="collapse" id="collapse-options">
+                    <div class="card card-body" id="method-options">
+                        {% for method in methods %}
+                            <div id="options-{{ method.name }}">
+                                {% for option in method.options %}
+                                    <label for="{{ method.name }}-option-{{ option.name }}"
+                                           class="col-form-label">{{ option.description }}</label>
+                                    {% if option.type == 'int' %}
+                                        <input class="form-control" type="number" value="{{ option.default }}"
+                                               id="{{ method.name }}-option-{{ option.name }}"
+                                               name="{{ method.name }}-option-{{ option.name }}">
+                                    {% else %}
+                                        <select class="form-control" name="{{ method.name }}-option-{{ option.name }}"
+                                                id="{{ method.name }}-option-{{ option.name }}">
+                                            {% for choice in option.choices %}
+                                                <option>{{ choice }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
         <hr>
         <div class="row">
             <div class="col-12 col-md-6">

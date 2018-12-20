@@ -26,19 +26,20 @@ function hide_parameters_publication(val) {
     $('#parameters_paper_label').prop('hidden', val);
 }
 
-$(function() {
+
+function init_index() {
     const $m_select = $('#method_selection');
     const $p_select = $('#parameters_selection');
 
     /* Set available methods */
     let m_options = '';
-    $.each(method_data, function(key, method) {
+    $.each(method_data, function (key, method) {
         m_options += `<option value="${method.name}">${method.name}</option>\n`;
     });
     $m_select.append(m_options);
 
     /* Update parameter publication on change */
-    $p_select.on('change', function() {
+    $p_select.on('change', function () {
         const m_name = $('#method_selection option:selected').val();
         const p_name = $('#parameters_selection option:selected').text();
 
@@ -49,8 +50,7 @@ $(function() {
         /* Default parameters (not found in parameter_data) have no publication assigned */
         if (e === undefined) {
             hide_parameters_publication(true);
-        }
-        else{
+        } else {
             hide_parameters_publication(false);
             /* Some parameters have no publication */
             if (e.publication == null) {
@@ -62,20 +62,33 @@ $(function() {
     });
 
     /* Update method data on method select change */
-    $m_select.on('change', function() {
+    $m_select.on('change', function () {
         const m_name = $('#method_selection option:selected').val();
         const e = method_data.find(function (element) {
             return element.name === m_name;
         });
 
+        if (e.options) {
+            $('#collapse-options').removeClass('show');
+            $.each($('div[id^="options"]'), function(key, div){
+                let $div = $(div);
+                $div.hide();
+            });
+            $(`#options-${m_name}`).show();
+            $('#method-options-row').show();
+        }
+        else {
+            $('#method-options-row').hide();
+        }
+
         $p_select.empty();
-        if(e.has_parameters) {
+        if (e.has_parameters) {
             let p_options = '';
             $p_select.prop('disabled', false);
-            if(parameter_data[m_name].length > 1) {
+            if (parameter_data[m_name].length > 1) {
                 $p_select.append('<option value="default">Select best (default)</option>');
             }
-            $.each(parameter_data[m_name], function(key, parameter_set) {
+            $.each(parameter_data[m_name], function (key, parameter_set) {
                 p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
             });
             $p_select.append(p_options);
@@ -88,7 +101,7 @@ $(function() {
 
         $('#method_name').text(e.full_name);
 
-        if(e.publication == null) {
+        if (e.publication == null) {
             $('#method_paper').text('None');
         } else {
             fill_paper($('#method_paper'), e.publication);
@@ -103,8 +116,8 @@ $(function() {
 
     $submit.prop('disabled', true);
 
-    $input.on('change', function() {
-        if($input.val()) {
+    $input.on('change', function () {
+        if ($input.val()) {
             $submit.prop('disabled', false);
         } else {
             $submit.prop('disabled', true);
@@ -113,7 +126,7 @@ $(function() {
 
     /* Check file size */
     $('form').submit(function (e) {
-        if($input[0].files[0].size > 10 * 1024 * 1024) {
+        if ($input[0].files[0].size > 10 * 1024 * 1024) {
             alert('Cannot upload file larger than 10 MB');
             $submit.prop('disabled', true);
             e.preventDefault();
@@ -122,5 +135,12 @@ $(function() {
             $submit.prop('disabled', true);
         }
     });
+}
 
+
+$(function () {
+    let page = window.location.pathname;
+    if (page === '/') {
+        init_index();
+    }
 });

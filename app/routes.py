@@ -49,7 +49,13 @@ def main_site():
         comp_id = str(uuid.uuid1())
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
-        res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'structures.sdf'),
+        method_info = next((m for m in method_data if m['name'] == method_name))
+        options = {}
+        if 'options' in method_info:
+            for option in method_info['options']:
+                options[option['name']] = request.form.get(f'{method_name}-option-{option["name"]}')
+
+        res = calculate(method_name, parameters_name, options, os.path.join(tmp_dir, 'structures.sdf'),
                         os.path.join(tmp_dir, 'charges'))
         if res.returncode:
             flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')

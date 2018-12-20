@@ -77,10 +77,6 @@
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
-<script>
-    const method_data = $.parseJSON('{{ methods | tojson | safe }}');
-    const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
-</script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>
