@@ -68,7 +68,11 @@
                                         <select class="form-control" name="{{ method.name }}-option-{{ option.name }}"
                                                 id="{{ method.name }}-option-{{ option.name }}">
                                             {% for choice in option.choices %}
-                                                <option>{{ choice }}</option>
+                                                {% if choice == option.default %}
+                                                    <option selected>{{ choice }}</option>
+                                                {% else %}
+                                                    <option>{{ choice }}</option>
+                                                {% endif %}
                                             {% endfor %}
                                         </select>
                                     {% endif %}
