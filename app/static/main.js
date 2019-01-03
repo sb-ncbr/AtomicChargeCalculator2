@@ -29,14 +29,20 @@ function hide_parameters_publication(val) {
 
 function init_index() {
     const $m_select = $('#method_selection');
+    const $m_group2d = $('#optgroup2D');
+    const $m_group3d = $('#optgroup3D');
     const $p_select = $('#parameters_selection');
 
     /* Set available methods */
-    let m_options = '';
     $.each(method_data, function (key, method) {
-        m_options += `<option value="${method.name}">${method.name}</option>\n`;
+        const str = `<option value="${method.name}">${method.name}</option>\n`;
+        if (method.type === "2D")
+            $m_group2d.append(str);
+        else if (method.type === "3D")
+            $m_group3d.append(str);
+        else
+            $m_select.append(str);
     });
-    $m_select.append(m_options);
 
     /* Update parameter publication on change */
     $p_select.on('change', function () {
