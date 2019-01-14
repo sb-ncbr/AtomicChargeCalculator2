@@ -7,14 +7,16 @@ import uuid
 import shutil
 import os
 import re
+import zipfile
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
+from app.export_charges import prepare_mol2
 
 request_data = {}
 
 
-def extract(tmp_dir, fmt):
+def extract(tmp_dir: str, fmt: str):
     shutil.unpack_archive(os.path.join(tmp_dir, 'input'), os.path.join(tmp_dir, 'tmp'), format=fmt)
     with open(os.path.join(tmp_dir, 'structures.sdf'), 'w') as output:
         for filename in os.listdir(os.path.join(tmp_dir, 'tmp')):
@@ -72,9 +74,9 @@ def main_site():
 def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
-    m = re.search('Number of molecules: (.*?)\n', comp_data['output'])
+    m = re.search(r'Number of molecules: (.*?)\n', comp_data['output'])
     n_molecules = m.group(1)
-    m = re.search('Computation took (.*?) seconds\n', comp_data['output'])
+    m = re.search(r'Computation took (.*?) seconds\n', comp_data['output'])
     time = m.group(1)
 
     info = False
@@ -85,7 +87,7 @@ def results():
         elif line == '':
             break
         elif info:
-            m = re.search('(.*?) plain \*: (\d+)', line)
+            m = re.search(r'(.*?) plain \*: (\d+)', line)
             element = m.group(1)
             element_count = int(m.group(2))
             c[element] = element_count
@@ -98,6 +100,17 @@ def results():
 @application.route('/download')
 def download_charges():
     comp_id = request.args.get('r')
+    charges_format = request.args.getlist('format')
     comp_data = request_data[comp_id]
-    return send_from_directory(f'{comp_data["tmpdir"]}', 'charges', as_attachment=True,
-                               attachment_filename=f'{comp_data["method"]}_charges.txt')
+    tmpdir = comp_data['tmpdir']
+    method = comp_data['method']
+    parameters = comp_data['parameters']
+
+    with zipfile.ZipFile(os.path.join(tmpdir, 'charges.zip'), 'w', compression=zipfile.ZIP_DEFLATED) as f:
+        if 'plain' in charges_format:
+            f.write(os.path.join(tmpdir, 'charges'), arcname='charges.txt')
+        if 'mol2' in charges_format:
+            prepare_mol2(tmpdir, method, parameters)
+            f.write(os.path.join(tmpdir, 'charges.mol2'), arcname='charges.mol2')
+
+    return send_from_directory(tmpdir, 'charges.zip', as_attachment=True, attachment_filename=f'{method}_charges.zip')

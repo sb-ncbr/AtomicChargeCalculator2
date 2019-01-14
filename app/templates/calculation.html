@@ -30,10 +30,10 @@
         <div class="col-12 col-lg-4 p-3">
             <table class="table">
                 <thead>
-                    <tr>
-                        <th>Element</th>
-                        <th>Number of atoms</th>
-                    </tr>
+                <tr>
+                    <th>Element</th>
+                    <th>Number of atoms</th>
+                </tr>
                 </thead>
                 <tbody>
                 {% for element in counts %}
@@ -51,8 +51,18 @@
     </div>
     <hr>
     <div class="row">
+        <div class="col">
+            File type:
+            <input type="checkbox" id="format-plain" name="format-plain" checked>
+            <label for="format-plain">Plain text</label>
+            <input type="checkbox" id="format-mol2" name="format-mol2">
+            <label for="format-mol2">Mol2</label>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-12 col-md-6 pb-3">
-            <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success">Download charges</a>
+            <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success" id="download">Download
+                charges</a>
         </div>
         <div class="col-12 col-md-6 text-md-right pb-3">
             <a href="{{ url_for('main_site') }}" class="btn btn-primary">Back to main page</a>
