@@ -8,7 +8,7 @@ with open(os.path.join(CHARGEFW2_DIR, 'share', 'methods.json')) as f:
     method_data = json.load(f)
 
 parameter_data = defaultdict(list)
-for parameters in os.listdir(PARAMETERS_DIRECTORY):
+for parameters in sorted(os.listdir(PARAMETERS_DIRECTORY)):
     with open(os.path.join(PARAMETERS_DIRECTORY, parameters)) as f:
         p_data = json.load(f)
         name = p_data['metadata']['name']
