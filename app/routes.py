@@ -1,4 +1,5 @@
 from flask import render_template, flash, request, send_from_directory, redirect, url_for
+from werkzeug.utils import secure_filename
 from app import application
 
 import tempfile
@@ -8,6 +9,7 @@ import shutil
 import os
 import re
 import zipfile
+import subprocess
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
@@ -16,11 +18,24 @@ from app.export_charges import prepare_mol2
 request_data = {}
 
 
-def extract(tmp_dir: str, fmt: str):
-    shutil.unpack_archive(os.path.join(tmp_dir, 'input'), os.path.join(tmp_dir, 'tmp'), format=fmt)
+def convert_to_sdf(filename: str):
+    basename, ext = os.path.splitext(filename)
+    if ext == 'sdf':
+        return
+    args = ['obabel', filename, '-osdf', '-O', f'{basename}.sdf']
+    run = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(' '.join(run.args))
+    if 'Open Babel Error' in run.stderr.decode('utf-8'):
+        raise ValueError
+
+
+def extract(tmp_dir: str, filename: str, fmt: str):
+    shutil.unpack_archive(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'tmp'), format=fmt)
     with open(os.path.join(tmp_dir, 'structures.sdf'), 'w') as output:
         for filename in os.listdir(os.path.join(tmp_dir, 'tmp')):
-            with open(os.path.join(tmp_dir, 'tmp', filename)) as f:
+            basename, ext = os.path.splitext(filename)
+            convert_to_sdf(os.path.join(tmp_dir, 'tmp', filename))
+            with open(os.path.join(tmp_dir, 'tmp', f'{basename}.sdf')) as f:
                 shutil.copyfileobj(f, output)
 
 
@@ -28,24 +43,29 @@ def extract(tmp_dir: str, fmt: str):
 def main_site():
     if request.method == 'POST':
         file = request.files['file']
+        filename = secure_filename(file.filename)
         tmp_dir = tempfile.mkdtemp(prefix='compute_')
-        file.save(os.path.join(tmp_dir, 'input'))
-        filetype = magic.from_file(os.path.join(tmp_dir, 'input'), mime=True)
+        file.save(os.path.join(tmp_dir, filename))
+        filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
         failed = False
         try:
-            if filetype == 'text/plain':
-                shutil.copyfile(os.path.join(tmp_dir, 'input'), os.path.join(tmp_dir, 'structures.sdf'))
+            if filetype.startswith('text'):
+                basename, ext = os.path.splitext(filename)
+                convert_to_sdf(os.path.join(tmp_dir, filename))
+                shutil.copyfile(os.path.join(tmp_dir, f'{basename}.sdf'), os.path.join(tmp_dir, 'structures.sdf'))
             elif filetype == 'application/zip':
-                extract(tmp_dir, 'zip')
+                extract(tmp_dir, filename, 'zip')
             elif filetype == 'application/x-gzip':
-                extract(tmp_dir, 'gztar')
+                extract(tmp_dir, filename, 'gztar')
             else:
                 failed = True
         except ValueError:
             failed = True
 
         if failed:
-            flash(f'Invalid file type: {filetype}. Use only sdf, zip or tar.gz only.', 'error')
+            flash('Invalid file provided. Supported types are common chemical formats like sdf, mol2, pdb'
+                  ' and zip or tar.gz of those.',
+                  'error')
             return render_template('index.html', methods=method_data, parameters=parameter_data)
 
         comp_id = str(uuid.uuid1())
