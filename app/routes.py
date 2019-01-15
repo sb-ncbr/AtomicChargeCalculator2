@@ -79,6 +79,13 @@ def main_site():
 
         res = calculate(method_name, parameters_name, options, os.path.join(tmp_dir, 'structures.sdf'),
                         os.path.join(tmp_dir, 'charges'))
+
+        with open(os.path.join(tmp_dir, 'computation.stdout'), 'w') as f:
+            f.write(res.stdout.decode('utf-8'))
+
+        with open(os.path.join(tmp_dir, 'computation.stderr'), 'w') as f:
+                f.write(res.stderr.decode('utf-8'))
+
         if res.returncode:
             flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
         else:
