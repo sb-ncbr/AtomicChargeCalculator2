@@ -1,5 +1,9 @@
 'use strict';
 
+function es(str) {
+    return str.replace('/', '\\/').replace('+', '\\+');
+}
+
 function fill_paper($element, doi) {
     if (localStorage.getItem(doi) != null) {
         $element.html(localStorage[doi]);
@@ -80,7 +84,7 @@ function init_index() {
                 let $div = $(div);
                 $div.hide();
             });
-            $(`#options-${m_name}`).show();
+            $(`#options-${es(m_name)}`).show();
             $('#method-options-row').show();
         } else {
             $('#method-options-row').hide();
