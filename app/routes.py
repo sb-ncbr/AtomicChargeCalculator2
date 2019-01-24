@@ -18,9 +18,9 @@ from app.export_charges import prepare_mol2
 request_data = {}
 
 
-def convert_to_sdf(filename: str):
+def convert_to_sdf_if_needed(filename: str):
     basename, ext = os.path.splitext(filename)
-    if ext == 'sdf':
+    if ext == 'sdf' or ext == 'mol2':
         return
     args = ['obabel', filename, '-osdf', '-O', f'{basename}.sdf']
     run = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -34,7 +34,7 @@ def extract(tmp_dir: str, filename: str, fmt: str):
     with open(os.path.join(tmp_dir, 'structures.sdf'), 'w') as output:
         for filename in os.listdir(os.path.join(tmp_dir, 'tmp')):
             basename, ext = os.path.splitext(filename)
-            convert_to_sdf(os.path.join(tmp_dir, 'tmp', filename))
+            convert_to_sdf_if_needed(os.path.join(tmp_dir, 'tmp', filename))
             with open(os.path.join(tmp_dir, 'tmp', f'{basename}.sdf')) as f:
                 shutil.copyfileobj(f, output)
 
@@ -51,7 +51,7 @@ def main_site():
         try:
             if filetype.startswith('text'):
                 basename, ext = os.path.splitext(filename)
-                convert_to_sdf(os.path.join(tmp_dir, filename))
+                convert_to_sdf_if_needed(os.path.join(tmp_dir, filename))
                 shutil.copyfile(os.path.join(tmp_dir, f'{basename}.sdf'), os.path.join(tmp_dir, 'structures.sdf'))
             elif filetype == 'application/zip':
                 extract(tmp_dir, filename, 'zip')
