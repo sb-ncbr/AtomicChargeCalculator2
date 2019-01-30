@@ -9,34 +9,21 @@ import shutil
 import os
 import re
 import zipfile
-import subprocess
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
-from app.export_charges import prepare_mol2
 
 request_data = {}
 
-
-def convert_to_sdf_if_needed(filename: str):
-    basename, ext = os.path.splitext(filename)
-    if ext == 'sdf' or ext == 'mol2':
-        return
-    args = ['obabel', filename, '-osdf', '-O', f'{basename}.sdf']
-    run = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print(' '.join(run.args))
-    if 'Open Babel Error' in run.stderr.decode('utf-8'):
-        raise ValueError
+ALLOWED_INPUT_EXTENSION = {'.sdf', '.mol2', '.pdb', '.cif'}
 
 
 def extract(tmp_dir: str, filename: str, fmt: str):
-    shutil.unpack_archive(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'tmp'), format=fmt)
-    with open(os.path.join(tmp_dir, 'structures.sdf'), 'w') as output:
-        for filename in os.listdir(os.path.join(tmp_dir, 'tmp')):
-            basename, ext = os.path.splitext(filename)
-            convert_to_sdf_if_needed(os.path.join(tmp_dir, 'tmp', filename))
-            with open(os.path.join(tmp_dir, 'tmp', f'{basename}.sdf')) as f:
-                shutil.copyfileobj(f, output)
+    shutil.unpack_archive(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'), format=fmt)
+    for filename in os.listdir(os.path.join(tmp_dir, 'input')):
+        basename, ext = os.path.splitext(filename)
+        if ext not in ALLOWED_INPUT_EXTENSION:
+            raise ValueError
 
 
 @application.route('/', methods=['GET', 'POST'])
@@ -45,14 +32,17 @@ def main_site():
         file = request.files['file']
         filename = secure_filename(file.filename)
         tmp_dir = tempfile.mkdtemp(prefix='compute_')
+
+        os.mkdir(os.path.join(tmp_dir, 'input'))
+        os.mkdir(os.path.join(tmp_dir, 'output'))
+        os.mkdir(os.path.join(tmp_dir, 'logs'))
+
         file.save(os.path.join(tmp_dir, filename))
         filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
         failed = False
         try:
-            if filetype.startswith('text'):
-                basename, ext = os.path.splitext(filename)
-                convert_to_sdf_if_needed(os.path.join(tmp_dir, filename))
-                shutil.copyfile(os.path.join(tmp_dir, f'{basename}.sdf'), os.path.join(tmp_dir, 'structures.sdf'))
+            if filetype == 'text/plain':
+                shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
             elif filetype == 'application/zip':
                 extract(tmp_dir, filename, 'zip')
             elif filetype == 'application/x-gzip':
@@ -63,7 +53,7 @@ def main_site():
             failed = True
 
         if failed:
-            flash('Invalid file provided. Supported types are common chemical formats like sdf, mol2, pdb'
+            flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
                   ' and zip or tar.gz of those.',
                   'error')
             return render_template('index.html', methods=method_data, parameters=parameter_data)
@@ -77,22 +67,21 @@ def main_site():
             for option in method_info['options']:
                 options[option['name']] = request.form.get(f'{method_name}-option-{option["name"]}')
 
-        res = calculate(method_name, parameters_name, options, os.path.join(tmp_dir, 'structures.sdf'),
-                        os.path.join(tmp_dir, 'charges'))
+        for file in os.listdir(os.path.join(tmp_dir, 'input')):
+            res = calculate(method_name, parameters_name, options, os.path.join(tmp_dir, 'input', file),
+                            os.path.join(tmp_dir, 'output'))
 
-        with open(os.path.join(tmp_dir, 'computation.stdout'), 'w') as f:
-            f.write(res.stdout.decode('utf-8'))
+            with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
+                f_stdout.write(res.stdout.decode('utf-8'))
 
-        with open(os.path.join(tmp_dir, 'computation.stderr'), 'w') as f:
-                f.write(res.stderr.decode('utf-8'))
+            with open(os.path.join(tmp_dir, 'logs', f'{file}.stderr'), 'w') as f_stderr:
+                f_stderr.write(res.stderr.decode('utf-8'))
 
-        if res.returncode:
-            flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
-        else:
-            output = res.stdout.decode('utf-8')
-            request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'output': output,
-                                     'parameters': parameters_name}
-            return redirect(url_for('results', r=comp_id))
+            if res.returncode:
+                flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
+
+        request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name}
+        return redirect(url_for('results', r=comp_id))
 
     return render_template('index.html', methods=method_data, parameters=parameter_data)
 
@@ -101,43 +90,20 @@ def main_site():
 def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
-    m = re.search(r'Number of molecules: (.*?)\n', comp_data['output'])
-    n_molecules = m.group(1)
-    m = re.search(r'Computation took (.*?) seconds\n', comp_data['output'])
-    time = m.group(1)
 
-    info = False
-    c = {}
-    for line in comp_data['output'].split('\n'):
-        if 'Number of molecules' in line:
-            info = True
-        elif line == '':
-            break
-        elif info:
-            m = re.search(r'(.*?) plain \*: (\d+)', line)
-            element = m.group(1)
-            element_count = int(m.group(2))
-            c[element] = element_count
-
-    return render_template('calculation.html', method_name=comp_data['method'], comp_id=comp_id,
-                           n_molecules=n_molecules, time=time, counts=c, methods=method_data, parameters=parameter_data,
+    return render_template('calculation.html', method_name=comp_data['method'], comp_id=comp_id, methods=method_data,
                            parameters_name=comp_data['parameters'])
 
 
 @application.route('/download')
 def download_charges():
     comp_id = request.args.get('r')
-    charges_format = request.args.getlist('format')
     comp_data = request_data[comp_id]
     tmpdir = comp_data['tmpdir']
     method = comp_data['method']
-    parameters = comp_data['parameters']
 
     with zipfile.ZipFile(os.path.join(tmpdir, 'charges.zip'), 'w', compression=zipfile.ZIP_DEFLATED) as f:
-        if 'plain' in charges_format:
-            f.write(os.path.join(tmpdir, 'charges'), arcname='charges.txt')
-        if 'mol2' in charges_format:
-            prepare_mol2(tmpdir, method, parameters)
-            f.write(os.path.join(tmpdir, 'charges.mol2'), arcname='charges.mol2')
+        for file in os.listdir(os.path.join(tmpdir, 'output')):
+            f.write(os.path.join(tmpdir, 'output', file), arcname=file)
 
     return send_from_directory(tmpdir, 'charges.zip', as_attachment=True, attachment_filename=f'{method}_charges.zip')

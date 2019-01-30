@@ -147,31 +147,9 @@ function init_index() {
 }
 
 
-function init_results() {
-    let $download = $('#download');
-    let $format_mol2 = $('#format-mol2');
-    let $format_plain = $('#format-plain');
-
-    $download.on('click', function (e) {
-       e.preventDefault();
-       let params = new URLSearchParams();
-       if ($format_mol2.prop('checked')) {
-           params.append('format', 'mol2');
-       }
-
-       if ($format_plain.prop('checked')) {
-           params.append('format', 'plain');
-       }
-       $(location).attr('href', $download.prop('href') + '&' + params);
-    });
-}
-
-
 $(function () {
     let page = window.location.pathname;
     if (page === '/') {
         init_index();
-    } else if (page === '/results') {
-        init_results();
     }
 });
