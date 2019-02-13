@@ -7,11 +7,11 @@ import magic
 import uuid
 import shutil
 import os
-import re
 import zipfile
 
 from app.method import method_data, parameter_data
 from app.calculation import calculate
+import config
 
 request_data = {}
 
@@ -29,36 +29,66 @@ def extract(tmp_dir: str, filename: str, fmt: str):
 @application.route('/', methods=['GET', 'POST'])
 def main_site():
     if request.method == 'POST':
-        file = request.files['file']
-        filename = secure_filename(file.filename)
         tmp_dir = tempfile.mkdtemp(prefix='compute_')
-
         os.mkdir(os.path.join(tmp_dir, 'input'))
         os.mkdir(os.path.join(tmp_dir, 'output'))
         os.mkdir(os.path.join(tmp_dir, 'logs'))
 
-        file.save(os.path.join(tmp_dir, filename))
-        filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
-        failed = False
-        try:
-            if filetype == 'text/plain':
-                shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
-            elif filetype == 'application/zip':
-                extract(tmp_dir, filename, 'zip')
-            elif filetype == 'application/x-gzip':
-                extract(tmp_dir, filename, 'gztar')
-            else:
-                failed = True
-        except ValueError:
-            failed = True
+        print(request.form)
+        print(request.form['type'])
 
-        if failed:
-            flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
-                  ' and zip or tar.gz of those.',
-                  'error')
-            return render_template('index.html', methods=method_data, parameters=parameter_data)
+        if request.form['type'] == 'upload':
+            file = request.files['file']
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(tmp_dir, filename))
+
+            filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
+            failed = False
+            try:
+                if filetype == 'text/plain':
+                    shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
+                elif filetype == 'application/zip':
+                    extract(tmp_dir, filename, 'zip')
+                elif filetype == 'application/x-gzip':
+                    extract(tmp_dir, filename, 'gztar')
+                else:
+                    failed = True
+            except ValueError:
+                failed = True
+
+            if failed:
+                flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
+                      ' and zip or tar.gz of those.',
+                      'error')
+                return render_template('index.html')
+        elif request.form['type'] == 'example':
+            if 'example-small' in request.form:
+                filename = 'set01.sdf'
+            elif 'example-ligand' in request.form:
+                filename = 'TRP.cif'
+            elif 'example-protein' in request.form:
+                filename = '3k0h_updated.cif'
+            else:
+                raise RuntimeError('Unknown example selected')
+            shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
+        else:
+            raise RuntimeError('Bad type of input')
 
         comp_id = str(uuid.uuid1())
+
+        request_data[comp_id] = {'tmpdir': tmp_dir}
+
+        return redirect(url_for('computation', r=comp_id))
+
+    return render_template('index.html')
+
+
+@application.route('/computation', methods=['GET', 'POST'])
+def computation():
+    comp_id = request.args.get('r')
+    tmp_dir = request_data[comp_id]['tmpdir']
+
+    if request.method == 'POST':
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
         method_info = next((m for m in method_data if m['name'] == method_name))
@@ -83,7 +113,7 @@ def main_site():
         request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name}
         return redirect(url_for('results', r=comp_id))
 
-    return render_template('index.html', methods=method_data, parameters=parameter_data)
+    return render_template('computation.html', methods=method_data, parameters=parameter_data)
 
 
 @application.route('/results')
@@ -91,7 +121,7 @@ def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
 
-    return render_template('calculation.html', method_name=comp_data['method'], comp_id=comp_id, methods=method_data,
+    return render_template('results.html', method_name=comp_data['method'], comp_id=comp_id, methods=method_data,
                            parameters_name=comp_data['parameters'])
 
 

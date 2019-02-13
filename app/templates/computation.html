@@ -15,54 +15,90 @@
 <div class="container p-3">
     <div class="d-none mt-5 d-lg-block"></div>
     <form method=post enctype=multipart/form-data>
-        <input type="hidden" name="type" id="type" value="example"/>
         <div class="row">
             <div class="col">
                 <h1 style="margin-bottom: 30px">ChargeCompute</h1>
-                <p>ChargeCompute is an application for fast calculation of partial atomic charges. It features 17
-                    empirical methods along with parameters from literature.</p>
             </div>
         </div>
         <hr>
         <div class="row">
             <div class="col">
-                <h2>Input data</h2>
-                <p>Try one of the examples or load your own structure:</p>
+                <h2>Computation settings</h2>
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-4">
-                <b>DTP NCI</b>
-                <p>Set of 500 drug-like molecules from DTP NCI.</p>
-                <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose</button>
-                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 120px">
-            </div>
-            <div class="col-lg-4">
-                <b>Tryptophan</b>
-                <p>One of the amino acids.</p>
-                <button type="submit" id="example-ligand" name="example-ligand" class="btn btn-primary">Choose</button>
-                <img src="{{ url_for('static', filename='tryptophan.png') }}" alt="Tryptophan" style="height: 120px">
-            </div>
-            <div class="col-lg-4">
-                <b>3k0h</b>
-                <p>Small protein.</p>
-                <button type="submit" id="example-protein" name="example-protein" class="btn btn-primary">Choose
-                </button>
-                <img src="{{ url_for('static', filename='protein.png') }}" alt="3k0h" style="height: 120px">
-            </div>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
-                    <label class="font-weight-bold" for="file_input">File from disk</label>
-                    <input type="file" class="form-control-file" id="file_input" name="file">
-                    <small class="form-text text-muted">
-                        Single sdf, mol2, pdb or mmcif file or archive (zip, tar.gz) of those files.
-                        Maximum file size: 10 MB
-                    </small>
+                    <label class="font-weight-bold" for="method_selection">Method</label>
+                    <select class="form-control" name="method_select" id="method_selection" style="width:auto;">
+                        <optgroup label="3D" id="optgroup3D">
+                        </optgroup>
+                        <optgroup label="2D" id="optgroup2D">
+                        </optgroup>
+                    </select>
                 </div>
-                <button type="submit" id="upload" name="upload" class="btn btn-primary">Upload</button>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="font-weight-bold">Full name</label>
+                <div id="method_name"></div>
+                <label class="font-weight-bold">Publication</label>
+                <div id="method_paper"></div>
+            </div>
+        </div>
+        <div class="row" id="method-options-row">
+            <div class="col-md-6">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-options"
+                        aria-expanded="false" aria-controls="collapse-options">Method options
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="collapse" id="collapse-options">
+                    <div class="card card-body" id="method-options">
+                        {% for method in methods %}
+                            <div id="options-{{ method.name }}">
+                                {% for option in method.options %}
+                                    <label for="{{ method.name }}-option-{{ option.name }}"
+                                           class="col-form-label">{{ option.description }}</label>
+                                    {% if option.type == 'int' %}
+                                        <input class="form-control" type="number" value="{{ option.default }}"
+                                               id="{{ method.name }}-option-{{ option.name }}"
+                                               name="{{ method.name }}-option-{{ option.name }}">
+                                    {% else %}
+                                        <select class="form-control" name="{{ method.name }}-option-{{ option.name }}"
+                                                id="{{ method.name }}-option-{{ option.name }}">
+                                            {% for choice in option.choices %}
+                                                {% if choice == option.default %}
+                                                    <option selected>{{ choice }}</option>
+                                                {% else %}
+                                                    <option>{{ choice }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="form-group">
+                    <label class="font-weight-bold" for="parameters_selection">Parameters</label>
+                    <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="font-weight-bold" id="parameters_paper_label">Publication</label>
+                <div id="parameters_paper"></div>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
+                <button type="submit" class="btn btn-primary" id="calculate">Calculate</button>
             </div>
         </div>
     </form>
@@ -113,6 +149,7 @@
     </footer>
 </div>
 
+
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
@@ -122,6 +159,10 @@
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
+<script>
+    const method_data = $.parseJSON('{{ methods | tojson | safe }}');
+    const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
+</script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>

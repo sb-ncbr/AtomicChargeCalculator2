@@ -25,6 +25,7 @@ function fill_paper($element, doi) {
     }
 }
 
+
 function hide_parameters_publication(val) {
     $('#parameters_paper').prop('hidden', val);
     $('#parameters_paper_label').prop('hidden', val);
@@ -32,6 +33,35 @@ function hide_parameters_publication(val) {
 
 
 function init_index() {
+    /* Allow submit only if file is selected */
+    const $input = $('#file_input');
+    const $submit = $('#upload');
+
+    $submit.prop('disabled', true);
+
+    $input.on('change', function () {
+        if ($input.val()) {
+            $submit.prop('disabled', false);
+        } else {
+            $submit.prop('disabled', true);
+        }
+    });
+
+    $submit.on('click', function () {
+        if ($input[0].files[0].size > 10 * 1024 * 1024) {
+            alert('Cannot upload file larger than 10 MB');
+            $submit.prop('disabled', true);
+        } else {
+            $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
+            $submit.prop('disabled', true);
+            $('#type').val('upload');
+            $('form').submit();
+        }
+    });
+}
+
+
+function init_computation() {
     const $m_select = $('#method_selection');
     const $m_group2d = $('#optgroup2D');
     const $m_group3d = $('#optgroup3D');
@@ -118,32 +148,6 @@ function init_index() {
     });
 
     $m_select.trigger('change');
-
-    /* Allow submit only if file is selected */
-    const $input = $('#file_input');
-    const $submit = $('#calculate');
-
-    $submit.prop('disabled', true);
-
-    $input.on('change', function () {
-        if ($input.val()) {
-            $submit.prop('disabled', false);
-        } else {
-            $submit.prop('disabled', true);
-        }
-    });
-
-    /* Check file size */
-    $('form').submit(function (e) {
-        if ($input[0].files[0].size > 10 * 1024 * 1024) {
-            alert('Cannot upload file larger than 10 MB');
-            $submit.prop('disabled', true);
-            e.preventDefault();
-        } else {
-            $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Calculating...');
-            $submit.prop('disabled', true);
-        }
-    });
 }
 
 
@@ -151,5 +155,7 @@ $(function () {
     let page = window.location.pathname;
     if (page === '/') {
         init_index();
+    } else if (page === '/computation') {
+        init_computation();
     }
 });
