@@ -24,6 +24,10 @@
         <div class="row">
             <div class="col">
                 <h2>Computation settings</h2>
+                <div class="form-text text-muted">
+                    Note that the list of methods and parameters shows only suitable combinations for given input
+                    structures.
+                </div>
             </div>
         </div>
         <div class="row">
@@ -43,42 +47,6 @@
                 <div id="method_name"></div>
                 <label class="font-weight-bold">Publication</label>
                 <div id="method_paper"></div>
-            </div>
-        </div>
-        <div class="row" id="method-options-row">
-            <div class="col-md-6">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-options"
-                        aria-expanded="false" aria-controls="collapse-options">Method options
-                    <i class="fa fa-caret-down"></i>
-                </button>
-                <div class="collapse" id="collapse-options">
-                    <div class="card card-body" id="method-options">
-                        {% for method in methods %}
-                            <div id="options-{{ method.name }}">
-                                {% for option in method.options %}
-                                    <label for="{{ method.name }}-option-{{ option.name }}"
-                                           class="col-form-label">{{ option.description }}</label>
-                                    {% if option.type == 'int' %}
-                                        <input class="form-control" type="number" value="{{ option.default }}"
-                                               id="{{ method.name }}-option-{{ option.name }}"
-                                               name="{{ method.name }}-option-{{ option.name }}">
-                                    {% else %}
-                                        <select class="form-control" name="{{ method.name }}-option-{{ option.name }}"
-                                                id="{{ method.name }}-option-{{ option.name }}">
-                                            {% for choice in option.choices %}
-                                                {% if choice == option.default %}
-                                                    <option selected>{{ choice }}</option>
-                                                {% else %}
-                                                    <option>{{ choice }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
         </div>
         <hr>
@@ -162,6 +130,8 @@
 <script>
     const method_data = $.parseJSON('{{ methods | tojson | safe }}');
     const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
+    const suitable_methods = $.parseJSON('{{ suitable_methods | tojson | safe }}');
+    const suitable_parameters = $.parseJSON('{{ suitable_parameters | tojson | safe }}');
 </script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 

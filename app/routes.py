@@ -10,7 +10,7 @@ import os
 import zipfile
 
 from app.method import method_data, parameter_data
-from app.calculation import calculate
+from app.chargefw2 import calculate, get_suitable_methods
 import config
 
 request_data = {}
@@ -33,9 +33,6 @@ def main_site():
         os.mkdir(os.path.join(tmp_dir, 'input'))
         os.mkdir(os.path.join(tmp_dir, 'output'))
         os.mkdir(os.path.join(tmp_dir, 'logs'))
-
-        print(request.form)
-        print(request.form['type'])
 
         if request.form['type'] == 'upload':
             file = request.files['file']
@@ -76,7 +73,10 @@ def main_site():
 
         comp_id = str(uuid.uuid1())
 
-        request_data[comp_id] = {'tmpdir': tmp_dir}
+        methods, parameters = get_suitable_methods(tmp_dir)
+        data = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
+
+        request_data[comp_id] = data
 
         return redirect(url_for('computation', r=comp_id))
 
@@ -87,18 +87,15 @@ def main_site():
 def computation():
     comp_id = request.args.get('r')
     tmp_dir = request_data[comp_id]['tmpdir']
+    suitable_methods = request_data[comp_id]['suitable_methods']
+    suitable_parameters = request_data[comp_id]['suitable_parameters']
 
     if request.method == 'POST':
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
-        method_info = next((m for m in method_data if m['name'] == method_name))
-        options = {}
-        if 'options' in method_info:
-            for option in method_info['options']:
-                options[option['name']] = request.form.get(f'{method_name}-option-{option["name"]}')
 
         for file in os.listdir(os.path.join(tmp_dir, 'input')):
-            res = calculate(method_name, parameters_name, options, os.path.join(tmp_dir, 'input', file),
+            res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
                             os.path.join(tmp_dir, 'output'))
 
             with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
@@ -113,7 +110,8 @@ def computation():
         request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name}
         return redirect(url_for('results', r=comp_id))
 
-    return render_template('computation.html', methods=method_data, parameters=parameter_data)
+    return render_template('computation.html', methods=method_data, parameters=parameter_data,
+                           suitable_methods=suitable_methods, suitable_parameters=suitable_parameters)
 
 
 @application.route('/results')

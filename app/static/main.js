@@ -69,13 +69,15 @@ function init_computation() {
 
     /* Set available methods */
     $.each(method_data, function (key, method) {
-        const str = `<option value="${method.name}">${method.name}</option>\n`;
-        if (method.type === "2D")
-            $m_group2d.append(str);
-        else if (method.type === "3D")
-            $m_group3d.append(str);
-        else
-            $m_select.append(str);
+        if (suitable_methods.includes(method.name)) {
+            const str = `<option value="${method.name}">${method.name}</option>\n`;
+            if (method.type === "2D")
+                $m_group2d.append(str);
+            else if (method.type === "3D")
+                $m_group3d.append(str);
+            else
+                $m_select.append(str);
+        }
     });
 
     /* Update parameter publication on change */
@@ -108,18 +110,6 @@ function init_computation() {
             return element.name === m_name;
         });
 
-        if (e.options) {
-            $('#collapse-options').removeClass('show');
-            $.each($('div[id^="options"]'), function (key, div) {
-                let $div = $(div);
-                $div.hide();
-            });
-            $(`#options-${es(m_name)}`).show();
-            $('#method-options-row').show();
-        } else {
-            $('#method-options-row').hide();
-        }
-
         $p_select.empty();
         if (e.has_parameters) {
             let p_options = '';
@@ -128,7 +118,9 @@ function init_computation() {
                 $p_select.append('<option value="default">Select best (default)</option>');
             }
             $.each(parameter_data[m_name], function (key, parameter_set) {
-                p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
+                if (suitable_parameters[m_name].includes(parameter_set.filename)) {
+                    p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
+                }
             });
             $p_select.append(p_options);
             $p_select.trigger('change');
