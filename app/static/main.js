@@ -143,11 +143,34 @@ function init_computation() {
 }
 
 
+function init_results() {
+    const $select = $('#structure_select');
+    $select.select2({width: 'auto', placeholder: 'Select a structure'});
+    $select.on('select2:select', function (e) {
+        console.log(get_structure_url + `&s=${e.params.data.id}`);
+        let format = e.params.data.id.split(':')[0].split('.')[1].toUpperCase();
+        if (format === 'ENT') {
+            format = 'PDB';
+        } else if (format === 'CIF') {
+            format = 'mmCIF'
+        }
+        LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
+            structure_url: get_structure_url + `&s=${e.params.data.id}`,
+            charges_url: get_charges_url + `&s=${e.params.data.id}`,
+            structure_format: format,
+            charges_format: 'TXT'
+        });
+    });
+}
+
+
 $(function () {
     let page = window.location.pathname;
     if (page === '/') {
         init_index();
     } else if (page === '/computation') {
         init_computation();
+    } else if (page === '/results') {
+        init_results();
     }
 });

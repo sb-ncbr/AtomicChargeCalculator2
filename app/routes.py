@@ -11,6 +11,7 @@ import zipfile
 
 from app.method import method_data, parameter_data
 from app.chargefw2 import calculate, get_suitable_methods
+import app.parser as parser
 import config
 
 request_data = {}
@@ -94,6 +95,8 @@ def computation():
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
 
+        structures = {}
+        charges = {}
         for file in os.listdir(os.path.join(tmp_dir, 'input')):
             res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
                             os.path.join(tmp_dir, 'output'))
@@ -107,7 +110,26 @@ def computation():
             if res.returncode:
                 flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
 
-        request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name}
+            _, ext = os.path.splitext(file)
+
+            with open(os.path.join(tmp_dir, 'input', file)) as f:
+                if ext == '.sdf':
+                    structures.update(parser.parse_sdf(f))
+                elif ext == '.mol2':
+                    structures.update(parser.parse_mol2(f))
+                elif ext == '.pdb' or ext == '.ent':
+                    structures.update(parser.parse_pdb(f))
+                elif ext == '.cif':
+                    structures.update(parser.parse_cif(f))
+                else:
+                    raise RuntimeError(f'Not supported format: {ext}')
+
+            with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
+                charges.update(parser.parse_txt(f))
+
+        request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name,
+                                 'structures': structures, 'charges': charges}
+
         return redirect(url_for('results', r=comp_id))
 
     return render_template('computation.html', methods=method_data, parameters=parameter_data,
@@ -120,7 +142,7 @@ def results():
     comp_data = request_data[comp_id]
 
     return render_template('results.html', method_name=comp_data['method'], comp_id=comp_id, methods=method_data,
-                           parameters_name=comp_data['parameters'])
+                           parameters_name=comp_data['parameters'], structures=comp_data['structures'].keys())
 
 
 @application.route('/download')
@@ -135,3 +157,21 @@ def download_charges():
             f.write(os.path.join(tmpdir, 'output', file), arcname=file)
 
     return send_from_directory(tmpdir, 'charges.zip', as_attachment=True, attachment_filename=f'{method}_charges.zip')
+
+
+@application.route('/structure')
+def get_structure():
+    comp_id = request.args.get('r')
+    structure_id = request.args.get('s')
+    comp_data = request_data[comp_id]
+
+    return comp_data['structures'][structure_id]
+
+
+@application.route('/charges')
+def get_charges():
+    comp_id = request.args.get('r')
+    structure_id = request.args.get('s')
+    comp_data = request_data[comp_id]
+
+    return comp_data['charges'][structure_id]
