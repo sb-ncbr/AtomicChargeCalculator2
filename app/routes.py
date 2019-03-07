@@ -1,6 +1,6 @@
 from flask import render_template, flash, request, send_from_directory, redirect, url_for
 from werkzeug.utils import secure_filename
-from app import application
+from . import application, config
 
 import tempfile
 import magic
@@ -9,10 +9,9 @@ import shutil
 import os
 import zipfile
 
-from app.method import method_data, parameter_data
-from app.chargefw2 import calculate, get_suitable_methods
-import app.parser as parser
-import config
+from .method import method_data, parameter_data
+from .chargefw2 import calculate, get_suitable_methods
+from .parser import *
 
 request_data = {}
 
@@ -114,18 +113,18 @@ def computation():
 
             with open(os.path.join(tmp_dir, 'input', file)) as f:
                 if ext == '.sdf':
-                    structures.update(parser.parse_sdf(f))
+                    structures.update(parse_sdf(f))
                 elif ext == '.mol2':
-                    structures.update(parser.parse_mol2(f))
+                    structures.update(parse_mol2(f))
                 elif ext == '.pdb' or ext == '.ent':
-                    structures.update(parser.parse_pdb(f))
+                    structures.update(parse_pdb(f))
                 elif ext == '.cif':
-                    structures.update(parser.parse_cif(f))
+                    structures.update(parse_cif(f))
                 else:
                     raise RuntimeError(f'Not supported format: {ext}')
 
             with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
-                charges.update(parser.parse_txt(f))
+                charges.update(parse_txt(f))
 
         request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name,
                                  'structures': structures, 'charges': charges}

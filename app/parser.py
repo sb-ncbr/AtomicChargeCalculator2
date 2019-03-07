@@ -1,6 +1,9 @@
 import os
 
 
+__all__ = ['parse_txt', 'parse_cif', 'parse_mol2', 'parse_pdb', 'parse_sdf']
+
+
 def parse_sdf(f):
     filename = os.path.basename(f.name)
     d = {}

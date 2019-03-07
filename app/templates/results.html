@@ -16,7 +16,7 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
 
-    <link href="{{ url_for('static', filename='litemol/static/css/main.7c8c3b10.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='litemol/static/css/###litemol.css###') }}" rel="stylesheet">
 </head>
 <body>
 
@@ -41,7 +41,15 @@
                 {% endfor %}
             </select>
         </div>
-
+        <div class="col">
+            <label><input type="radio" name="colors" value="Relative" checked> Relative</label>
+            <label><input type="radio" name="colors" value="Absolute"> Absolute</label>
+            <br>
+            <label for="min_value">Min value</label>
+            <input type="number" id="min_value" name="min_value" min="-5" max="5" step="0.1" value="-1">
+            <label for="max_value">Max value</label>
+            <input type="number" id="max_value" name="max_value" min="-5" max="5" step="0.1" value="1">
+        </div>
     </div>
     <div class="row">
         <div class="col">
@@ -85,7 +93,7 @@
 </script>
 
 <script type="text/javascript" src="{{ url_for('static', filename='litemol/LiteMol-plugin.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='litemol/static/js/main.5f982b25.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='litemol/static/js/###litemol.js###') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
 
 

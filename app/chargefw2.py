@@ -3,8 +3,8 @@ import os
 import string
 from collections import Counter, defaultdict
 
-from app.method import method_data
-from config import MKL_PATH, PARAMETERS_DIRECTORY, CHARGEFW2_DIR
+from .method import method_data
+from .config import MKL_PATH, PARAMETERS_DIRECTORY, CHARGEFW2_DIR
 
 
 def calculate(method_name, parameters_name, source, charge_out_dir):

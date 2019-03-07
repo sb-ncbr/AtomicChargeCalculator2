@@ -143,6 +143,18 @@ function init_computation() {
 }
 
 
+function update_litemol_colors(min_color, max_color) {
+    LiteMolChargesViewerEventQueue.send("lm-set-default-color-scheme", {
+        minVal: min_color,
+        maxVal: max_color,
+        fallbackColor: {r: 0, g: 255, b: 0},
+        minColor: {r: 255, g: 0, b: 0},
+        maxColor: {r: 0, g: 0, b: 255},
+        middleColor: {r: 255, g: 255, b: 255}
+    });
+}
+
+
 function init_results() {
     const $select = $('#structure_select');
     $select.select2({width: 'auto', placeholder: 'Select a structure'});
@@ -161,6 +173,26 @@ function init_results() {
             charges_format: 'TXT'
         });
     });
+
+    $('#min_value, #max_value').on('change', function () {
+        update_litemol_colors(parseFloat($('#min_value').val()), parseFloat($('#max_value').val()));
+    });
+
+    let $colors = $('input[name=colors]');
+    $colors.on('change', function () {
+        let coloring = $('input[name=colors]:checked').val();
+        if (coloring === 'Relative') {
+            update_litemol_colors(null, null);
+
+            $('#min_value').prop('disabled', true);
+            $('#max_value').prop('disabled', true);
+        } else {
+            $('#min_value').prop('disabled', false);
+            $('#max_value').prop('disabled', false);
+        }
+    });
+
+    $colors.trigger('change');
 }
 
 
