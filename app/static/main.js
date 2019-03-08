@@ -159,7 +159,6 @@ function init_results() {
     const $select = $('#structure_select');
     $select.select2({width: 'auto', placeholder: 'Select a structure'});
     $select.on('select2:select', function (e) {
-        console.log(get_structure_url + `&s=${e.params.data.id}`);
         let format = e.params.data.id.split(':')[0].split('.')[1].toUpperCase();
         if (format === 'ENT') {
             format = 'PDB';
@@ -174,8 +173,13 @@ function init_results() {
         });
     });
 
-    $('#min_value, #max_value').on('change', function () {
+    let $min_value = $('#min_value');
+    let $max_value = $('#max_value');
+
+    $('#min_value, #max_value').on('input', function () {
         update_litemol_colors(parseFloat($('#min_value').val()), parseFloat($('#max_value').val()));
+        $min_value.attr('max', $max_value.val());
+        $max_value.attr('min', $min_value.val());
     });
 
     let $colors = $('input[name=colors]');
@@ -183,12 +187,12 @@ function init_results() {
         let coloring = $('input[name=colors]:checked').val();
         if (coloring === 'Relative') {
             update_litemol_colors(null, null);
-
-            $('#min_value').prop('disabled', true);
-            $('#max_value').prop('disabled', true);
+            $min_value.prop('disabled', true);
+            $max_value.prop('disabled', true);
         } else {
-            $('#min_value').prop('disabled', false);
-            $('#max_value').prop('disabled', false);
+            $min_value.prop('disabled', false);
+            $max_value.prop('disabled', false);
+            $min_value.trigger('input');
         }
     });
 
