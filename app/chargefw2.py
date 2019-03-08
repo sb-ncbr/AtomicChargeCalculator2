@@ -10,7 +10,7 @@ from .config import MKL_PATH, PARAMETERS_DIRECTORY, CHARGEFW2_DIR
 def calculate(method_name, parameters_name, source, charge_out_dir):
     method = ''.join(c for c in method_name.lower() if c in string.ascii_lowercase)
     args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'charges', '--method', method,
-            '--input-file', source, '--chg-out-dir', charge_out_dir]
+            '--input-file', source, '--chg-out-dir', charge_out_dir, '--read-hetatm']
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = MKL_PATH
     if next(m for m in method_data if m['name'] == method_name)['has_parameters']:
@@ -31,7 +31,8 @@ def get_suitable_methods(directory: str):
         env = os.environ.copy()
         env['LD_LIBRARY_PATH'] = MKL_PATH
 
-        args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'suitable-methods', '--input-file', fullname]
+        args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'suitable-methods', '--read-hetatm',
+                '--input-file', fullname]
         calculation = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE, env=env)
         print(' '.join(calculation.args))
         if calculation.returncode:
