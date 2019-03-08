@@ -34,7 +34,7 @@ def main_site():
         os.mkdir(os.path.join(tmp_dir, 'output'))
         os.mkdir(os.path.join(tmp_dir, 'logs'))
 
-        if request.form['type'] == 'upload':
+        if request.form['type'] in ['settings', 'charges']:
             file = request.files['file']
             filename = secure_filename(file.filename)
             file.save(os.path.join(tmp_dir, filename))
@@ -76,7 +76,19 @@ def main_site():
         methods, parameters = get_suitable_methods(tmp_dir)
         data = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
+        print(methods)
+        print(parameters)
+
         request_data[comp_id] = data
+
+        if request.form['type'] == 'charges':
+            method_name = methods[0]
+            parameters_name = 'default'
+            charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
+            request_data[comp_id].update(
+                {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
+
+            return redirect(url_for('results', r=comp_id))
 
         return redirect(url_for('computation', r=comp_id))
 
@@ -94,37 +106,10 @@ def computation():
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
 
-        structures = {}
-        charges = {}
-        for file in os.listdir(os.path.join(tmp_dir, 'input')):
-            res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
-                            os.path.join(tmp_dir, 'output'))
+        print(method_name)
+        print(parameters_name)
 
-            with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
-                f_stdout.write(res.stdout.decode('utf-8'))
-
-            with open(os.path.join(tmp_dir, 'logs', f'{file}.stderr'), 'w') as f_stderr:
-                f_stderr.write(res.stderr.decode('utf-8'))
-
-            if res.returncode:
-                flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
-
-            _, ext = os.path.splitext(file)
-
-            with open(os.path.join(tmp_dir, 'input', file)) as f:
-                if ext == '.sdf':
-                    structures.update(parse_sdf(f))
-                elif ext == '.mol2':
-                    structures.update(parse_mol2(f))
-                elif ext == '.pdb' or ext == '.ent':
-                    structures.update(parse_pdb(f))
-                elif ext == '.cif':
-                    structures.update(parse_cif(f))
-                else:
-                    raise RuntimeError(f'Not supported format: {ext}')
-
-            with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
-                charges.update(parse_txt(f))
+        charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
 
         request_data[comp_id].update(
             {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
@@ -133,6 +118,41 @@ def computation():
 
     return render_template('computation.html', methods=method_data, parameters=parameter_data,
                            suitable_methods=suitable_methods, suitable_parameters=suitable_parameters)
+
+
+def calculate_charges(method_name, parameters_name, tmp_dir):
+    structures = {}
+    charges = {}
+    for file in os.listdir(os.path.join(tmp_dir, 'input')):
+        res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
+                        os.path.join(tmp_dir, 'output'))
+
+        with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
+            f_stdout.write(res.stdout.decode('utf-8'))
+
+        with open(os.path.join(tmp_dir, 'logs', f'{file}.stderr'), 'w') as f_stderr:
+            f_stderr.write(res.stderr.decode('utf-8'))
+
+        if res.returncode:
+            flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
+
+        _, ext = os.path.splitext(file)
+
+        with open(os.path.join(tmp_dir, 'input', file)) as f:
+            if ext == '.sdf':
+                structures.update(parse_sdf(f))
+            elif ext == '.mol2':
+                structures.update(parse_mol2(f))
+            elif ext == '.pdb' or ext == '.ent':
+                structures.update(parse_pdb(f))
+            elif ext == '.cif':
+                structures.update(parse_cif(f))
+            else:
+                raise RuntimeError(f'Not supported format: {ext}')
+
+        with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
+            charges.update(parse_txt(f))
+    return charges, structures
 
 
 @application.route('/results')

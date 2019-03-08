@@ -35,7 +35,6 @@
         <div class="col">
             <label for="structure_select">Structure:</label>
             <select id="structure_select" name="structure_select" style="width:50%">
-                <option></option>
                 {% for k in structures %}
                     <option value="{{ k }}">{{ k.split(':')[1].strip() }}</option>
                 {% endfor %}

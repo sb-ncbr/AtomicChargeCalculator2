@@ -35,26 +35,42 @@ function hide_parameters_publication(val) {
 function init_index() {
     /* Allow submit only if file is selected */
     const $input = $('#file_input');
-    const $submit = $('#upload');
+    const $settings = $('#settings');
+    const $charges = $('#charges');
 
-    $submit.prop('disabled', true);
+    $settings.prop('disabled', true);
+    $charges.prop('disabled', true);
 
     $input.on('change', function () {
         if ($input.val()) {
-            $submit.prop('disabled', false);
+            $settings.prop('disabled', false);
+            $charges.prop('disabled', false);
         } else {
-            $submit.prop('disabled', true);
+            $settings.prop('disabled', true);
+            $charges.prop('disabled', true);
         }
     });
 
-    $submit.on('click', function () {
+    $settings.on('click', function () {
+        $settings.prop('disabled', true);
+        $charges.prop('disabled', true);
         if ($input[0].files[0].size > 10 * 1024 * 1024) {
             alert('Cannot upload file larger than 10 MB');
-            $submit.prop('disabled', true);
         } else {
-            $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
-            $submit.prop('disabled', true);
-            $('#type').val('upload');
+            $settings.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
+            $('#type').val('settings');
+            $('form').submit();
+        }
+    });
+
+    $charges.on('click', function () {
+        $settings.prop('disabled', true);
+        $charges.prop('disabled', true);
+        if ($input[0].files[0].size > 10 * 1024 * 1024) {
+            alert('Cannot upload file larger than 10 MB');
+        } else {
+            $charges.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
+            $('#type').val('charges');
             $('form').submit();
         }
     });
@@ -164,17 +180,18 @@ function update_litemol_colors(min_color, max_color) {
 
 function init_results() {
     const $select = $('#structure_select');
-    $select.select2({width: 'auto', placeholder: 'Select a structure'});
-    $select.on('select2:select', function (e) {
-        let format = e.params.data.id.split(':')[0].split('.')[1].toUpperCase();
+    $select.select2({width: 'auto'});
+    $select.on('select2:select', function () {
+        const id = $select.select2('data')[0].id;
+        let format = id.split(':')[0].split('.')[1].toUpperCase();
         if (format === 'ENT') {
             format = 'PDB';
         } else if (format === 'CIF') {
             format = 'mmCIF'
         }
         LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
-            structure_url: get_structure_url + `&s=${e.params.data.id}`,
-            charges_url: get_charges_url + `&s=${e.params.data.id}`,
+            structure_url: get_structure_url + `&s=${id}`,
+            charges_url: get_charges_url + `&s=${id}`,
             structure_format: format,
             charges_format: 'TXT'
         });
@@ -204,6 +221,7 @@ function init_results() {
     });
 
     $colors.trigger('change');
+    $select.trigger('select2:select');
 }
 
 
