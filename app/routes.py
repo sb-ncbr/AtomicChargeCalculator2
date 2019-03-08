@@ -62,7 +62,7 @@ def main_site():
             if 'example-small' in request.form:
                 filename = 'set01.sdf'
             elif 'example-ligand' in request.form:
-                filename = 'TRP.cif'
+                filename = 'TRP.sdf'
             elif 'example-protein' in request.form:
                 filename = '3k0h_updated.cif'
             else:
