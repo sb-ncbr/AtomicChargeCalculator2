@@ -87,6 +87,7 @@ def main_site():
 def computation():
     comp_id = request.args.get('r')
     tmp_dir = request_data[comp_id]['tmpdir']
+    print(request_data[comp_id].keys())
     suitable_methods = request_data[comp_id]['suitable_methods']
     suitable_parameters = request_data[comp_id]['suitable_parameters']
 
@@ -126,8 +127,8 @@ def computation():
             with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
                 charges.update(parse_txt(f))
 
-        request_data[comp_id] = {'tmpdir': tmp_dir, 'method': method_name, 'parameters': parameters_name,
-                                 'structures': structures, 'charges': charges}
+        request_data[comp_id].update(
+            {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
 
         return redirect(url_for('results', r=comp_id))
 
