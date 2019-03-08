@@ -42,7 +42,7 @@ def main_site():
             filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
             failed = False
             try:
-                if filetype == 'text/plain':
+                if filetype in ['text/plain', 'chemical/x-pdb']:
                     shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
                 elif filetype == 'application/zip':
                     extract(tmp_dir, filename, 'zip')
