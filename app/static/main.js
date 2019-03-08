@@ -140,6 +140,13 @@ function init_computation() {
     });
 
     $m_select.trigger('change');
+
+    const $submit = $('#calculate');
+    $submit.on('click', function () {
+        $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Computing...');
+        $submit.prop('disabled', true);
+        $('form').submit();
+    });
 }
 
 
