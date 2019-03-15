@@ -1,5 +1,5 @@
-CONFIG_FILE = '/etc/charge_compute.conf'
+CONFIG_FILE = '/etc/ACC2.conf'
 MKL_PATH = '/opt/intel/compilers_and_libraries_2019.0.117/linux/mkl/lib/intel64_lin'
 PARAMETERS_DIRECTORY = '/home/charge/chargefw2/share/parameters'
 CHARGEFW2_DIR = '/home/charge/chargefw2/'
-EXAMPLES_DIR = '/home/charge/www/charge_compute/examples'
+EXAMPLES_DIR = '/home/charge/www/ACC2/examples'
