@@ -26,17 +26,26 @@
         <hr>
         <div class="row">
             <div class="col">
+                <h3>Upload structure</h3>
+                <div class="form-group">
+                    <label class="font-weight-bold" for="file_input">Input file</label>
+                    <input type="file" class="form-control-file" id="file_input" name="file">
+                    <small class="form-text text-muted">
+                        Single sdf, mol2, pdb or mmcif file or archive (zip, tar.gz) of those files.
+                        Maximum file size: 10 MB
+                    </small>
+                </div>
+                <button type="submit" id="charges" name="charges" class="btn btn-success">Get charges</button>
+                <button type="submit" id="settings" name="settings" class="btn btn-secondary">Setup computation</button>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col">
                 <h3>Examples</h3>
-                <p>Try one of the examples or load your own structure:</p>
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-4">
-                <b>DTP NCI</b>
-                <p>Set of 500 drug-like molecules from DTP NCI.</p>
-                <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose</button>
-                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 120px">
-            </div>
             <div class="col-lg-4">
                 <b>Tryptophan</b>
                 <p>One of the amino acids.</p>
@@ -50,23 +59,14 @@
                 </button>
                 <img src="{{ url_for('static', filename='protein.png') }}" alt="3k0h" style="height: 120px">
             </div>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col">
-                <h3>Upload structure</h3>
-                <div class="form-group">
-                    <label class="font-weight-bold" for="file_input">Input file</label>
-                    <input type="file" class="form-control-file" id="file_input" name="file">
-                    <small class="form-text text-muted">
-                        Single sdf, mol2, pdb or mmcif file or archive (zip, tar.gz) of those files.
-                        Maximum file size: 10 MB
-                    </small>
-                </div>
-                <button type="submit" id="settings" name="settings" class="btn btn-primary">Set computation</button>
-                <button type="submit" id="charges" name="charges" class="btn btn-success">Get charges</button>
+            <div class="col-lg-4">
+                <b>DTP NCI</b>
+                <p>Set of 500 drug-like molecules from DTP NCI.</p>
+                <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose</button>
+                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 120px">
             </div>
         </div>
+
     </form>
     {% with messages = get_flashed_messages() %}
         {% if messages %}

@@ -76,9 +76,6 @@ def main_site():
         methods, parameters = get_suitable_methods(tmp_dir)
         data = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
-        print(methods)
-        print(parameters)
-
         request_data[comp_id] = data
 
         if request.form['type'] == 'charges':
@@ -105,9 +102,6 @@ def computation():
     if request.method == 'POST':
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
-
-        print(method_name)
-        print(parameters_name)
 
         charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
 

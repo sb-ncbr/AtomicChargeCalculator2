@@ -26,7 +26,6 @@ def get_suitable_methods(directory: str):
     suitable_methods = Counter()
     for file in os.listdir(os.path.join(directory, 'input')):
         fullname = os.path.join(directory, 'input', file)
-        print(file)
 
         env = os.environ.copy()
         env['LD_LIBRARY_PATH'] = MKL_PATH
