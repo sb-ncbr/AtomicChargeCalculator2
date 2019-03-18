@@ -188,6 +188,9 @@ function init_results() {
             format = 'PDB';
         } else if (format === 'CIF') {
             format = 'mmCIF'
+        } else if (format === 'MOL2') {
+            /* We converted MOL2 to SDF as LiteMol can't handle it */
+            format = 'SDF'
         }
         LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
             structure_url: get_structure_url + `&s=${id}`,

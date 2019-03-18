@@ -8,6 +8,7 @@ import uuid
 import shutil
 import os
 import zipfile
+import subprocess
 
 from .method import method_data, parameter_data
 from .chargefw2 import calculate, get_suitable_methods
@@ -136,7 +137,12 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
             if ext == '.sdf':
                 structures.update(parse_sdf(f))
             elif ext == '.mol2':
-                structures.update(parse_mol2(f))
+                d = parse_mol2(f)
+                for name, struct in d.items():
+                    args = ['obabel', '-imol2', '-osdf']
+                    run = subprocess.run(args, input=struct.encode('utf-8'), stdout=subprocess.PIPE)
+                    print(' '.join(args))
+                    structures[name] = run.stdout.decode('utf-8')
             elif ext == '.pdb' or ext == '.ent':
                 structures.update(parse_pdb(f))
             elif ext == '.cif':

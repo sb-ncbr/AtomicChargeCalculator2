@@ -74,6 +74,7 @@ def parse_mol2(f):
 
             lines = [line]
             line = next(it)
+            lines.append(line)
             name = line.strip()
 
             while line.strip() != '@<TRIPOS>MOLECULE':
