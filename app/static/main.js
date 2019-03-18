@@ -18,7 +18,7 @@ function fill_paper($element, doi) {
                 localStorage[doi] = result;
                 $element.html(result);
             },
-            error: function (e) {
+            error: function () {
                 $element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
             }
         });
