@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AtomicChargeCalculator 2 - Calculation results</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
@@ -15,7 +16,7 @@
 <div class="container mt-5 p-3">
     <div class="row">
         <div class="col">
-            <h1 style="margin-bottom: 30px">AtomicChargeCalculator <span style="color: #28a745">2</span></h1>
+            <h1 style="margin-bottom: 30px">Atomic<wbr>Charge<wbr>Calculator <span style="color: #28a745">2</span></h1>
         </div>
     </div>
     <div class="row">
@@ -31,7 +32,7 @@
     </div>
     <hr>
     <div class="row">
-        <div class="col">
+        <div class="col-12 col-md-6">
             <label for="structure_select">Structure:</label>
             <select id="structure_select" name="structure_select" style="width:50%">
                 {% for k in structures %}
@@ -39,19 +40,21 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col">
-            <label><input type="radio" name="colors" value="Relative" checked> Relative</label>
-            <label><input type="radio" name="colors" value="Absolute"> Absolute</label>
+        <div class="col-12 col-md-6">
+            Coloring:
+            <label><input type="radio" name="colors" value="Relative" checked>Relative</label>
+            <label><input type="radio" name="colors" value="Absolute">Absolute</label>
             <br>
-            <label for="min_value">Min value</label>
+            <label for="min_value">Min value:</label>
             <input type="number" id="min_value" name="min_value" min="-5" max="5" step="0.1" value="-1">
-            <label for="max_value">Max value</label>
+            <label for="max_value">Max value:</label>
             <input type="number" id="max_value" name="max_value" min="-5" max="5" step="0.1" value="1">
         </div>
     </div>
+    <hr>
     <div class="row">
         <div class="col">
-            <div id="root"></div>
+            <div id="root" style="height: 750px"></div>
         </div>
     </div>
     <hr>
