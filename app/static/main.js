@@ -105,18 +105,7 @@ function init_computation() {
             return element.name === p_name;
         });
 
-        /* Default parameters (not found in parameter_data) have no publication assigned */
-        if (e === undefined) {
-            hide_parameters_publication(true);
-        } else {
-            hide_parameters_publication(false);
-            /* Some parameters have no publication */
-            if (e.publication == null) {
-                $('#parameters_paper').text('None');
-            } else {
-                fill_paper($('#parameters_paper'), e.publication);
-            }
-        }
+        fill_paper($('#parameters_paper'), e.publication);
     });
 
     /* Update method data on method select change */
@@ -130,9 +119,6 @@ function init_computation() {
         if (e.has_parameters) {
             let p_options = '';
             $p_select.prop('disabled', false);
-            if (parameter_data[m_name].length > 1) {
-                $p_select.append('<option value="default">Select best (default)</option>');
-            }
             $.each(parameter_data[m_name], function (key, parameter_set) {
                 if (suitable_parameters[m_name].includes(parameter_set.filename)) {
                     p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;

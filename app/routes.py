@@ -9,6 +9,7 @@ import shutil
 import os
 import zipfile
 import subprocess
+from glob import glob
 
 from .method import method_data, parameter_data
 from .chargefw2 import calculate, get_suitable_methods
@@ -75,14 +76,17 @@ def main_site():
         comp_id = str(uuid.uuid1())
 
         methods, parameters = get_suitable_methods(tmp_dir)
-        data = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
-
-        request_data[comp_id] = data
+        request_data[comp_id] = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
         if request.form['type'] == 'charges':
             method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
 
-            parameters_name = 'default'
+            if method_name in parameters:
+                parameters_name = parameters[method_name][0]
+            else:
+                # This value should not be used as we later check whether the method needs parameters
+                parameters_name = None
+
             charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
             request_data[comp_id].update(
                 {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
@@ -160,11 +164,19 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
 def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
+    tmpdir = comp_data['tmpdir']
+    filename = glob(os.path.join(tmpdir, 'logs', '*.stdout'))[0]
+    parameters_name = 'None'
+    with open(filename) as f:
+        for line in f:
+            if line.startswith('Parameters:'):
+                _, parameters_name = line.split(' ', 1)
+                break
 
     method_name = next(m for m in method_data if m['internal_name'] == comp_data['method'])['name']
 
-    return render_template('results.html', method_name=method_name, comp_id=comp_id, methods=method_data,
-                           parameters_name=comp_data['parameters'], structures=comp_data['structures'].keys())
+    return render_template('results.html', method_name=method_name, comp_id=comp_id, parameters_name=parameters_name,
+                           structures=comp_data['structures'].keys())
 
 
 @application.route('/download')

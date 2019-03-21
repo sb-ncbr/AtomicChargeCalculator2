@@ -12,8 +12,7 @@ def calculate(method_name, parameters_name, source, charge_out_dir):
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = MKL_PATH
     if next(m for m in method_data if m['internal_name'] == method_name)['has_parameters']:
-        if parameters_name != 'default':
-            args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
+        args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
 
     calculation = subprocess.run(args, stderr=subprocess.PIPE, env=env, stdout=subprocess.PIPE)
     print(' '.join(calculation.args))
