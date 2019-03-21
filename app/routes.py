@@ -140,13 +140,23 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
 
         with open(os.path.join(tmp_dir, 'input', file)) as f:
             if ext == '.sdf':
-                structures.update(parse_sdf(f))
+                d = parse_sdf(f)
+                # Convert to Mol V2000 if possible as LiteMol can't handle Mol V3000
+                for name, struct in d.items():
+                    version = struct.splitlines()[3][34:39]
+                    if version == 'V2000':
+                        # We are OK here
+                        structures[name] = struct
+                        continue
+                    args = ['obabel', '-isdf', '-osdf']
+                    run = subprocess.run(args, input=struct.encode('utf-8'), stdout=subprocess.PIPE)
+                    structures[name] = run.stdout.decode('utf-8')
             elif ext == '.mol2':
+                # Convert to Mol V2000 as LiteMol can't handle Mol V3000
                 d = parse_mol2(f)
                 for name, struct in d.items():
                     args = ['obabel', '-imol2', '-osdf']
                     run = subprocess.run(args, input=struct.encode('utf-8'), stdout=subprocess.PIPE)
-                    print(' '.join(args))
                     structures[name] = run.stdout.decode('utf-8')
             elif ext == '.pdb' or ext == '.ent':
                 structures.update(parse_pdb(f))
