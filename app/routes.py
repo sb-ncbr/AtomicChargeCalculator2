@@ -80,7 +80,8 @@ def main_site():
         request_data[comp_id] = data
 
         if request.form['type'] == 'charges':
-            method_name = methods[0]
+            method_name = next(method['name'] for method in method_data if method['name'] in methods)
+
             parameters_name = 'default'
             charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
             request_data[comp_id].update(
