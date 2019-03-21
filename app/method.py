@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from .config import PARAMETERS_DIRECTORY, CHARGEFW2_DIR
 
+
 with open(os.path.join(CHARGEFW2_DIR, 'share', 'methods.json')) as f:
     method_data = json.load(f)
 

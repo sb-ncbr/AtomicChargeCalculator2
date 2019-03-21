@@ -80,7 +80,7 @@ def main_site():
         request_data[comp_id] = data
 
         if request.form['type'] == 'charges':
-            method_name = next(method['name'] for method in method_data if method['name'] in methods)
+            method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
 
             parameters_name = 'default'
             charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
@@ -161,7 +161,9 @@ def results():
     comp_id = request.args.get('r')
     comp_data = request_data[comp_id]
 
-    return render_template('results.html', method_name=comp_data['method'], comp_id=comp_id, methods=method_data,
+    method_name = next(m for m in method_data if m['internal_name'] == comp_data['method'])['name']
+
+    return render_template('results.html', method_name=method_name, comp_id=comp_id, methods=method_data,
                            parameters_name=comp_data['parameters'], structures=comp_data['structures'].keys())
 
 

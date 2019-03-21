@@ -85,8 +85,8 @@ function init_computation() {
 
     /* Set available methods */
     $.each(method_data, function (key, method) {
-        if (suitable_methods.includes(method.name)) {
-            const str = `<option value="${method.name}">${method.name}</option>\n`;
+        if (suitable_methods.includes(method.internal_name)) {
+            const str = `<option value="${method.internal_name}">${method.name}</option>\n`;
             if (method.type === "2D")
                 $m_group2d.append(str);
             else if (method.type === "3D")
@@ -123,7 +123,7 @@ function init_computation() {
     $m_select.on('change', function () {
         const m_name = $('#method_selection option:selected').val();
         const e = method_data.find(function (element) {
-            return element.name === m_name;
+            return element.internal_name === m_name;
         });
 
         $p_select.empty();
