@@ -55,6 +55,11 @@ def main_site():
             except ValueError:
                 failed = True
 
+            # Handle files from Windows
+            for file in os.listdir(os.path.join(tmp_dir, 'input')):
+                args = ['dos2unix', os.path.join(tmp_dir, 'input', file)]
+                subprocess.run(args)
+
             if failed:
                 flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
                       ' and zip or tar.gz of those.',
