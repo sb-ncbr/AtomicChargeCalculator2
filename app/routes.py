@@ -79,8 +79,14 @@ def main_site():
             raise RuntimeError('Bad type of input')
 
         comp_id = str(uuid.uuid1())
+        try:
+            methods, parameters = get_suitable_methods(tmp_dir)
+        except RuntimeError:
+            flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
+                  ' and zip or tar.gz of those.',
+                  'error')
+            return render_template('index.html')
 
-        methods, parameters = get_suitable_methods(tmp_dir)
         request_data[comp_id] = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
         if request.form['type'] == 'charges':
