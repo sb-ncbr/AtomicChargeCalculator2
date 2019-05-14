@@ -54,4 +54,7 @@ def get_suitable_methods(directory: str):
         if len(pair) == 2:
             parameters[pair[0]].append(pair[1])
 
+    for p in parameters.values():
+        p.sort()
+
     return methods, parameters
