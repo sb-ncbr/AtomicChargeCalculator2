@@ -17,7 +17,11 @@
         <input type="hidden" name="type" id="type" value="example"/>
         <div class="row">
             <div class="col">
-                <h1 style="margin-bottom: 30px">Atomic<wbr>Charge<wbr>Calculator <span style="color: #28a745">2</span></h1>
+                <h1 style="margin-bottom: 30px">Atomic
+                    <wbr>
+                    Charge
+                    <wbr>
+                    Calculator <span style="color: #28a745">2</span></h1>
                 <p>AtomicChargeCalculator 2 is an application for fast calculation of partial atomic charges. It
                     features 17
                     empirical methods along with parameters from literature.</p>
@@ -35,7 +39,7 @@
                         Maximum file size: 10 MB
                     </small>
                 </div>
-                <button type="submit" id="charges" name="charges" class="btn btn-success">Get charges</button>
+                <button type="submit" id="charges" name="charges" class="btn btn-success">Compute charges</button>
                 <button type="submit" id="settings" name="settings" class="btn btn-secondary">Setup computation</button>
             </div>
         </div>
@@ -47,23 +51,37 @@
         </div>
         <div class="row">
             <div class="col-lg-4">
-                <b>Tryptophan</b>
-                <p>One of the amino acids.</p>
-                <button type="submit" id="example-ligand" name="example-ligand" class="btn btn-primary">Choose</button>
-                <img src="{{ url_for('static', filename='tryptophan.png') }}" alt="Tryptophan" style="height: 120px">
+                <b>Cis-homoaconitate</b>
+                <p>Dissociation</p>
+                <img src="{{ url_for('static', filename='cis-homoaconitate.png') }}" alt="Cis-homoaconitate"
+                     style="height: 200px">
+                <div style="text-align: center;">
+                    <button type="submit" id="example-ligand" name="example-ligand" class="btn btn-primary">Choose
+                    </button>
+                </div>
             </div>
             <div class="col-lg-4">
-                <b>3k0h</b>
-                <p>Small protein.</p>
-                <button type="submit" id="example-protein" name="example-protein" class="btn btn-primary">Choose
-                </button>
-                <img src="{{ url_for('static', filename='protein.png') }}" alt="3k0h" style="height: 120px">
+                <b>BAX</b>
+                <p>Apoptotic protein activation</p>
+                <img src="{{ url_for('static', filename='bax.png') }}" alt="BAX" style="height: 200px">
+                <div style="text-align: center;">
+                    <button type="submit" id="example-bax-inactive" name="example-bax-inactive" class="btn btn-primary">
+                        Choose inactive
+                    </button>
+                    <button type="submit" id="example-bax-activated" name="example-bax-activated"
+                            class="btn btn-primary">
+                        Choose activated
+                    </button>
+                </div>
             </div>
             <div class="col-lg-4">
                 <b>DTP NCI</b>
                 <p>Set of 500 drug-like molecules from DTP NCI.</p>
-                <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose</button>
-                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 120px">
+                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 200px">
+                <div style="text-align: center;">
+                    <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose
+                    </button>
+                </div>
             </div>
         </div>
 

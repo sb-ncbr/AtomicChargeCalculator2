@@ -69,9 +69,11 @@ def main_site():
             if 'example-small' in request.form:
                 filename = 'set01.sdf'
             elif 'example-ligand' in request.form:
-                filename = 'TRP.sdf'
-            elif 'example-protein' in request.form:
-                filename = '3k0h_updated.cif'
+                filename = 'cis-homoaconitate.sdf'
+            elif 'example-bax-inactive' in request.form:
+                filename = '1f16_updated.cif'
+            elif 'example-bax-activated' in request.form:
+                filename = '2k7w_updated.cif'
             else:
                 raise RuntimeError('Unknown example selected')
             shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
