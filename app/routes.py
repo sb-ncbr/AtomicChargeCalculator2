@@ -11,7 +11,7 @@ import zipfile
 import subprocess
 from glob import glob
 
-from .method import method_data, parameter_data
+from .method import method_data, parameter_data, publication_data
 from .chargefw2 import calculate, get_suitable_methods
 from .parser import *
 
@@ -128,7 +128,8 @@ def computation():
         return redirect(url_for('results', r=comp_id))
 
     return render_template('computation.html', methods=method_data, parameters=parameter_data,
-                           suitable_methods=suitable_methods, suitable_parameters=suitable_parameters)
+                           publications=publication_data, suitable_methods=suitable_methods,
+                           suitable_parameters=suitable_parameters)
 
 
 def calculate_charges(method_name, parameters_name, tmp_dir):
