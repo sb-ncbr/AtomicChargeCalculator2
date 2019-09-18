@@ -3,12 +3,13 @@ import os
 from collections import Counter, defaultdict
 
 from .method import method_data
-from .config import PARAMETERS_DIRECTORY, CHARGEFW2_DIR
+from .config import PARAMETERS_DIRECTORY, CHARGEFW2_DIR, LOG_DIR
 
 
 def calculate(method_name, parameters_name, source, charge_out_dir):
+    logfile = os.path.join(LOG_DIR, 'computations')
     args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'charges', '--method', method_name,
-            '--input-file', source, '--chg-out-dir', charge_out_dir, '--read-hetatm']
+            '--input-file', source, '--chg-out-dir', charge_out_dir, '--read-hetatm', '--log-file', logfile]
     if next(m for m in method_data if m['internal_name'] == method_name)['has_parameters']:
         args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
 
