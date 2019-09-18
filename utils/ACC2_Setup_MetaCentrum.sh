@@ -54,23 +54,23 @@ nproc=$(($(grep -c processor /proc/cpuinfo) + 1))
 # Install nanoflann library from source
 wget 'https://github.com/jlblancoc/nanoflann/archive/v1.3.0.tar.gz' -O nanoflann.tar.gz
 tar xvzf nanoflann.tar.gz
-cd nanoflann-1.3.0
-mkdir build && cd build
+cd nanoflann-1.3.0 || exit 1
+mkdir build && cd build || exit 1
 cmake ..
 make -j${nproc} && sudo make install
 
 # Install latest version of ChargeFW2
-cd
+cd || exit 1
 sudo apt-get install -y git
 git clone https://github.com/krab1k/ChargeFW2.git ChargeFW2
-cd ChargeFW2
-mkdir build && cd build
+cd ChargeFW2 || exit 1
+mkdir build && cd build || exit 1
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/charge/chargefw2 ..
 make -j${nproc}
 sudo make install
 
 # Install ACC2
-cd
+cd || exit 1
 git clone https://github.com/krab1k/AtomicChargeCalculator2.git ACC2
 sudo cp -r ACC2/app/* /home/charge/www/ACC2
 
@@ -82,23 +82,34 @@ sudo tar xvzf litemol.tar.gz -C /home/charge/www/ACC2/static/litemol
 # Setup scripts for easy update
 sudo sh -c 'cat << EOF > /usr/local/bin/update_chargefw2
 #!/bin/bash
-nproc=$(($(grep -c processor /proc/cpuinfo) + 1))
+set -x
+nproc=\$((\$(grep -c processor /proc/cpuinfo) + 1))
 cd ~/ChargeFW2
-rm -rf build
+sudo rm -rf build
 git pull
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/charge/chargefw2 ..
-make -j${nproc}
+make -j\${nproc}
 sudo make install
-sudo chown -R charge:charge /home/charge
-sudo touch /home/charge/www/ACC2/ACC2.wsgi
+if [ "\$?" -eq 0 ]; then
+  sudo chown -R charge:charge /home/charge
+  sudo touch /home/charge/www/ACC2/ACC2.wsgi
+else
+  echo Failed to update ChargeFW2
+  exit 1
+fi
 EOF'
 
 sudo sh -c 'cat << EOF > /usr/local/bin/update_acc2
 #!/bin/bash
+set -x
 cd ~/ACC2
 git pull
+sudo rm -rf /home/charge/www/ACC2/*
 sudo cp -r app/* /home/charge/www/ACC2
+sudo mkdir /home/charge/www/ACC2/static/litemol
+wget http://yavanna.ncbr.muni.cz:9877/share/litemol.tar.gz -O /tmp/litemol.tar.gz
+sudo tar xvzf /tmp/litemol.tar.gz -C /home/charge/www/ACC2/static/litemol
 sudo chown -R charge:charge /home/charge
 sudo touch /home/charge/www/ACC2/ACC2.wsgi
 EOF'
