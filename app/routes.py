@@ -199,8 +199,12 @@ def results():
 
     method_name = next(m for m in method_data if m['internal_name'] == comp_data['method'])['name']
 
+    chg_range = {}
+    for struct, charges in comp_data['charges'].items():
+        chg_range[struct] = max(abs(float(chg)) for chg in charges.split()[1:])
+
     return render_template('results.html', method_name=method_name, comp_id=comp_id, parameters_name=parameters_name,
-                           structures=comp_data['structures'].keys())
+                           structures=comp_data['structures'].keys(), chg_range=chg_range)
 
 
 @application.route('/download')

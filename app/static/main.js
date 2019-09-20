@@ -57,7 +57,7 @@ function init_index() {
         if ($input[0].files[0].size > 10 * 1024 * 1024) {
             alert('Cannot upload file larger than 10 MB');
         } else {
-            $charges.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
+            $charges.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Computing...');
             $('#type').val('charges');
             $('form').submit();
         }
@@ -155,6 +155,10 @@ function update_litemol_colors(min_color, max_color) {
 
 function init_results() {
     const $select = $('#structure_select');
+
+    let $min_value = $('#min_value');
+    let $max_value = $('#max_value');
+
     $select.select2({width: 'auto'});
     $select.on('select2:select', function () {
         const id = $select.select2('data')[0].id;
@@ -173,10 +177,13 @@ function init_results() {
             structure_format: format,
             charges_format: 'TXT'
         });
+        if ($('input[name=colors]:checked').val() === 'Relative') {
+            $min_value.val(-chg_range[id]);
+            $max_value.val(chg_range[id]);
+            $min_value.trigger('input');
+        }
     });
 
-    let $min_value = $('#min_value');
-    let $max_value = $('#max_value');
 
     $('#min_value, #max_value').on('input', function () {
         update_litemol_colors(parseFloat($('#min_value').val()), parseFloat($('#max_value').val()));
@@ -188,6 +195,10 @@ function init_results() {
     $colors.on('change', function () {
         let coloring = $('input[name=colors]:checked').val();
         if (coloring === 'Relative') {
+            const id = $select.select2('data')[0].id;
+            $min_value.val(-chg_range[id]);
+            $max_value.val(chg_range[id]);
+
             update_litemol_colors(null, null);
             $min_value.prop('disabled', true);
             $max_value.prop('disabled', true);
