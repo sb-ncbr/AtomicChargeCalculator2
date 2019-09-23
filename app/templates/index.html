@@ -36,8 +36,14 @@
                         Maximum file size: 10 MB
                     </small>
                 </div>
-                <button type="submit" id="charges" name="charges" class="btn btn-success">Compute charges</button>
-                <button type="submit" id="settings" name="settings" class="btn btn-secondary">Setup computation</button>
+                <button type="submit" id="charges" name="charges" class="btn btn-success"
+                        title="Direct computation of charges using automatically selected empirical charge calculation method.">
+                    Compute charges
+                </button>
+                <button type="submit" id="settings" name="settings" class="btn btn-secondary"
+                        title="Selection of empirical charge calculation method and its parameters.">
+                    Setup computation
+                </button>
             </div>
         </div>
         <hr>
@@ -50,9 +56,9 @@
             <div class="col-lg-4">
                 <b>Cis-homoaconitate</b>
                 <p>Dissociation</p>
-                <img src="{{ url_for('static', filename='cis-homoaconitate.png') }}" alt="Cis-homoaconitate"
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='cis-homoaconitate.png') }}" alt="Cis-homoaconitate"
                      style="height: 200px">
-                <div style="text-align: center;">
                     <button type="submit" id="example-ligand" name="example-ligand" class="btn btn-primary">Choose
                     </button>
                 </div>
@@ -60,8 +66,8 @@
             <div class="col-lg-4">
                 <b>BAX</b>
                 <p>Apoptotic protein activation</p>
-                <img src="{{ url_for('static', filename='bax.png') }}" alt="BAX" style="height: 200px">
-                <div style="text-align: center;">
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='bax.png') }}" alt="BAX" style="height: 200px">
                     <button type="submit" id="example-bax-inactive" name="example-bax-inactive" class="btn btn-primary">
                         Choose inactive
                     </button>
@@ -74,8 +80,8 @@
             <div class="col-lg-4">
                 <b>DTP NCI</b>
                 <p>Set of 500 drug-like molecules from DTP NCI.</p>
-                <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 200px">
-                <div style="text-align: center;">
+                <div class="text-center">
+                    <img src="{{ url_for('static', filename='small.png') }}" alt="Small set" style="height: 200px">
                     <button type="submit" id="example-small" name="example-small" class="btn btn-primary">Choose
                     </button>
                 </div>
