@@ -29,8 +29,10 @@ def get_suitable_methods(directory: str):
         calculation = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         print(' '.join(calculation.args))
         if calculation.returncode:
-            print(calculation.stderr.decode('utf-8'))
-            raise RuntimeError('Cannot get suitable methods')
+            output = calculation.stderr.decode('utf-8').strip()
+            print(output)
+            error = output.split('\n')[-1]
+            raise RuntimeError(error)
 
         for line in calculation.stdout.decode('utf-8').splitlines():
             if not line.strip():
