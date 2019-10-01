@@ -159,7 +159,7 @@ function init_results() {
     let $min_value = $('#min_value');
     let $max_value = $('#max_value');
 
-    $select.select2({width: 'auto'});
+    $select.select2({width: '100%'});
     $select.on('select2:select', function () {
         const id = $select.select2('data')[0].id;
         let format = id.split(':')[0].split('.')[1].toUpperCase();

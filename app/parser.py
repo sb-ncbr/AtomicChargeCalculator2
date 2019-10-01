@@ -1,7 +1,22 @@
+import string
 import os
 
 
 __all__ = ['parse_txt', 'parse_cif', 'parse_mol2', 'parse_pdb', 'parse_sdf']
+
+
+def sanitize_name(name):
+    return ''.join(c if c in string.ascii_letters + string.digits else '_' for c in name)
+
+
+def get_unique_name(name, already_defined):
+    count = 0
+    new_name = name
+    while new_name in already_defined:
+        count += 1
+        new_name = f'{name}_{count}'
+
+    return new_name
 
 
 def parse_sdf(f):
@@ -11,7 +26,7 @@ def parse_sdf(f):
     it = iter(f)
     try:
         while it:
-            name = next(it).strip()
+            name = next(it)[:80].strip()
             line = next(it)
             lines = [f'{name}\n', line]
             while line.strip() != '$$$$':
@@ -19,7 +34,9 @@ def parse_sdf(f):
                 lines.append(line)
 
             mol_record = ''.join(lines)
-            d[f'{filename}:{name}'] = mol_record
+            safe_name = sanitize_name(name)
+            unique_name = get_unique_name(f'{filename}:{safe_name}', d.keys())
+            d[unique_name] = mol_record
     except StopIteration:
         pass
 
@@ -37,7 +54,7 @@ def parse_cif(f):
             break
 
     record = ''.join(lines)
-    return {f'{filename}:{name}': record}
+    return {f'{filename}:{sanitize_name(name)}': record}
 
 
 def parse_pdb(f):
@@ -57,7 +74,7 @@ def parse_pdb(f):
             break
 
     record = ''.join(lines)
-    return {f'{filename}:{name}': record}
+    return {f'{filename}:{sanitize_name(name)}': record}
 
 
 def parse_mol2(f):
@@ -82,11 +99,15 @@ def parse_mol2(f):
                 lines.append(line)
 
             mol2_record = ''.join(lines)
-            d[f'{filename}: {name}'] = mol2_record
+            safe_name = sanitize_name(name)
+            unique_name = get_unique_name(f'{filename}:{safe_name}', d.keys())
+            d[unique_name] = mol2_record
 
     except StopIteration:
         mol2_record = ''.join(lines)
-        d[f'{filename}:{name}'] = mol2_record
+        safe_name = sanitize_name(name)
+        unique_name = get_unique_name(f'{filename}:{safe_name}', d.keys())
+        d[unique_name] = mol2_record
 
     return d
 
@@ -100,7 +121,9 @@ def parse_txt(f):
         while it:
             name = next(it).strip()
             values = next(it)
-            d[f'{base}:{name}'] = f'{name}\n' + values
+            safe_name = sanitize_name(name)
+            unique_name = get_unique_name(f'{base}:{safe_name}', d.keys())
+            d[unique_name] = f'{name}\n' + values
     except StopIteration:
         pass
 

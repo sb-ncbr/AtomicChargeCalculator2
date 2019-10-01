@@ -28,6 +28,63 @@ def extract(tmp_dir: str, filename: str, fmt: str):
             raise ValueError
 
 
+def prepare_file(rq, tmp_dir):
+    file = rq.files['file']
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(tmp_dir, filename))
+
+    filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
+    success = True
+    try:
+        if filetype in ['text/plain', 'chemical/x-pdb']:
+            shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
+        elif filetype == 'application/zip':
+            extract(tmp_dir, filename, 'zip')
+        elif filetype == 'application/x-gzip':
+            extract(tmp_dir, filename, 'gztar')
+        else:
+            success = False
+    except ValueError:
+        success = False
+
+    # Handle files from Windows
+    for file in os.listdir(os.path.join(tmp_dir, 'input')):
+        args = ['dos2unix', os.path.join(tmp_dir, 'input', file)]
+        subprocess.run(args)
+
+    return success
+
+
+def prepare_example(rq, tmp_dir):
+    if 'example-small' in rq.form:
+        filename = 'set01.sdf'
+    elif 'example-ligand' in rq.form:
+        filename = 'cis-homoaconitate.sdf'
+    elif 'example-bax-inactive' in rq.form:
+        filename = '1f16_updated.cif'
+    elif 'example-bax-activated' in rq.form:
+        filename = '2k7w_updated.cif'
+    else:
+        raise RuntimeError('Unknown example selected')
+    shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
+
+
+def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
+    method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
+
+    if method_name in parameters:
+        parameters_name = parameters[method_name][0]
+    else:
+        # This value should not be used as we later check whether the method needs parameters
+        parameters_name = None
+
+    charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
+    request_data[comp_id].update(
+        {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
+
+    return redirect(url_for('results', r=comp_id))
+
+
 @application.route('/', methods=['GET', 'POST'])
 def main_site():
     if request.method == 'POST':
@@ -37,46 +94,12 @@ def main_site():
         os.mkdir(os.path.join(tmp_dir, 'logs'))
 
         if request.form['type'] in ['settings', 'charges']:
-            file = request.files['file']
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(tmp_dir, filename))
-
-            filetype = magic.from_file(os.path.join(tmp_dir, filename), mime=True)
-            failed = False
-            try:
-                if filetype in ['text/plain', 'chemical/x-pdb']:
-                    shutil.copy(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'))
-                elif filetype == 'application/zip':
-                    extract(tmp_dir, filename, 'zip')
-                elif filetype == 'application/x-gzip':
-                    extract(tmp_dir, filename, 'gztar')
-                else:
-                    failed = True
-            except ValueError:
-                failed = True
-
-            # Handle files from Windows
-            for file in os.listdir(os.path.join(tmp_dir, 'input')):
-                args = ['dos2unix', os.path.join(tmp_dir, 'input', file)]
-                subprocess.run(args)
-
-            if failed:
+            if not prepare_file(request, tmp_dir):
                 flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
-                      ' and zip or tar.gz of those.',
-                      'error')
+                      ' and zip or tar.gz of those.', 'error')
                 return render_template('index.html')
         elif request.form['type'] == 'example':
-            if 'example-small' in request.form:
-                filename = 'set01.sdf'
-            elif 'example-ligand' in request.form:
-                filename = 'cis-homoaconitate.sdf'
-            elif 'example-bax-inactive' in request.form:
-                filename = '1f16_updated.cif'
-            elif 'example-bax-activated' in request.form:
-                filename = '2k7w_updated.cif'
-            else:
-                raise RuntimeError('Unknown example selected')
-            shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
+            prepare_example(request, tmp_dir)
         else:
             raise RuntimeError('Bad type of input')
 
@@ -92,23 +115,11 @@ def main_site():
         request_data[comp_id] = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
         if request.form['type'] == 'charges':
-            method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
-
-            if method_name in parameters:
-                parameters_name = parameters[method_name][0]
-            else:
-                # This value should not be used as we later check whether the method needs parameters
-                parameters_name = None
-
-            charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
-            request_data[comp_id].update(
-                {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
-
-            return redirect(url_for('results', r=comp_id))
-
-        return redirect(url_for('computation', r=comp_id))
-
-    return render_template('index.html')
+            return calculate_charges_default(methods, parameters, tmp_dir, comp_id)
+        else:
+            return redirect(url_for('computation', r=comp_id))
+    else:
+        return render_template('index.html')
 
 
 @application.route('/computation', methods=['GET', 'POST'])
