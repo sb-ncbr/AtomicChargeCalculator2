@@ -1,4 +1,4 @@
-from flask import render_template, flash, request, send_from_directory, redirect, url_for
+from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response
 from werkzeug.utils import secure_filename
 from . import application, config
 
@@ -236,7 +236,7 @@ def get_structure():
     structure_id = request.args.get('s')
     comp_data = request_data[comp_id]
 
-    return comp_data['structures'][structure_id]
+    return Response(comp_data['structures'][structure_id], mimetype='text/plain')
 
 
 @application.route('/charges')
@@ -245,4 +245,4 @@ def get_charges():
     structure_id = request.args.get('s')
     comp_data = request_data[comp_id]
 
-    return comp_data['charges'][structure_id]
+    return Response(comp_data['charges'][structure_id], mimetype='text/plain')
