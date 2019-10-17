@@ -195,6 +195,7 @@ function init_results() {
     $colors.on('change', function () {
         let coloring = $('input[name=colors]:checked').val();
         if (coloring === 'Relative') {
+            LiteMolChargesViewerEventQueue.send('lm-use-default-themes', {value: false});
             const id = $select.select2('data')[0].id;
             $min_value.val(-chg_range[id]);
             $max_value.val(chg_range[id]);
@@ -202,11 +203,28 @@ function init_results() {
             update_litemol_colors(null, null);
             $min_value.prop('disabled', true);
             $max_value.prop('disabled', true);
-        } else {
+        } else if (coloring === 'Absolute') {
+            LiteMolChargesViewerEventQueue.send('lm-use-default-themes', {value: false});
             $min_value.prop('disabled', false);
             $max_value.prop('disabled', false);
             $min_value.trigger('input');
+        } else {
+            /* Coloring by elements */
+            LiteMolChargesViewerEventQueue.send('lm-use-default-themes', {value: true});
         }
+    });
+
+    let $view = $('input[name=view]');
+    $view.on('change', function() {
+       let v = $('input[name=view]:checked').val();
+       if (v === 'Cartoon') {
+           LiteMolChargesViewerEventQueue.send('lm-switch-to-cartoons');
+       } else if (v === 'Balls and sticks') {
+           LiteMolChargesViewerEventQueue.send('lm-switch-to-bas');
+       } else {
+           /* Surface */
+           LiteMolChargesViewerEventQueue.send('lm-switch-to-surface');
+       }
     });
 
     $colors.trigger('change');
