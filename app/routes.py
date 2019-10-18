@@ -160,28 +160,17 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
             flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
 
         _, ext = os.path.splitext(file)
-
+        ext = ext.lower()
         with open(os.path.join(tmp_dir, 'input', file)) as f:
-            if ext == '.sdf':
-                d = parse_sdf(f)
-                # Convert to Mol V2000 if possible as LiteMol can't handle Mol V3000
-                for name, struct in d.items():
-                    version = struct.splitlines()[3][34:39]
-                    if version == 'V2000':
-                        # We are OK here
-                        structures[name] = struct
-                        continue
-                    args = ['obabel', '-isdf', '-osdf']
-                    run = subprocess.run(args, input=struct.encode('utf-8'), stdout=subprocess.PIPE)
-                    structures[name] = run.stdout.decode('utf-8')
-            elif ext == '.mol2':
-                # Convert to Mol V2000 as LiteMol can't handle Mol V3000
-                d = parse_mol2(f)
-                for name, struct in d.items():
-                    args = ['obabel', '-imol2', '-osdf']
-                    run = subprocess.run(args, input=struct.encode('utf-8'), stdout=subprocess.PIPE)
-                    structures[name] = run.stdout.decode('utf-8')
-            elif ext == '.pdb' or ext == '.ent':
+            if ext in {'.sdf', '.mol2'}:
+                input_arg = f'-i{ext[1:]}'
+                args = ['obabel', input_arg, '-ommcif']
+                data = f.read()
+                run = subprocess.run(args, input=data.encode('utf-8'), stdout=subprocess.PIPE)
+                output = run.stdout.decode('utf-8')
+                for s in (s for s in output.split('# --------------------------------------------------------------------------') if s):
+                    structures.update(parse_cif_from_string(s, file))
+            elif ext in {'.ent', '.pdb'}:
                 structures.update(parse_pdb(f))
             elif ext == '.cif':
                 structures.update(parse_cif(f))

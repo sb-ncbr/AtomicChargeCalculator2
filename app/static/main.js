@@ -163,13 +163,11 @@ function init_results() {
     $select.on('select2:select', function () {
         const id = $select.select2('data')[0].id;
         let format = id.split(':')[0].split('.')[1].toUpperCase();
-        if (format === 'ENT') {
+        if (format === 'ENT' || format === 'PDB') {
             format = 'PDB';
-        } else if (format === 'CIF') {
+        } else{
+            /* Original file is mmCIF or we converted it to mmCIF */
             format = 'mmCIF'
-        } else if (format === 'MOL2') {
-            /* We converted MOL2 to SDF as LiteMol can't handle it */
-            format = 'SDF'
         }
         LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
             structure_url: get_structure_url + `&s=${id}`,
