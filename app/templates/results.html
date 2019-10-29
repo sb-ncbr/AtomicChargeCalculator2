@@ -59,6 +59,19 @@
 
     </div>
     <hr>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <div class="row">
         <div class="col">
             <div id="root" style="height: 750px"></div>
@@ -67,8 +80,10 @@
     <hr>
     <div class="row">
         <div class="col-12 col-md-6 pb-3">
-            <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success" id="download">Download
-                charges</a>
+            <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success" id="download">Download charges</a>
+            {% if logs %}
+                <a href="{{ url_for('get_logs', r=comp_id) }}" class="btn btn-warning" download="log.txt">Download logs</a>
+            {% endif %}
         </div>
         <div class="col-12 col-md-6 text-md-right pb-3">
             <a href="{{ url_for('main_site') }}" class="btn btn-primary">Back to main page</a>

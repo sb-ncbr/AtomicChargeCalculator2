@@ -78,9 +78,9 @@ def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
         # This value should not be used as we later check whether the method needs parameters
         parameters_name = None
 
-    charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
+    charges, structures, logs = calculate_charges(method_name, parameters_name, tmp_dir)
     request_data[comp_id].update(
-        {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
+        {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges, 'logs': logs})
 
     return redirect(url_for('results', r=comp_id))
 
@@ -131,10 +131,10 @@ def computation():
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
 
-        charges, structures = calculate_charges(method_name, parameters_name, tmp_dir)
+        charges, structures, logs = calculate_charges(method_name, parameters_name, tmp_dir)
 
         request_data[comp_id].update(
-            {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges})
+            {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges, 'logs': logs})
 
         return redirect(url_for('results', r=comp_id))
 
@@ -146,18 +146,24 @@ def computation():
 def calculate_charges(method_name, parameters_name, tmp_dir):
     structures = {}
     charges = {}
+    logs = {}
     for file in os.listdir(os.path.join(tmp_dir, 'input')):
         res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
                         os.path.join(tmp_dir, 'output'))
+
+        stderr = res.stderr.decode('utf-8')
 
         with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
             f_stdout.write(res.stdout.decode('utf-8'))
 
         with open(os.path.join(tmp_dir, 'logs', f'{file}.stderr'), 'w') as f_stderr:
-            f_stderr.write(res.stderr.decode('utf-8'))
+            f_stderr.write(stderr)
+
+        if stderr.strip():
+            logs['stderr'] = stderr
 
         if res.returncode:
-            flash('Computation failed: ' + res.stderr.decode('utf-8'), 'error')
+            flash('Computation failed. See logs for details.', 'error')
 
         _, ext = os.path.splitext(file)
         ext = ext.lower()
@@ -179,7 +185,7 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
 
         with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
             charges.update(parse_txt(f))
-    return charges, structures
+    return charges, structures, logs
 
 
 @application.route('/results')
@@ -201,8 +207,13 @@ def results():
     for struct, charges in comp_data['charges'].items():
         chg_range[struct] = max(abs(float(chg)) for chg in charges.split()[1:])
 
+    logs = ''
+    if 'stderr' in comp_data['logs']:
+        logs = comp_data['logs']['stderr']
+        flash('Some errors occured during the computation, see log for details.')
+
     return render_template('results.html', method_name=method_name, comp_id=comp_id, parameters_name=parameters_name,
-                           structures=comp_data['structures'].keys(), chg_range=chg_range)
+                           structures=comp_data['structures'].keys(), chg_range=chg_range, logs=logs)
 
 
 @application.route('/download')
@@ -233,5 +244,15 @@ def get_charges():
     comp_id = request.args.get('r')
     structure_id = request.args.get('s')
     comp_data = request_data[comp_id]
+    try:
+        return Response(comp_data['charges'][structure_id], mimetype='text/plain')
+    except KeyError:
+        print(f'Requested charges were not found for {structure_id}')
 
-    return Response(comp_data['charges'][structure_id], mimetype='text/plain')
+
+@application.route('/logs')
+def get_logs():
+    comp_id = request.args.get('r')
+    comp_data = request_data[comp_id]
+
+    return Response(comp_data['logs']['stderr'], mimetype='text/plain')
