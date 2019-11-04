@@ -19,6 +19,8 @@ def get_publication(doi: str) -> str:
 with open(os.path.join(CHARGEFW2_DIR, 'share', 'methods.json')) as f:
     method_data = json.load(f)
 
+method_data = method_data["methods"]
+
 parameter_data = defaultdict(list)
 for parameters in sorted(os.listdir(PARAMETERS_DIRECTORY)):
     with open(os.path.join(PARAMETERS_DIRECTORY, parameters)) as f:
