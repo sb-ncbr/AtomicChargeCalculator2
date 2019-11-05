@@ -84,47 +84,9 @@
     {% endwith %}
 
     <hr>
-    <p style="text-align: center">
-        <img src="{{ url_for('static', filename='elixirlogo.png') }}" alt="ELIXIR logo"
-             style="height: 70px"><br>
-        <small>
-            <span class="font-weight-bold">AtomicChargeCalculator <span style="color: #28a745">II</span></span>
-            is a part of services provided by
-            <a href="https://www.elixir-czech.cz/" target="_blank" rel="noreferrer">
-                ELIXIR
-            </a>
-            –
-            European research infrastructure for biological information.
-            For other services provided by ELIXIR's Czech Republic Node visit
-            <a href="https://www.elixir-czech.cz/services" target="_blank" rel="noreferrer">
-                www.elixir-czech.cz/services
-            </a>.
-        </small>
-    </p>
+    {% include 'elixir.html' %}
     <hr>
-    <p style="text-align: justify">
-        <small>
-            Licence conditions in accordance with § 11 of Act No. 130/2002 Coll. The owner of the software is Masaryk
-            University, a public university, ID: 00216224. Masaryk University allows other companies and individuals to
-            use this software free of charge and without territorial restrictions in usual way, that does not depreciate
-            its value. This permission is granted for the duration of property rights. This software is not subject to
-            special information treatment according to Act No. 412/2005 Coll., as amended. In case that a person who
-            will use the software under this licence offer violates the licence terms, the permission to use the
-            software terminates.
-        </small>
-    </p>
-
-    <hr>
-    <footer>
-        <p style="text-align: right; color: gray">
-            <small>© 2019 Tomáš Raček |
-                <a href="https://webchem.ncbr.muni.cz/Platform/Home/TermsOfUse" target="_blank" rel="noreferrer">
-                    Terms of Use &amp; GDPR
-                </a>
-            </small>
-        </p>
-        <br>
-    </footer>
+    {% include 'footer.html' %}
 </div>
 
 <script src="{{ url_for('static', filename='jquery/jquery-3.4.1.min.js') }}"></script>
