@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %} AtomicChargeCalculator II {% endblock title %}</title>
 
-    {% block styles %}
-        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
-    {% endblock styles %}
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
+
+{% block styles %}
+{% endblock styles %}
 </head>
 
 <body>
