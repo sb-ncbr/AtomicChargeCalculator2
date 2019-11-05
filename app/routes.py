@@ -248,6 +248,7 @@ def get_charges():
         return Response(comp_data['charges'][structure_id], mimetype='text/plain')
     except KeyError:
         print(f'Requested charges were not found for {structure_id}')
+        return Response('---No charges---', mimetype='text/plain')
 
 
 @application.route('/logs')
