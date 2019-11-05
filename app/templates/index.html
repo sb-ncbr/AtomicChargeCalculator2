@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AtomicChargeCalculator II</title>
+{% extends 'base/base.html' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
-</head>
-
-<body>
+{% block body %}
 <div class="container p-3">
     <div class="d-none mt-5 d-lg-block"></div>
     <form method=post enctype=multipart/form-data>
@@ -26,17 +16,7 @@
         </div>
         <hr>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    {% include 'base/flash.html' %}
 
         <div class="row">
             <div class="col">
@@ -104,14 +84,9 @@
     </form>
 
     <hr>
-    {% include 'elixir.html' %}
+    {% include 'base/elixir.html' %}
     <hr>
-    {% include 'footer.html' %}
+    {% include 'base/footer.html' %}
 </div>
 
-<script src="{{ url_for('static', filename='jquery/jquery-3.4.1.min.js') }}"></script>
-<script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
-<script src="{{ url_for('static', filename='main.js') }}"></script>
-
-</body>
-</html>
+{% endblock body %}

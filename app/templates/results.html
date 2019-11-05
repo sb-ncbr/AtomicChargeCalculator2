@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AtomicChargeCalculator II - Calculation results</title>
+{% extends 'base/base.html' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
+{% block title %} AtomicChargeCalculator II – Calculation results {% endblock title %}
+
+{% block styles %}
+    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2/select2.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='litemol/static/css/main.css') }}">
-</head>
-<body>
+{% endblock styles %}
 
+{% block body %}
 <div class="container mt-5 p-3">
     <div class="row">
         <div class="col">
@@ -60,17 +56,7 @@
     </div>
     <hr>
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    {% include 'base/flash.html' %}
 
     <div class="row">
         <div class="col">
@@ -78,6 +64,7 @@
         </div>
     </div>
     <hr>
+
     <div class="row">
         <div class="col-12 col-md-6 pb-3">
             <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success" id="download">Download charges</a>
@@ -89,10 +76,14 @@
             <a href="{{ url_for('main_site') }}" class="btn btn-primary">Back to main page</a>
         </div>
     </div>
-    <hr>
-    {% include 'footer.html' %}
-</div>
 
+    <hr>
+    {% include 'base/footer.html' %}
+</div>
+{% endblock body %}
+
+
+{% block scripts %}
 <script src="{{ url_for('static', filename='jquery/jquery-3.4.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
@@ -105,6 +96,4 @@
     const get_charges_url = '{{ url_for("get_charges", r=comp_id) }}';
     const chg_range = $.parseJSON('{{ chg_range | tojson | safe }}');
 </script>
-
-</body>
-</html>
+{% endblock scripts %}

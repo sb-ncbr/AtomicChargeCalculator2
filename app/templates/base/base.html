@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %} AtomicChargeCalculator II {% endblock title %}</title>
+
+    {% block styles %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
+    {% endblock styles %}
+</head>
+
+<body>
+
+{% block body %}
+{% endblock body %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='jquery/jquery-3.4.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+{% endblock scripts %}
+
+</body>
+</html>

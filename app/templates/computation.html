@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AtomicChargeCalculator II</title>
+{% extends 'base/base.html' %}
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/fontawesome.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/solid.min.css') }}">
-</head>
+{% block title %} AtomicChargeCalculator II – Setup computation {% endblock title %}
 
-<body>
+{% block body %}
 <div class="container p-3">
     <div class="d-none mt-5 d-lg-block"></div>
     <form method=post enctype=multipart/form-data>
@@ -71,35 +63,25 @@
             </div>
         </div>
     </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger mt-1 alert-dismissible fade show" role="alert">{{ message }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+
+    {% include 'base/flash.html' %}
 
     <hr>
-    {% include 'elixir.html' %}
+    {% include 'base/elixir.html' %}
+
     <hr>
-    {% include 'footer.html' %}
+    {% include 'base/footer.html' %}
 </div>
+{% endblock body %}
 
-<script src="{{ url_for('static', filename='jquery/jquery-3.4.1.min.js') }}"></script>
-<script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
-<script src="{{ url_for('static', filename='main.js') }}"></script>
+{% block scripts %}
+    {{ super() }}
+    <script>
+        const method_data = $.parseJSON('{{ methods | tojson | safe }}');
+        const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
+        const publication_data = $.parseJSON('{{ publications | tojson | safe }}');
+        const suitable_methods = $.parseJSON('{{ suitable_methods | tojson | safe }}');
+        const suitable_parameters = $.parseJSON('{{ suitable_parameters | tojson | safe }}');
+    </script>
+{% endblock scripts %}
 
-<script>
-    const method_data = $.parseJSON('{{ methods | tojson | safe }}');
-    const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');
-    const publication_data = $.parseJSON('{{ publications | tojson | safe }}');
-    const suitable_methods = $.parseJSON('{{ suitable_methods | tojson | safe }}');
-    const suitable_parameters = $.parseJSON('{{ suitable_parameters | tojson | safe }}');
-</script>
-
-</body>
-</html>
