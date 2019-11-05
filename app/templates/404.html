@@ -1,0 +1,35 @@
+{% extends 'base/base.html' %}
+
+{% block title %} AtomicChargeCalculator II – Page not found {% endblock title %}
+
+{% block body %}
+    <div class="container p-3">
+        <div class="d-none mt-5 d-lg-block"></div>
+        <div class="row">
+            <div class="col">
+                <h1 style="margin-bottom: 30px" class="font-weight-bold">Atomic<wbr>Charge<wbr>Calculator
+                    <span style="color: #28a745">II</span></h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <b>404</b>: This isn't the page you're looking for.
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col pb-3 mt-3">
+                <a href="{{ url_for('main_site') }}" class="btn btn-primary">Back to main page</a>
+            </div>
+        </div>
+
+        <hr>
+        {% include 'base/elixir.html' %}
+        <hr>
+        {% include 'base/footer.html' %}
+    </div>
+{% endblock body %}
+
+{% block scripts %}
+{% endblock scripts %}

@@ -1,4 +1,4 @@
-from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response
+from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response, abort
 from werkzeug.utils import secure_filename
 from . import application, config
 
@@ -123,7 +123,11 @@ def main_site():
 @application.route('/computation', methods=['GET', 'POST'])
 def computation():
     comp_id = request.args.get('r')
-    tmp_dir = request_data[comp_id]['tmpdir']
+    try:
+        tmp_dir = request_data[comp_id]['tmpdir']
+    except KeyError:
+        abort(404)
+
     suitable_methods = request_data[comp_id]['suitable_methods']
     suitable_parameters = request_data[comp_id]['suitable_parameters']
 
@@ -191,7 +195,11 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
 @application.route('/results')
 def results():
     comp_id = request.args.get('r')
-    comp_data = request_data[comp_id]
+    try:
+        comp_data = request_data[comp_id]
+    except KeyError:
+        abort(404)
+
     tmpdir = comp_data['tmpdir']
     filename = glob(os.path.join(tmpdir, 'logs', '*.stdout'))[0]
     parameters_name = 'None'
@@ -257,3 +265,8 @@ def get_logs():
     comp_data = request_data[comp_id]
 
     return Response(comp_data['logs']['stderr'], mimetype='text/plain')
+
+
+@application.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
