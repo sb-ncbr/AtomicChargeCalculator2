@@ -165,7 +165,7 @@ function init_results() {
         let format = id.split(':')[0].split('.')[1].toUpperCase();
         if (format === 'ENT' || format === 'PDB') {
             format = 'PDB';
-        } else{
+        } else {
             /* Original file is mmCIF or we converted it to mmCIF */
             format = 'mmCIF'
         }
@@ -227,6 +227,15 @@ function init_results() {
 
     $colors.trigger('change');
     $select.trigger('select2:select');
+
+    /* Change the state of a radio button to reflect view LiteMol chooses when it loads a molecule */
+    LiteMolChargesViewerEventQueue.subscribe("lm-visualization-mode-changed", (event_info) => {
+        if (event_info.mode === 'balls-and-sticks') {
+            $('input:radio[name=view][value="Balls and sticks"]').prop('checked', true);
+        } else if (event_info.mode === 'cartoons') {
+            $('input:radio[name=view][value="Cartoon"]').prop('checked', true);
+        }
+    });
 }
 
 
