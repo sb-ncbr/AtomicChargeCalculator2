@@ -47,13 +47,15 @@ def get_suitable_methods(directory: str):
     all_valid = [pair for pair in suitable_methods if
                  suitable_methods[pair] == len(os.listdir(os.path.join(directory, 'input')))]
 
-    methods = list({pair[0] for pair in all_valid})
+    # Remove duplicates from methods
+    tmp = {}
+    for data in all_valid:
+        tmp[data[0]] = None
+    methods = list(tmp.keys())
+
     parameters = defaultdict(list)
     for pair in all_valid:
         if len(pair) == 2:
             parameters[pair[0]].append(pair[1])
-
-    for p in parameters.values():
-        p.sort()
 
     return methods, parameters

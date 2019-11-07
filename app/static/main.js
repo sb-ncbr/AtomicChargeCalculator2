@@ -72,17 +72,16 @@ function init_computation() {
     const $p_select = $('#parameters_selection');
 
     /* Set available methods */
-    $.each(method_data, function (key, method) {
-        if (suitable_methods.includes(method.internal_name)) {
-            const str = `<option value="${method.internal_name}">${method.name}</option>\n`;
-            if (method.type === "2D")
+    for (const method of suitable_methods) {
+        const data = method_data.find(m => m.internal_name === method);
+        const str = `<option value="${data.internal_name}">${data.name}</option>\n`;
+            if (data.type === "2D")
                 $m_group2d.append(str);
-            else if (method.type === "3D")
+            else if (data.type === "3D")
                 $m_group3d.append(str);
             else
                 $m_select.append(str);
-        }
-    });
+    }
 
     /* Update parameter publication on change */
     $p_select.on('change', function () {
@@ -107,11 +106,11 @@ function init_computation() {
         if (e.has_parameters) {
             let p_options = '';
             $p_select.prop('disabled', false);
-            $.each(parameter_data[m_name], function (key, parameter_set) {
-                if (suitable_parameters[m_name].includes(parameter_set.filename)) {
-                    p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
-                }
-            });
+            for (const parameters of suitable_parameters[m_name]) {
+                const parameter_set = parameter_data[m_name].find(p => p.filename === parameters);
+                p_options += `<option value="${parameter_set.filename}">${parameter_set.name}</option>\n`;
+            }
+
             $p_select.append(p_options);
             hide_parameters_publication(false);
             $p_select.trigger('change');
