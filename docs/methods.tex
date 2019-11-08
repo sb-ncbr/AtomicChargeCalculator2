@@ -1,0 +1,431 @@
+\documentclass[oneside]{memoir}
+\usepackage{fontspec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage[euler-digits,euler-hat-accent]{eulervm}
+\usepackage[bibstyle=numeric,backend=biber, sorting=none]{biblatex}
+\addbibresource[datatype=bibtex]{methods.bib}
+
+\setlrmarginsandblock{3.5cm}{2.5cm}{*}
+\setulmarginsandblock{2.5cm}{*}{1}
+\checkandfixthelayout 
+
+
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\setmainfont{TeX Gyre Pagella}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\def\chapterheadstart{}
+
+\begin{document}
+
+\chapter*{Short description of the methods}
+This section shortly describes the main idea of each method implemented in AtomicChargeCalculator II. Methods here are ordered according to the publication date.
+
+For clarity, we use unifying naming scheme (which may differ from the one used in the original publication); the symbols used throughout the chapter: $q_i$ stands for charge on $i$th atom, $Q$ is the total molecular charge, $N$ is the number of atoms in a molecule and $R_{i, j}$ represents the Euclidean distance between atoms $i$ and $j$.
+
+\section*{DelRe}
+\label{sec:methods_delre}
+Methods of Del Re \cite{DelRe1958} starts with the definition of a linear system in the form:
+
+\begin{equation}
+\label{eq:delre_main}
+\delta_i = \delta_i^0 + \sum_{j}\gamma_{i, j}\delta_j
+\end{equation}
+
+where $j$ iterates over atoms bonded to $i$. $\delta_i^0$ is an atom parameter, whereas $\gamma_{i, j}$ is a bond parameter. Solving for $\delta_i$ allow us to derive bond charges:
+
+\begin{equation}
+\label{eq:delre_bond}
+q_{i, j} = \ddfrac{\delta_i - \delta_j}{2\epsilon_{i, j}}
+\end{equation}
+
+where $\epsilon_{i, j}$ is another bond parameter. Finally, charge for each atom is computed as the sum of all involved bond charges. 
+
+\section*{PEOE}
+\label{sec:methods_peoe}
+
+Partial equalization of orbital electronegativity \cite{Gasteiger1978, Gasteiger1980} is an iterative scheme in which the charges are moved along the bonds from the more electropositive atom to the more electronegative one. The amount of charge shifted is proportional to the difference of the electronegativities of the bonding partners. As effective electronegativity is defined here as a function of charge:
+
+\begin{equation}
+\label{eq:peoe_chi}
+\chi_i^\alpha = A_i + B_iq^\alpha + C_i(q_i^\alpha)^2
+\end{equation}
+
+its value for each atom must be recomputed as it enters the next iteration.
+
+The main idea of a charge transfer is expressed through the following equation:
+
+\begin{equation}
+\label{eq:peoe_main}
+q_i^\alpha = \left(\sum_j \ddfrac{\chi_j^\alpha - \chi_i^\alpha}{D_i} + \sum_k \ddfrac{\chi_i^\alpha - \chi_k^\alpha}{D_k}\right)\cdot{\left(\ddfrac{1}{2}\right)}^\alpha
+\end{equation}
+
+where $j$ are atoms bonded to atom $i$ with higher electronegativity and $k$ are atoms bonded to atom $i$ with lower electronegativity.
+
+Since the generated charges produce an electrostatic field which further hinders the charge transfer, the dampening factor $(1/2)^\alpha$ was introduced to account for that fact. Usually, six iterations of \ref{eq:peoe_chi} followed by \ref{eq:peoe_main} are necessary for charges to converge.
+
+Finally, total atomic charge $q_i$ is the sum of charge transfers across all the iterations:
+
+\begin{equation}
+\label{eq:peoe_total}
+q_i = \sum_\alpha q_i^\alpha
+\end{equation}
+
+\section*{Charge2}
+\label{sec:methods_charge2}
+
+Charge2 \cite{Abraham1982} is an iterative method in which charge increments from neighbor atoms are added to a central one.
+
+\begin{align}
+\label{eq:charge2_main}
+q_i &= q_i(\alpha) + q_i(\beta) + q_i(\gamma)\\
+q_i(\alpha) &= \sum_j \ddfrac{\chi_j - \chi_i}{a}\\
+q_i(\beta) &= \sum_k \ddfrac{(\chi_k - \chi_H)P_i}{b}\\
+q_i(\gamma) &= \sum_l \ddfrac{(\chi_l - \chi_H)P_i}{bc}\\
+\end{align}
+
+where
+\begin{equation}
+\label{eq:charge2_aux}
+P_i = P_i^0\left(1 + \alpha(q_i^0 - q_i)\right)
+\end{equation}
+
+and $j, k$ and $l$ represents atoms one, two or three bonds apart from atom $i$, $a, b, c$ and $P^0$ are atom parameters, $q^0$ is a formal charge, $\chi_H$ is an electronegativity of hydrogen, and $\alpha$ is a common parameter.
+
+\section*{EEM}
+\label{sec:methods_eem}
+Contrary to the partial electronegativity equalization methods like PEOE or MPEOE, full electronegativity equalization is fundamental to the Mortier's Electronegativity Equalization Method \cite{Mortier1986}.
+
+According to the Sanderson's principle, the electronegativity of each atom gets equalized when atoms bond to form a molecule:
+
+\begin{equation}
+\label{eq:eem_sanderson}
+\overline{\chi} = \chi_1 = \ldots = \chi_N
+\end{equation}
+
+The electronegativity of an atom in a molecule is expressed as:
+
+\begin{equation}
+\label{eq:eem_main}
+\chi_i = A_i + B_iq_i + \sum_{i \neq j} \ddfrac{q_j}{R_{i, j}}
+\end{equation}
+
+where
+
+\begin{align}
+A_i &= \chi_i^0 + \Delta\chi_i\\
+B_i &= 2(\eta_i^0 + \Delta\eta_i)
+\end{align}
+
+$\chi^0$ is an electronegativity of an isolated atom, $\eta^0$ is a hardness of an isolated atom. $\Delta$ symbols represent corrections for the molecular environment.
+
+Finally, charge conservation principle holds:
+
+\begin{equation}
+\label{eq:eem_sum}
+Q = \sum_i q_i
+\end{equation}
+
+Rewriting \ref{eq:eem_main} for every atom in molecule subject to \ref{eq:eem_sanderson} and \ref{eq:eem_sum} yields a system of $N + 1$ linear equations:
+
+\begin{gather}
+	\label{eq:eem_system}
+	\begin{bmatrix}
+		B_1			    & R_{1,2}^{-1}  & \cdots	& R_{1,N}^{-1}	& 1 \\
+		R_{2,1}^{-1}	& B_2			& \cdots	& R_{2,N}^{-1}	& 1 \\
+		\vdots			& \vdots		& \ddots	& \vdots		& \vdots \\
+		R_{N,1}^{-1}	& R_{N,2}^{-1}	& \cdots	& B_N			& 1 \\
+		1			    & 1		    	& \cdots	& 1		    	& 0 \\
+	\end{bmatrix}
+	\cdot
+	\begin{bmatrix}
+		q_1 \\
+		q_2 \\
+		\vdots \\
+		q_N \\
+		-\overline{\chi}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+		-A_1\\
+		-A_2\\
+		\vdots \\
+		-A_N\\
+		Q\\
+	\end{bmatrix}
+\end{gather}
+
+\section*{MPEOE}
+\label{sec:methods_mpeoe}
+
+Modified Partial Equalization of Orbital Electronegativity \cite{No1990} differs from original \hyperref[sec:methods_peoe]{PEOE} by expressing electronegativity as a linear function of charge, so that \ref{eq:peoe_chi} is modified to:
+
+\begin{equation}
+\label{eq:mpeoe_chi}
+\chi_i^\alpha = A_i + B_iq^\alpha
+\end{equation}
+
+Other than that, the dampening factor $(1/2)^\alpha$ is a now considered as a bond type dependent parameter $f_{x, y}$ changing \ref{eq:peoe_main} to:
+
+\begin{equation}
+\label{eq:mpeoe_main}
+q_i^\alpha = \sum_j \ddfrac{\chi_j^\alpha - \chi_i^\alpha}{D_i}f_{i, j}^\alpha + \sum_k \ddfrac{\chi_i^\alpha - \chi_k^\alpha}{D_k}f_{i, k}^\alpha
+\end{equation}
+
+\section*{QEq}
+\label{sec:methods_qeq}
+
+Charge Equilibration (QEq) \cite{Rappe1991} is similar to \hyperref[sec:methods_eem]{EEM}. However, originally, it was meant as an iterative scheme as parameter $J_{i, i}$ for hydrogen was defined to be charge-dependent.
+
+\begin{equation}
+\label{eq:qeq_main}
+\chi_i = \chi_i^0 + J_{i, i}^0q_i + \sum_{i \neq j} J_{i,j}q_j
+\end{equation}
+
+In the original publication values for the Coulomb repulsion term $J_{i, j}$ were obtained using \textit{ab-initio} calculations. To simplify the process, several empirical terms were developed to substitute $J_{i, j}$ with some simple expression.
+
+The system of linear equations is constructed and solved for $q$ similarly to the one in \hyperref[eq:eem_system]{EEM}.
+
+\section*{ABEEM}
+\label{sec:methods_abeem}
+
+Atom-bond Electronegativity Equalization Method \cite{Yang1997} extends original \hyperref[sec:methods_eem]{EEM} to also include bond electronegativities into the equalization scheme. Electronegativity of atom $i$ is expressed as:
+
+\begin{equation}
+\label{eq:abeem_atom}
+\chi_i = A_i + B_iq_i + C_i\sum_{i-j}q_{i-j} + k\sum_{i \neq j}\ddfrac{q_j}{R_{i, j}} + k \sum_{k-l \neq i-j}\ddfrac{q_{k-l}}{R_{i, k-l}}
+\end{equation}
+
+where $A, B$ and $C$ are atom parameters, $k$ is a common parameter, $q_{i-j}$ denotes the charge on the bond $i-j$. Distance to a bond is computed to its center proportional to the covalent radius of the constituent atoms. Electronegativity of a bond $i-j$ has the following form:
+
+\begin{equation}
+\label{eq:abeem_bond}
+\chi_{i-j} = A_{i-j} + B_{i-j}q_{i-j} + C_{i-j, i}q_i + D_{i-j, j}q_j + k\sum_{k\neq i, j}\ddfrac{q_k}{R_{i-j, k}} + k\sum_{k-l\neq i-j}\ddfrac{q_{k-l}}{R_{i-j,k-l}}
+\end{equation}
+
+where $A, B, C$ and $D$ are bond parameters and $k$ is a common parameter.
+
+Solving the system of linear equations provides us with the atomic and bond charges. The bond charges are then added onto the constituent atoms proportionally to their covalent radii yielding the final atomic charges.
+
+\section*{GDAC}
+\label{sec:methods_gdac}
+
+Further modification of \hyperref[sec:methods_mpeoe]{MPEOE} method is coined Geometry-dependent Atomic Charges \cite{Cho2001}. GDAC modifies the dampening term $f_{x, y}$ to be geometry dependent:
+
+\begin{equation}
+f_{x, y} = 1 - \ddfrac{R_{x, y}}{R_x^{\text{vdw}} + R_y^{\text{vdw}}}
+\end{equation}
+
+where $R^{\text{vdw}}_x$ stands for the van der Waals radius of atom $x$.
+
+\section*{MGC}
+\label{sec:methods_mgc}
+
+Molecular Graph Charge model (MGC) \cite{Oliferenko2000, Oliferenko2001} uses molecular graph representation of the molecule as it is inspired by electrical circuits and Kirchhoff's current laws. Therefore, no atomic coordinates are employed.
+
+MGC constructs auxiliary matrix $\bm{S}$ in the following way:
+\begin{equation}
+\label{eq:mgc_main}
+\bm{S} = -\bm{A} + \bm{D} + \bm{I}
+\end{equation}
+
+where $\bm{A}$ is a connectivity matrix, $\bm{D}$ represents diagonal degree matrix and $\bm{I}$ is a standard identity matrix.
+
+Equalized electronegativities are obtained from those of isolated atoms as a solution to the system of linear equations.
+
+\begin{equation}
+\label{eq:mgc_system}
+\bm{S\chi} = \bm{\chi}^0
+\end{equation}
+
+Finally, partial atomic charges are computed as a difference between equalized and standard electronegativities of respective atoms, divided by the average electronegativity $\chi_M$ (geometric average).
+
+\begin{equation}
+\label{eq:mgc_charges}
+\bm{q} = \ddfrac{\bm{\chi} - \bm{\chi}^0}{\bm{\chi}_M}
+\end{equation}
+
+\section*{SFKEEM}
+\label{sec:methods_sfkeem}
+
+Selfconsistent Functional Kernel Equalized Electronegativity Method \cite{Chaves2006} develops on \hyperref[sec:methods_eem]{EEM}'s main idea. However, it incorporates different hardness matrix. The electronegativity equalization principle in SFKEEM is expressed as:
+
+\begin{equation}
+\label{eq:sfkeem_main}
+\chi_i = A + 2B_iq_i + \sum_{i \neq j} 2\sqrt{B_iB_j}\mathrm{sech}(\sigma R_{i, j})
+\end{equation}
+
+where $A, B$ and $\sigma$ are empirical parameters and $\mathrm{sech}$ is a hyperbolic secant function.
+
+\section*{KCM}
+Kirchhoff Charge Model \cite{Yakovenko2008} builds a Laplacian matrix $\bm{L}$ as:
+
+\begin{equation}
+\label{eq:ksm_laplacian}
+\bm{L} = \bm{B}^T \bm{W} \bm{B}
+\end{equation}
+
+where $\bm{B}$ is an incidence matrix and $\bm{W}$ is a diagonal "softness" matrix with elements $w_{i, i} = 1 / (\eta_i + \eta_j)$, where $\eta$ stands for hardness of an atom.
+
+Atomic charges are derived using the following expression:
+
+\begin{equation}
+\label{eq:kcm_charges}
+\bm{q} = (\bm{L}^{-1} - \bm{I})\bm{\chi^0}
+\end{equation}
+
+where $\bm{L}^{-1}$ is an inverse of $\bm{L}$ and $\bm{\chi^0}$ represents a vector of electronegativities of isolated atoms.
+
+\section*{DENR}
+\label{sec:methods_denr}
+
+Dynamic electronegativity relaxation \cite{Shulga2008} is an iterative 2D scheme in which charges are derived using a Laplacian matrix:
+
+\begin{equation}
+\label{eq:denr_main}
+\bm{q}^{(n + 1)} = (\bm{I} + c\Delta t\cdot \bm{B}_0)^{-1}\cdot(\bm{q}^{(n)} - c\Delta t\cdot \bm{a}_0)
+\end{equation}
+
+where $\bm{B}_0 = \bm{L}\bm{\eta}_0$ and $\bm{a}_0 = \bm{L}\bm{\chi}_0$. Note that $\bm{\eta}_0$ is a diagonal matrix of atomic hardnesses.
+
+\section*{TSEF}
+\label{sec:methods_tsef}
+
+Topologically Symmetrical Energy Function \cite{Shulga2008} has electronegativity equalization principle as its base but changes off-diagonal term to include bond distance rather than Euclidean distance making TSEF conformationally independent.
+
+\begin{equation}
+\label{eq:tsef_main}
+\phi_{i, j} = \alpha \cdot K\mathrm{(MDP_{i, j})}\cdot\ddfrac{1}{0.84\cdot\mathrm{MDP}_{i, j} + 0.46}
+\end{equation}
+
+where $\mathrm{MDP}$ stands for \textit{minimal distance path}, i.e., minimal number of bonds between two atoms, $K$ is parameter and $\alpha$ is a unit conversion factor.
+
+\section*{SMP/QEq}
+\label{sec:methods_smpqeq}
+
+Self-Consistent Charge Equilibration Method \cite{Zhang2009} builds upon the idea of the original \hyperref[sec:methods_qeq]{QEq}, electronegativity of an atom is formalized as a function of charge, thus the whole scheme is a iterative one. The main equation follows:
+
+\begin{equation}
+\label{eq:smpqeq_main}
+\chi_i(q_i) = A_i + 2\lambda(q_i)q_i + \sum_{i\neq j} J_{i, j}q_j
+\end{equation}
+
+where
+
+\begin{equation}
+\label{eq:smpqeq_lambda}
+\lambda(q_i) = B_i + C_iq_i + D_i(q_i)^2
+\end{equation}
+
+and
+
+\begin{equation}
+\label{eq:smpqeq_J}
+J_{i, j} = \left(\ddfrac{1}{(2\sqrt{B_iB_j})^3} + R_{i,j}^3\right)^{-1/3}
+\end{equation}
+
+where $A, B, C$ and $D$ are atom parameters.
+
+\section*{VEEM}
+\label{sec:methods_veem}
+
+Valence electrons equilibration method \cite{Wu2011} calculates atomic charges based on the number of valence electrons of individual atoms and atomic groups.
+
+First, equalized electronegativity is calculated for the whole molecule:
+
+\begin{equation}
+\label{eq:veem_en}
+\chi_{ve} = \ddfrac{\sum_i \chi_iN_{ve, i}}{\sum_i N_{ve, i}}
+\end{equation}
+
+where $\chi_i$ is an electronegativity of isolated atom $i$; $N_{ve, i}$ stands for the number of valence electrons of atom $i$.
+
+Finally, the partial atomic charge of atom $i$ is computed as:
+
+\begin{equation}
+\label{eq:veem_q}
+q_i = N_{ve, i}\ddfrac{\chi_{ve} - \chi_i}{\chi_{ve}}
+\end{equation}
+
+
+\section*{EQeq}
+\label{sec:methods_eqeq}
+Extended charge equilibration method \cite{Wilmer2012} builds upon original \hyperref[sec:methods_qeq]{QEq} scheme, which is modified to take the following form (the simplest, non-periodic case without different charge centers):
+
+\begin{equation}
+\label{eq:eqeq_main}
+\chi_i = \chi_i^0 + J_i^0q_i + \ddfrac{K}{2}\sum_{i \neq j} q_j\left(\ddfrac{1}{R_{i, j}} + O_{i, j}\right)
+\end{equation}
+
+where
+\begin{eqnarray}
+\label{eq:eqeq_default}
+\chi_i^0 &=& \ddfrac{\mathrm{IP}_i + \mathrm{EA}_i}{2}\\
+J_i^0 é &=& \mathrm{IP}_i - \mathrm{EA}_i
+\end{eqnarray}
+
+K is a constant; IP and EA stand for ionization potential and electron affinity, respectively, and
+
+\begin{equation}
+\label{eq:eqeq_overlap}
+O_{i, j} = \exp{\left(-\ddfrac{J_{i, j}^2R_{i, j}^2}{K^2}\right)}\cdot\left(\ddfrac{J_{i, j}}{K} - \ddfrac{J_{i, j}^2R_{i, j}}{K^2} - \ddfrac{1}{R_{i, j}}\right)
+\end{equation}
+
+where $J_{i, j}$ is a geometric mean of $J_i^0$ and $J_j^0$.
+
+
+\section*{EQeq+C}
+Bond-order-corrected Extended Charge Equilibration Method \cite{MartinNoble2015} follows exactly the same procedure as \hyperref[sec:methods_eqeq]{EQeq}, however, after the computation is done, some corrections are added to the original charges, i.e.:
+
+\begin{equation}
+\label{eq:eqeqc_main}
+q_i = q_i^0 + \sum_{j \neq i} T_{i, j}B_{i, j}
+\end{equation}
+
+where $q_i^0$ is original charge from EQeq, and
+
+\begin{eqnarray}
+\label{eq:eqeqc_terms}
+T_{i, j} &=& D_i - D_j\\ 
+B_{i, j} &=& \exp\left[-\alpha\left(R_{i, j} - r_i - r_j\right)\right]
+\end{eqnarray}
+
+
+where $D$ is an atom parameter, $\alpha$ is a common parameter and $r$ stands for covalent radius.
+
+\chapter*{Notes on the implementation}
+Following section presents some notes and discusses differences in implementation of the some methods compared to the description used in original publication.
+
+\section*{EEM, SFKEEM, QEq, SMP/QEq, EQeq, EQeq+C}
+These methods have implemented support for \textit{cutoff} and \textit{cover} approaches introduced in the original AtomicChargeCalculator \cite{Ionescu2015} allowing to transparently compute charges for large molecules. 
+
+\section*{GDAC}
+Only a subset of the parameters is used.
+
+\section*{QEq}
+The scheme is not iterative, expression for $J_{i,j}$ is taken from \cite{Louwen1998} as in \hyperref[sec:methods_smpqeq]{SMP/QEq}:
+
+\begin{equation}
+\label{eq:qeq_louwen}
+J_{i, j} = \left(\ddfrac{1}{(2\sqrt{B_iB_j})^3} + R_{i,j}^3\right)^{-1/3}
+\end{equation}
+
+
+\section*{EQeq and EQeq+C}
+Only the non-periodic case without non-zero charge centers is supported.
+
+\printbibliography
+\end{document}
+
