@@ -7,7 +7,7 @@ __all__ = ['parse_txt', 'parse_cif', 'parse_cif_from_string', 'parse_pdb']
 
 
 def sanitize_name(name: str) -> str:
-    return ''.join(c if c in string.ascii_letters + string.digits else '_' for c in name)
+    return ''.join(c.upper() if c in string.ascii_letters + string.digits else '_' for c in name)
 
 
 def get_unique_name(name: str, already_defined: Iterable[str]) -> str:
