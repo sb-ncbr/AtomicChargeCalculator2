@@ -1,9 +1,5 @@
 'use strict';
 
-function es(str) {
-    return str.replace('/', '\\/').replace('+', '\\+');
-}
-
 
 function fill_paper($element, doi) {
     if (doi in publication_data) {
@@ -75,12 +71,12 @@ function init_computation() {
     for (const method of suitable_methods) {
         const data = method_data.find(m => m.internal_name === method);
         const str = `<option value="${data.internal_name}">${data.name}</option>\n`;
-            if (data.type === "2D")
-                $m_group2d.append(str);
-            else if (data.type === "3D")
-                $m_group3d.append(str);
-            else
-                $m_select.append(str);
+        if (data.type === "2D")
+            $m_group2d.append(str);
+        else if (data.type === "3D")
+            $m_group3d.append(str);
+        else
+            $m_select.append(str);
     }
 
     /* Update parameter publication on change */
@@ -174,6 +170,16 @@ function init_results() {
             structure_format: format,
             charges_format: 'TXT'
         });
+
+        if (chg_range.hasOwnProperty(id)) {
+            $('input:radio[name=colors]').prop('disabled', false);
+        } else {
+            $('input:radio[name=colors][value="Structure"]').prop('checked', true);
+            $('input:radio[name=colors]').prop('disabled', true);
+            $min_value.val(0);
+            $max_value.val(0);
+        }
+
         if ($('input[name=colors]:checked').val() === 'Relative') {
             $min_value.val(-chg_range[id]);
             $max_value.val(chg_range[id]);
@@ -212,20 +218,21 @@ function init_results() {
     });
 
     let $view = $('input[name=view]');
-    $view.on('change', function() {
-       let v = $('input[name=view]:checked').val();
-       if (v === 'Cartoon') {
-           LiteMolChargesViewerEventQueue.send('lm-switch-to-cartoons');
-       } else if (v === 'Balls and sticks') {
-           LiteMolChargesViewerEventQueue.send('lm-switch-to-bas');
-       } else {
-           /* Surface */
-           LiteMolChargesViewerEventQueue.send('lm-switch-to-surface');
-       }
+    $view.on('change', function () {
+        let v = $('input[name=view]:checked').val();
+        if (v === 'Cartoon') {
+            LiteMolChargesViewerEventQueue.send('lm-switch-to-cartoons');
+        } else if (v === 'Balls and sticks') {
+            LiteMolChargesViewerEventQueue.send('lm-switch-to-bas');
+        } else {
+            /* Surface */
+            LiteMolChargesViewerEventQueue.send('lm-switch-to-surface');
+        }
     });
 
-    $colors.trigger('change');
     $select.trigger('select2:select');
+    $colors.filter(':checked').trigger('change');
+
 
     /* Change the state of a radio button to reflect view LiteMol chooses when it loads a molecule */
     LiteMolChargesViewerEventQueue.subscribe("lm-visualization-mode-changed", (event_info) => {
