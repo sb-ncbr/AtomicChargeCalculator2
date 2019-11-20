@@ -77,9 +77,6 @@ def parse_pdb(f: IO[str]) -> Dict[str, str]:
         if line.startswith('HEADER'):
             name = line.split()[-1]
             break
-        elif line.startswith('COMPND'):
-            name = line.split()[1]
-            break
         elif line.startswith('ATOM'):
             # We were unable to find the name
             break
