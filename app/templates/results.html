@@ -94,6 +94,6 @@
     const get_structure_url = '{{ url_for("get_structure", r=comp_id) }}';
     const get_charges_url = '{{ url_for("get_charges", r=comp_id) }}';
     const get_format_url = '{{ url_for("get_format", r=comp_id) }}';
-    const chg_range = $.parseJSON('{{ chg_range | tojson | safe }}');
+    const chg_range = JSON.parse('{{ chg_range | tojson | safe }}');
 </script>
 {% endblock scripts %}
