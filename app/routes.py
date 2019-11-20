@@ -1,6 +1,7 @@
 from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response, abort
 from werkzeug.utils import secure_filename
 from . import application, config
+from typing import Dict, IO
 
 import tempfile
 import magic
@@ -30,6 +31,20 @@ def extract(tmp_dir: str, filename: str, fmt: str):
     shutil.unpack_archive(os.path.join(tmp_dir, filename), os.path.join(tmp_dir, 'input'), format=fmt)
     for filename in os.listdir(os.path.join(tmp_dir, 'input')):
         check_extension(filename)
+
+
+def convert_to_mmcif(f: IO[str], fmt: str, filename: str) -> Dict[str, str]:
+    input_arg = f'-i{fmt}'
+    args = ['obabel', input_arg, '-ommcif']
+    data = f.read()
+    run = subprocess.run(args, input=data.encode('utf-8'), stdout=subprocess.PIPE)
+    output = run.stdout.decode('utf-8')
+    structures: Dict[str, str] = {}
+    delimiter = '# --------------------------------------------------------------------------'
+    for s in (s for s in output.split(delimiter) if s):
+        structures.update(parse_cif_from_string(s, filename))
+
+    return structures
 
 
 def prepare_file(rq, tmp_dir):
@@ -74,6 +89,16 @@ def prepare_example(rq, tmp_dir):
     shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
 
 
+def update_computation_results(method_name: str, parameters_name: str, tmp_dir: str, comp_id: str):
+    charges, structures, formats, logs = calculate_charges(method_name, parameters_name, tmp_dir)
+    request_data[comp_id].update({'method': method_name,
+                                  'parameters': parameters_name,
+                                  'structures': structures,
+                                  'formats': formats,
+                                  'charges': charges,
+                                  'logs': logs})
+
+
 def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
     method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
 
@@ -83,9 +108,7 @@ def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
         # This value should not be used as we later check whether the method needs parameters
         parameters_name = None
 
-    charges, structures, logs = calculate_charges(method_name, parameters_name, tmp_dir)
-    request_data[comp_id].update(
-        {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges, 'logs': logs})
+    update_computation_results(method_name, parameters_name, tmp_dir, comp_id)
 
     return redirect(url_for('results', r=comp_id))
 
@@ -140,10 +163,7 @@ def computation():
         method_name = request.form.get('method_select')
         parameters_name = request.form.get('parameters_select')
 
-        charges, structures, logs = calculate_charges(method_name, parameters_name, tmp_dir)
-
-        request_data[comp_id].update(
-            {'method': method_name, 'parameters': parameters_name, 'structures': structures, 'charges': charges, 'logs': logs})
+        update_computation_results(method_name, parameters_name, tmp_dir, comp_id)
 
         return redirect(url_for('results', r=comp_id))
 
@@ -153,9 +173,11 @@ def computation():
 
 
 def calculate_charges(method_name, parameters_name, tmp_dir):
-    structures = {}
-    charges = {}
-    logs = {}
+    structures: Dict[str, str] = {}
+    charges: Dict[str, str] = {}
+    formats: Dict[str, str] = {}
+    logs: Dict[str, str] = {}
+
     for file in os.listdir(os.path.join(tmp_dir, 'input')):
         res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
                         os.path.join(tmp_dir, 'output'))
@@ -176,25 +198,36 @@ def calculate_charges(method_name, parameters_name, tmp_dir):
 
         _, ext = os.path.splitext(file)
         ext = ext.lower()
+
+        tmp_structures: Dict[str, str] = {}
         with open(os.path.join(tmp_dir, 'input', file)) as f:
-            if ext in {'.sdf', '.mol2'}:
-                input_arg = f'-i{ext[1:]}'
-                args = ['obabel', input_arg, '-ommcif']
-                data = f.read()
-                run = subprocess.run(args, input=data.encode('utf-8'), stdout=subprocess.PIPE)
-                output = run.stdout.decode('utf-8')
-                for s in (s for s in output.split('# --------------------------------------------------------------------------') if s):
-                    structures.update(parse_cif_from_string(s, file))
-            elif ext in {'.ent', '.pdb'}:
-                structures.update(parse_pdb(f))
+            if ext == '.sdf':
+                if get_MOL_versions(os.path.join(tmp_dir, 'input', file)) == {'V2000'}:
+                    tmp_structures.update(parse_sdf(f))
+                    fmt = 'SDF'
+                else:
+                    tmp_structures.update(convert_to_mmcif(f, 'sdf', file))
+                    fmt = 'mmCIF'
+            elif ext == '.mol2':
+                tmp_structures.update(convert_to_mmcif(f, 'mol2', file))
+                fmt = 'mmCIF'
+            elif ext == '.pdb':
+                tmp_structures.update(parse_pdb(f))
+                fmt = 'PDB'
             elif ext == '.cif':
-                structures.update(parse_cif(f))
+                tmp_structures.update(parse_cif(f))
+                fmt = 'mmCIF'
             else:
                 raise RuntimeError(f'Not supported format: {ext}')
 
+        for s in tmp_structures:
+            formats[s] = fmt
+
+        structures.update(tmp_structures)
+
         with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
             charges.update(parse_txt(f))
-    return charges, structures, logs
+    return charges, structures, formats, logs
 
 
 @application.route('/results')
@@ -250,6 +283,14 @@ def get_structure():
     comp_data = request_data[comp_id]
 
     return Response(comp_data['structures'][structure_id], mimetype='text/plain')
+
+
+@application.route('/format')
+def get_format():
+    comp_id = request.args.get('r')
+    structure_id = request.args.get('s')
+    comp_data = request_data[comp_id]
+    return Response(comp_data['formats'][structure_id], mimetype='text/plain')
 
 
 @application.route('/charges')

@@ -3,7 +3,7 @@ import os
 from typing import IO, Dict, Iterable
 
 
-__all__ = ['parse_txt', 'parse_cif', 'parse_cif_from_string', 'parse_pdb']
+__all__ = ['parse_txt', 'parse_cif', 'parse_cif_from_string', 'parse_pdb', 'parse_sdf', 'get_MOL_versions']
 
 
 def sanitize_name(name: str) -> str:
@@ -18,6 +18,30 @@ def get_unique_name(name: str, already_defined: Iterable[str]) -> str:
         new_name = f'{name}_{count}'
 
     return new_name
+
+
+def parse_sdf(f: IO[str]) -> Dict[str, str]:
+    filename = os.path.basename(f.name)
+    d = {}
+
+    it = iter(f)
+    try:
+        while it:
+            name = next(it)[:80].strip()
+            line = next(it)
+            lines = [f'{name}\n', line]
+            while line.strip() != '$$$$':
+                line = next(it)
+                lines.append(line)
+
+            mol_record = ''.join(lines)
+            safe_name = sanitize_name(name)
+            unique_name = get_unique_name(f'{filename}:{safe_name}', d.keys())
+            d[unique_name] = mol_record
+    except StopIteration:
+        pass
+
+    return d
 
 
 def parse_cif(f: IO[str]) -> Dict[str, str]:
@@ -80,3 +104,33 @@ def parse_txt(f: IO[str]) -> Dict[str, str]:
         pass
 
     return d
+
+
+def get_MOL_versions(filename: str):
+    def get_version(text: str):
+        return text[34:39]
+
+    def skip_header(file: IO[str]):
+        next(file)
+        next(file)
+        next(file)
+
+    versions = set()
+    f = open(filename)
+
+    skip_header(f)
+    versions.add(get_version(next(f)))
+    try:
+        while True:
+            line = next(f)
+            while line.strip() != '$$$$':
+                line = next(f)
+            skip_header(f)
+            versions.add(get_version(next(f)))
+
+    except StopIteration:
+        pass
+
+    f.close()
+
+    return versions

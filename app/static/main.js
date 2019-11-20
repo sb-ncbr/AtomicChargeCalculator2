@@ -157,18 +157,17 @@ function init_results() {
     $select.select2({width: '100%'});
     $select.on('select2:select', function () {
         const id = $select.select2('data')[0].id;
-        let format = id.split(':')[0].split('.')[1].toUpperCase();
-        if (format === 'ENT' || format === 'PDB') {
-            format = 'PDB';
-        } else {
-            /* Original file is mmCIF or we converted it to mmCIF */
-            format = 'mmCIF'
-        }
-        LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
-            structure_url: get_structure_url + `&s=${id}`,
-            charges_url: get_charges_url + `&s=${id}`,
-            structure_format: format,
-            charges_format: 'TXT'
+
+        $.ajax({
+            url: get_format_url + `&s=${id}`,
+            success: function (format) {
+                LiteMolChargesViewerEventQueue.send("lm-load-molecule", {
+                    structure_url: get_structure_url + `&s=${id}`,
+                    charges_url: get_charges_url + `&s=${id}`,
+                    structure_format: format,
+                    charges_format: 'TXT'
+                });
+            }
         });
 
         if (chg_range.hasOwnProperty(id)) {
