@@ -76,8 +76,8 @@ def prepare_file(rq, tmp_dir):
 
 
 def prepare_example(rq, tmp_dir):
-    if 'example-small' in rq.form:
-        filename = 'set01.sdf'
+    if 'example-drugs' in rq.form:
+        filename = 'drugs.sdf'
     elif 'example-ligand' in rq.form:
         filename = 'cis-homoaconitate.sdf'
     elif 'example-bax-inactive' in rq.form:
