@@ -48,12 +48,16 @@
         </div>
         <div class="row">
             <div class="col-lg-4">
-                <b>Cis-homoaconitate</b>
-                <p>Dissociation</p>
+                <b>Paralen, Warfarin, Oxytocin</b>
+                <p>H dissociation</p>
                 <div class="text-center">
-                    <img src="{{ url_for('static', filename='cis-homoaconitate.png') }}" alt="Cis-homoaconitate"
+                    <img src="{{ url_for('static', filename='warfarin.png') }}" alt="Cis-homoaconitate"
                      style="height: 200px">
-                    <button type="submit" id="example-ligand" name="example-ligand" class="btn btn-primary">Choose
+                    <button type="submit" id="example-paralen" name="example-paralen" class="btn btn-primary">Paralen
+                    </button>
+                     <button type="submit" id="example-warfarin" name="example-warfarin" class="btn btn-primary">Warfarin
+                    </button>
+                     <button type="submit" id="example-oxytocin" name="example-oxytocin" class="btn btn-primary">Oxytocin
                     </button>
                 </div>
             </div>
@@ -63,11 +67,11 @@
                 <div class="text-center">
                     <img src="{{ url_for('static', filename='bax.png') }}" alt="BAX" style="height: 200px">
                     <button type="submit" id="example-bax-inactive" name="example-bax-inactive" class="btn btn-primary">
-                        Choose inactive
+                        Inactive
                     </button>
                     <button type="submit" id="example-bax-activated" name="example-bax-activated"
                             class="btn btn-primary">
-                        Choose activated
+                        Activated
                     </button>
                 </div>
             </div>
@@ -76,7 +80,7 @@
                 <p>Subset of approved drugs from DrugBank</p>
                 <div class="text-center">
                     <img src="{{ url_for('static', filename='drugs.png') }}" alt="Small set" style="height: 200px">
-                    <button type="submit" id="example-drugs" name="example-drugs" class="btn btn-primary">Choose
+                    <button type="submit" id="example-drugs" name="example-drugs" class="btn btn-primary">Approved drugs
                     </button>
                 </div>
             </div>

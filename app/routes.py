@@ -78,8 +78,12 @@ def prepare_file(rq, tmp_dir):
 def prepare_example(rq, tmp_dir):
     if 'example-drugs' in rq.form:
         filename = 'drugs.sdf'
-    elif 'example-ligand' in rq.form:
-        filename = 'cis-homoaconitate.sdf'
+    elif 'example-paralen' in rq.form:
+        filename = 'paralen.sdf'
+    elif 'example-oxytocin' in rq.form:
+        filename = 'oxytocin.sdf'
+    elif 'example-warfarin' in rq.form:
+        filename = 'warfarin.sdf'
     elif 'example-bax-inactive' in rq.form:
         filename = '1f16_updated.cif'
     elif 'example-bax-activated' in rq.form:
