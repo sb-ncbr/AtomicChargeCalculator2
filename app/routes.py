@@ -140,7 +140,7 @@ def main_site():
 
         request_data[comp_id] = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
 
-        if request.form['type'] == 'charges':
+        if request.form['type'] in ['charges', 'example']:
             return calculate_charges_default(methods, parameters, tmp_dir, comp_id)
         else:
             return redirect(url_for('computation', r=comp_id))
