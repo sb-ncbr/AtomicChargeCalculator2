@@ -20,81 +20,111 @@
             </div>
             <hr>
 
-    {% include 'base/flash.html' %}
+            {% include 'base/flash.html' %}
 
-        <div class="row">
-            <div class="col">
-                <h3>Upload structure</h3>
-                <div class="form-group">
-                    <label class="font-weight-bold" for="file_input">Input file</label>
-                    <input type="file" class="form-control-file" id="file_input" name="file" accept=".pdb, .sdf, .mol2, .cif">
-                    <small class="form-text text-muted">
-                        Single sdf, mol2, pdb or mmcif file or archive (zip, tar.gz) of those files.
-                        Maximum file size: 10 MB
-                    </small>
-                </div>
-                <button type="submit" id="charges" name="charges" class="btn btn-success"
-                        title="Direct computation of charges using automatically selected empirical charge calculation method.">
-                    Compute charges
-                </button>
-                <button type="submit" id="settings" name="settings" class="btn btn-secondary"
-                        title="Selection of empirical charge calculation method and its parameters.">
-                    Setup computation
-                </button>
-            </div>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col">
-                <h3>Examples</h3>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-4">
-                <b>Paralen, Warfarin, Oxytocin</b>
-                <p>H dissociation</p>
-                <div class="text-center">
-                    <img src="{{ url_for('static', filename='warfarin.png') }}" alt="Cis-homoaconitate"
-                     style="height: 200px">
-                    <button type="submit" id="example-paralen" name="example-paralen" class="btn btn-primary">Paralen
+            <div class="row">
+                <div class="col">
+                    <h3>Upload structure</h3>
+                    <div class="form-group">
+                        <label class="font-weight-bold" for="file_input">Input file</label>
+                        <input type="file" class="form-control-file" id="file_input" name="file"
+                               accept=".pdb, .sdf, .mol2, .cif">
+                        <small class="form-text text-muted">
+                            Single sdf, mol2, pdb or mmcif file or archive (zip, tar.gz) of those files.
+                            Maximum file size: 10 MB
+                        </small>
+                    </div>
+                    <button type="submit" id="charges" name="charges" class="btn btn-success"
+                            title="Direct computation of charges using automatically selected empirical charge calculation method.">
+                        Compute charges
                     </button>
-                     <button type="submit" id="example-warfarin" name="example-warfarin" class="btn btn-primary">Warfarin
-                    </button>
-                     <button type="submit" id="example-oxytocin" name="example-oxytocin" class="btn btn-primary">Oxytocin
+                    <button type="submit" id="settings" name="settings" class="btn btn-secondary"
+                            title="Selection of empirical charge calculation method and its parameters.">
+                        Setup computation
                     </button>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <b>BAX</b>
-                <p>Apoptotic protein activation</p>
-                <div class="text-center">
+            <hr>
+            <div class="row">
+                <div class="col">
+                    <h3>Examples</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <b>Dissociating hydrogens</b><br>
+                    <img src="{{ url_for('static', filename='warfarin.png') }}" alt="Dissociating hydrogens"
+                         style="height: 200px">
+                    <p><small>This example focuses on acid dissociation of three frequently used drugs –
+                        <a href="https://www.drugbank.ca/drugs/DB00316" target="_blank" rel="noreferrer">paracetamol</a>,
+                        <a href="https://www.drugbank.ca/drugs/DB00682" target="_blank" rel="noreferrer">warfarin</a>
+                        and
+                        <a href="https://www.drugbank.ca/drugs/DB00107" target="_blank" rel="noreferrer">oxytocin</a>.
+                        Their dissociating hydrogens are highlighted <a
+                                href="{{ url_for('static', filename='dissociation.pdf') }}" target="_blank">here</a>.
+                        During dissociation, an acid releases a hydrogen atom which has the highest value of partial
+                        atomic charge. Using ACC II, we can detect the dissociating atoms, i.e., calculate charges and
+                        find the hydrogen with the highest charge – see:</small></p>
+                    <div class="">
+                        <button type="submit" id="example-paralen" name="example-paralen" class="btn btn-primary mb-2">
+                            Paracetamol
+                        </button>
+                        <button type="submit" id="example-warfarin" name="example-warfarin"
+                                class="btn btn-primary mb-2">
+                            Warfarin
+                        </button>
+                        <button type="submit" id="example-oxytocin" name="example-oxytocin"
+                                class="btn btn-primary mb-2">
+                            Oxytocin
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <b>Apoptotic protein activation</b><br>
                     <img src="{{ url_for('static', filename='bax.png') }}" alt="BAX" style="height: 200px">
-                    <button type="submit" id="example-bax-inactive" name="example-bax-inactive" class="btn btn-primary">
-                        Inactive
-                    </button>
-                    <button type="submit" id="example-bax-activated" name="example-bax-activated"
-                            class="btn btn-primary">
-                        Activated
-                    </button>
+                    <p><small>BAX protein regulates an apoptosis process. In our example, we show inactive BAX (PDB ID
+                        <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/1f16" target="_blank" rel="noreferrer">1f16</a>)
+                        and activated BAX (PDB ID
+                        <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/1f16" target="_blank" rel="noreferrer">2k7w</a>).
+                        The activation causes a charge redistribution that also includes C domain depolarization (<a
+                                href="{{ url_for('static', filename='bax.pdf') }}" target="_blank">see here</a>).
+                        This depolarization causes release of the C domain, which can then penetrate mitochondrial
+                        membrane and start the
+                        apoptosis (<a href="https://doi.org/10.1371/journal.pcbi.1002565" target="_blank"
+                                      rel="noreferrer">Ionescu et al., Plos Comp.
+                            Biol., 2012</a>). See charges on inactive and activated BAX here:</small></p>
+                    <div class="text-center">
+                        <button type="submit" id="example-bax-inactive" name="example-bax-inactive"
+                                class="btn btn-primary">
+                            Inactive
+                        </button>
+                        <button type="submit" id="example-bax-activated" name="example-bax-activated"
+                                class="btn btn-primary">
+                            Activated
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <b>Approved drugs</b><br>
+                    <img src="{{ url_for('static', filename='drugs.png') }}" alt="Approved drugs" style="height: 200px">
+                    <p><small>This example shows a rich set of drug molecules (i.e., subset of all approved drugs from
+                        DrugBank – 1760 compounds) and their charges. The drugs are denoted as approved, when
+                        they have received approval in at least one country. See charges of these drugs here:</small>
+                    </p>
+                    <div class="text-center">
+                        <button type="submit" id="example-drugs" name="example-drugs" class="btn btn-primary">Approved
+                            drugs
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <b>Approved drugs</b>
-                <p>Subset of approved drugs from DrugBank</p>
-                <div class="text-center">
-                    <img src="{{ url_for('static', filename='drugs.png') }}" alt="Small set" style="height: 200px">
-                    <button type="submit" id="example-drugs" name="example-drugs" class="btn btn-primary">Approved drugs
-                    </button>
-                </div>
-            </div>
-        </div>
 
-    </form>
+        </form>
 
-    <hr>
-    {% include 'base/elixir.html' %}
-    <hr>
-    {% include 'base/footer.html' %}
-</div>
+        <hr>
+        {% include 'base/elixir.html' %}
+        <hr>
+        {% include 'base/footer.html' %}
+    </div>
 
 {% endblock body %}
