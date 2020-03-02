@@ -359,7 +359,6 @@ Finally, the partial atomic charge of atom $i$ is computed as:
 q_i = N_{ve, i}\ddfrac{\chi_{ve} - \chi_i}{\chi_{ve}}
 \end{equation}
 
-
 \section*{EQeq}
 \label{sec:methods_eqeq}
 Extended charge equilibration method \cite{Wilmer2012} builds upon original \hyperref[sec:methods_qeq]{QEq} scheme, which is modified to take the following form (the simplest, non-periodic case without different charge centers):
@@ -385,7 +384,6 @@ O_{i, j} = \exp{\left(-\ddfrac{J_{i, j}^2R_{i, j}^2}{K^2}\right)}\cdot\left(\ddf
 
 where $J_{i, j}$ is a geometric mean of $J_i^0$ and $J_j^0$.
 
-
 \section*{EQeq+C}
 Bond-order-corrected Extended Charge Equilibration Method \cite{MartinNoble2015} follows exactly the same procedure as \hyperref[sec:methods_eqeq]{EQeq}, however, after the computation is done, some corrections are added to the original charges, i.e.:
 
@@ -401,7 +399,6 @@ where $q_i^0$ is original charge from EQeq, and
 T_{i, j} &=& D_i - D_j\\ 
 B_{i, j} &=& \exp\left[-\alpha\left(R_{i, j} - r_i - r_j\right)\right]
 \end{eqnarray}
-
 
 where $D$ is an atom parameter, $\alpha$ is a common parameter and $r$ stands for covalent radius.
 
@@ -422,10 +419,8 @@ The scheme is not iterative, expression for $J_{i,j}$ is taken from \cite{Louwen
 J_{i, j} = \left(\ddfrac{1}{(2\sqrt{B_iB_j})^3} + R_{i,j}^3\right)^{-1/3}
 \end{equation}
 
-
 \section*{EQeq and EQeq+C}
 Only the non-periodic case without non-zero charge centers is supported.
 
 \printbibliography
 \end{document}
-
