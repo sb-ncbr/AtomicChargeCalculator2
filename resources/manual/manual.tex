@@ -51,14 +51,18 @@ Input file can be zipped. A size of input file is limited to 10 MB.
 \item[SDF] Both MOL V2000 and V3000 are supported.
 \end{description}
 
+Formal charges, if present, are read from an input file as well. Their sum is used as a total molecular charge, which is used by some methods (ABEEM, EEM, EQeq, Eqeq+C, QEq, SFKEEM, SMP/QEq, TSEF).
+
 \section*{Computation settings}
-Based on the molecules provided, methods (and parameters) that are suitable for all structures are displayed. The parameter set is suitable for a given input if it covers all the atomic types contained in input files. A method is suitable if it has at least one suitable set of parameters; or uses no parameters. Additionally, some methods might be omitted if the input contains at least one big molecule (i.e., having over 20,000 atoms).
+Based on the molecules provided (in all files), methods and parameters that are suitable for all structures are displayed. The parameter set is suitable for a given input if it covers all the atomic types contained in input files. A method is suitable if it has at least one suitable set of parameters; or uses no parameters. Additionally, some methods (namely ABEEM, DelRe, DENR, KCM, MGC) might be omitted if the input contains at least one big molecule, i.e., having over 20,000 atoms.
+
+Automatic selection works in a same manner. After initial filtering described above, 3D methods are preferred over the 2D ones. When input contains protein structures, parameters for proteins are used (this is the case for EEM having the most parameters to choose from).
 
 \begin{center}
     \includegraphics[width=.9\linewidth]{images/settings.png}
 \end{center}
 
-All the methods and parameters have direct links to the original publications. The theoretical background of the methods is summarized in \href{https://acc2.ncbr.muni.cz/static/methods.pdf}{standalone document}. For easy identification, the name of the parameters used in a publication is enclosed in the brackets.
+All the methods and parameters have direct links to the original publications. The theoretical background of the methods is summarized in the \href{https://acc2.ncbr.muni.cz/static/methods.pdf}{standalone document}. For easy identification, the name of the parameters used in a publication is enclosed in the brackets.
 
 \section*{Results}
 The final page features the visualization of the charges and the possibility to download calculated charges. At the top, it states which method and parameters were used (useful when the automatic selection was used).
@@ -96,9 +100,8 @@ The charges are available in three formats – plain text, Mol2, and PQR. Plain 
 OS & Version & Chrome & Firefox & Edge & Safari\\
 \midrule
 Linux & Fedora 31 & 80 & 73 & n/a & n/a\\
-Windows & 10 & ? & ? & ? & n/a\\
+Windows & 10 (1909) & 80 & 73 & 44 & n/a\\
 macOS & ? & ? & ? & ? & ?\\
-Android & 10 & 80 & ? & ? & n/a \\
 \bottomrule
 
 \end{tabular}
