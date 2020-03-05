@@ -1,0 +1,87 @@
+\documentclass[oneside]{memoir}
+\usepackage{fontspec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[euler-digits,euler-hat-accent]{eulervm}
+
+\setlrmarginsandblock{3.5cm}{2.5cm}{*}
+\setulmarginsandblock{2.5cm}{*}{1}
+\checkandfixthelayout
+
+\definecolor{ACCgreen}{HTML}{28A745}
+
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\setmainfont{TeX Gyre Pagella}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\def\chapterheadstart{}
+\pagestyle{empty}
+
+\begin{document}
+
+\begin{table}
+\renewcommand\thetable{1}
+\begin{tabular}{lllrr}
+\toprule
+\textbf{Name of the compound} & \textbf{DrugBank ID} & \textbf{PubChem CID} & \textbf{pKa} & \textbf{Charge on phenolic H}\\
+\midrule
+2,4-dinitrophenol &
+DB04528 &
+1493 &
+4.09 &
+0.467 \\
+4-nitrophenol / p-nitrophenol &
+DB04417 &
+980 &
+7.15 &
+0.430 \\
+2-chlorophenol &
+DB03110 &
+7245 &
+8.56 &
+0.405 \\
+3-chlorophenol &
+DB01957 &
+7933 &
+9.12 &
+0.393 \\
+3-methylphenol / m-cresol &
+DB11143* &
+342 &
+10.10 &
+0.379 \\
+2-methylphenol / o-cresol &
+DB11143*&
+335 &
+10.30 &
+0.376 \\
+2,6-di(propan-2-yl)phenol / propofol &
+DB00818 &
+4943 &
+11.10 &
+0.350 \\
+\bottomrule
+\end{tabular}
+
+\caption{Summary information about phenolic drug compounds. *\textit{DrugBank ID links to the Cresol mixture.}}
+
+
+\end{table}
+
+
+
+\end{document}

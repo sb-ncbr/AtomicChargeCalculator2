@@ -53,29 +53,22 @@
             <div class="row">
                 <div class="col-lg-4">
                     <b>Dissociating hydrogens</b><br>
-                    <img src="{{ url_for('static', filename='warfarin.png') }}" alt="Dissociating hydrogens"
+                    <img src="{{ url_for('static', filename='propofol.png') }}" alt="Dissociating hydrogens"
                          style="height: 200px">
-                    <p><small>This example focuses on acid dissociation of three frequently used drugs –
-                        <a href="https://www.drugbank.ca/drugs/DB00316" target="_blank" rel="noreferrer">paracetamol</a>,
-                        <a href="https://www.drugbank.ca/drugs/DB00682" target="_blank" rel="noreferrer">warfarin</a>
-                        and
-                        <a href="https://www.drugbank.ca/drugs/DB00107" target="_blank" rel="noreferrer">oxytocin</a>.
-                        Their dissociating hydrogens are highlighted <a
-                                href="{{ url_for('static', filename='dissociation.pdf') }}" target="_blank">here</a>.
-                        During dissociation, an acid releases a hydrogen atom which has the highest value of partial
-                        atomic charge. Using ACC II, we can detect the dissociating atoms, i.e., calculate charges and
-                        find the hydrogen with the highest charge – see:</small></p>
-                    <div class="">
-                        <button type="submit" id="example-paralen" name="example-paralen" class="btn btn-primary mb-2">
-                            Paracetamol
-                        </button>
-                        <button type="submit" id="example-warfarin" name="example-warfarin"
-                                class="btn btn-primary mb-2">
-                            Warfarin
-                        </button>
-                        <button type="submit" id="example-oxytocin" name="example-oxytocin"
-                                class="btn btn-primary mb-2">
-                            Oxytocin
+                    <p><small>
+                        This example focuses on acid dissociation of seven phenolic drugs, described in DrugBank. Their
+                        structures were obtained from PubChem. During the acid dissociation, these compounds release a
+                        hydrogen from the phenolic OH group. Using ACC II, we can examine a relation between pKa and a
+                        charge on the dissociating hydrogen. We found that the higher is pKa, the lower charge has the
+                        hydrogen (see <a href="{{ url_for('static', filename='pka.pdf') }}" target="_blank"
+                            rel="noreferrer">table</a>).
+                        It agrees with results published in
+                        <a href="https://pubs.acs.org/doi/full/10.1021/ci200133w" target="_blank" rel="noreferrer">literature</a>.
+                    </small>
+                    </p>
+                    <div class="text-center">
+                        <button type="submit" id="example-phenols" name="example-phenols" class="btn btn-primary mb-2">
+                            Phenols
                         </button>
                     </div>
                 </div>
