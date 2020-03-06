@@ -1,4 +1,4 @@
-2,4-Dinitrophenol
+2,4-dinitrophenol
   -OEChem-03052011433D
 
  17 17  0     0  0  0  0  0  0999 V2000
@@ -39,7 +39,7 @@
 M  CHG  4   2  -1   4  -1   6   1   7   1
 M  END
 $$$$
-p-nitrophenol
+4-nitrophenol
   -OEChem-03052011443D
 
  15 15  0     0  0  0  0  0  0999 V2000
