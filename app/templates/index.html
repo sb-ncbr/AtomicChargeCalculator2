@@ -100,15 +100,28 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <b>Approved drugs</b><br>
-                    <img src="{{ url_for('static', filename='drugs.png') }}" alt="Approved drugs" style="height: 200px">
-                    <p><small>This example shows a rich set of drug molecules (i.e., subset of all approved drugs from
-                        DrugBank – 1760 compounds) and their charges. The drugs are denoted as approved, when
-                        they have received approval in at least one country. See charges of these drugs here:</small>
+                    <b>Transmembrane protein</b><br>
+                    <img src="{{ url_for('static', filename='receptor.png') }}" alt="The nicotinic acetylcholine receptor" style="height: 200px">
+                    <p><small>The nicotinic acetylcholine receptor passes the cell membrane
+                        (see the <a href="https://cdn.rcsb.org/images/hd/bg/2bg9/2bg9.0_chimera_tm_1000_1000.png" target="_blank" rel="noreferrer">figure</a>)
+                        and serves as an ion channel
+                        (more <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022283604016018" target="_blank" rel="noreferrer">details</a>).
+                        We obtained its structure from Protein Data Bank Europe
+                        (PDB ID <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/2bg9" target="_blank" rel="noreferrer">2bg9</a>),
+                        added missing hydrogens via
+                        <a href="https://swift.cmbi.umcn.nl/whatif/" target="_blank" rel="noreferrer">WHAT IF</a>
+                        and calculated the partial atomic charges using ACC II with default settings. Visualization of
+                        partial charges on the surface highlights the difference between nonpolar transmembrane part
+                        (mostly white due to charge around zero) and polar surface of extracellular and cytoplasmic
+                        parts (with mosaic of blue positive and red negative charges). The
+                        <a href="{{ url_for('static', filename='receptor.pdf') }}" target="_blank" rel="noreferrer">comparison</a>
+                        demonstrates that this charge distribution agrees with receptor membrane position reported in
+                        <a href="https://www.sciencedirect.com/science/article/pii/S0022283604016018" target="_blank" rel="noreferrer">literature</a>.
+                    </small>
                     </p>
                     <div class="text-center">
-                        <button type="submit" id="example-drugs" name="example-drugs" class="btn btn-primary">Approved
-                            drugs
+                        <button type="submit" id="example-receptor" name="example-receptor" class="btn btn-primary">
+                            Receptor
                         </button>
                     </div>
                 </div>

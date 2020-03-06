@@ -76,8 +76,8 @@ def prepare_file(rq, tmp_dir):
 
 
 def prepare_example(rq, tmp_dir):
-    if 'example-drugs' in rq.form:
-        filename = 'drugs.sdf'
+    if 'example-receptor' in rq.form:
+        filename = 'receptor.pdb'
     elif 'example-phenols' in rq.form:
         filename = 'phenols.sdf'
     elif 'example-bax-inactive' in rq.form:
