@@ -56,13 +56,15 @@
                     <img src="{{ url_for('static', filename='propofol.png') }}" alt="Dissociating hydrogens"
                          style="height: 200px">
                     <p><small>
-                        This example focuses on acid dissociation of seven phenolic drugs, described in DrugBank. Their
-                        structures were obtained from PubChem. During the acid dissociation, these compounds release a
-                        hydrogen from the phenolic OH group. Using ACC II, we can examine a relation between pKa and a
-                        charge on the dissociating hydrogen. We found that the higher is pKa, the lower charge has the
-                        hydrogen (see <a href="{{ url_for('static', filename='pka.pdf') }}" target="_blank"
-                            rel="noreferrer">table</a>).
-                        It agrees with results published in
+                        This example focuses on acid dissociation of seven phenolic drugs, described in
+                        <a href="https://www.drugbank.ca/" target="_blank" rel="noreferrer">DrugBank</a>. Their
+                        structures were obtained from
+                        <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank" rel="noreferrer">PubChem</a>.
+                        During the acid dissociation, these compounds release a hydrogen from the phenolic OH group.
+                        Using ACC II, we can examine a relation between pKa and a charge on the dissociating hydrogen.
+                        We found that the higher is pKa, the lower charge the hydrogen has
+                        (see <a href="{{ url_for('static', filename='pka.pdf') }}" target="_blank" rel="noreferrer">table</a>).
+                        This finding agrees with results published in
                         <a href="https://pubs.acs.org/doi/full/10.1021/ci200133w" target="_blank" rel="noreferrer">literature</a>.
                     </small>
                     </p>

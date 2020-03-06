@@ -39,7 +39,7 @@
 M  CHG  4   2  -1   4  -1   6   1   7   1
 M  END
 $$$$
-4-Nitrophenol
+p-nitrophenol
   -OEChem-03052011443D
 
  15 15  0     0  0  0  0  0  0999 V2000
@@ -76,7 +76,7 @@ $$$$
 M  CHG  2   2  -1   4   1
 M  END
 $$$$
-2-Chlorophenol
+2-chlorophenol
   -OEChem-03052004003D
 
  13 13  0     0  0  0  0  0  0999 V2000
@@ -108,7 +108,7 @@ $$$$
   8 12  1  0  0  0  0
 M  END
 $$$$
-3-Chlorophenol
+3-chlorophenol
   -OEChem-03052011453D
 
  13 13  0     0  0  0  0  0  0999 V2000
@@ -140,7 +140,7 @@ $$$$
   8 12  1  0  0  0  0
 M  END
 $$$$
-3-methylphenol
+m-cresol
   -OEChem-03052011463D
 
  16 16  0     0  0  0  0  0  0999 V2000
@@ -178,7 +178,7 @@ $$$$
   8 15  1  0  0  0  0
 M  END
 $$$$
-2-methylphenol
+o-cresol
   -OEChem-03052011463D
 
  16 16  0     0  0  0  0  0  0999 V2000
@@ -216,7 +216,7 @@ $$$$
   8 15  1  0  0  0  0
 M  END
 $$$$
-2,6-di(propan-2-yl)phenol
+propofol
   -OEChem-03052011473D
 
  31 31  0     0  0  0  0  0  0999 V2000
