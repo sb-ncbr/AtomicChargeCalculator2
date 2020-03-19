@@ -5,6 +5,8 @@
 {% block styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2/select2.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='litemol/static/css/main.css') }}">
+    <link rel="preload" href="{{ url_for('static', filename='litemol/static/media/fontello.woff2') }}?version=r6.6"
+          as="font" type="font/woff2" crossorigin>
 {% endblock styles %}
 
 {% block body %}
