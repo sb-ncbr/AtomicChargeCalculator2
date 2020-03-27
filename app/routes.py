@@ -144,13 +144,13 @@ def main_site():
         if request.form['type'] in ['charges', 'example']:
             return calculate_charges_default(methods, parameters, tmp_dir, comp_id)
         else:
-            return redirect(url_for('computation', r=comp_id))
+            return redirect(url_for('setup', r=comp_id))
     else:
         return render_template('index.html')
 
 
-@application.route('/computation', methods=['GET', 'POST'])
-def computation():
+@application.route('/setup', methods=['GET', 'POST'])
+def setup():
     comp_id = request.args.get('r')
     try:
         tmp_dir = request_data[comp_id]['tmpdir']
@@ -168,7 +168,7 @@ def computation():
 
         return redirect(url_for('results', r=comp_id))
 
-    return render_template('computation.html', methods=method_data, parameters=parameter_data,
+    return render_template('setup.html', methods=method_data, parameters=parameter_data,
                            publications=publication_data, suitable_methods=suitable_methods,
                            suitable_parameters=suitable_parameters)
 

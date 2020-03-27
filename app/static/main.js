@@ -80,7 +80,7 @@ function init_index() {
 }
 
 
-function init_computation() {
+function init_setup() {
     const $m_select = $('#method_selection');
     const $m_group2d = $('#optgroup2D');
     const $m_group3d = $('#optgroup3D');
@@ -268,8 +268,8 @@ $(function () {
     let page = window.location.pathname;
     if (page === '/') {
         init_index();
-    } else if (page === '/computation') {
-        init_computation();
+    } else if (page === '/setup') {
+        init_setup();
     } else if (page === '/results') {
         init_results();
     }
