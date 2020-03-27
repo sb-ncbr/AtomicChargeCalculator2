@@ -58,8 +58,11 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col">
-                <button type="submit" class="btn btn-primary" id="calculate">Compute</button>
+            <div class="col-6">
+                <button type="submit" class="btn btn-success" id="calculate">Compute</button>
+            </div>
+            <div class="col-6 text-right">
+                <button class="btn btn-primary" onclick="location.href='{{ url_for("main_site") }}'" type="button">Back to main page</button>
             </div>
         </div>
     </form>
