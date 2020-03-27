@@ -77,6 +77,9 @@ function init_index() {
             $('form').submit();
         }
     });
+
+    /* Fix disabled buttons when user press Back button in browser (at least in Chrome) */
+    $input.trigger('change');
 }
 
 
