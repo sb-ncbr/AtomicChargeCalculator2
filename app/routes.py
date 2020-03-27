@@ -76,13 +76,14 @@ def prepare_file(rq, tmp_dir):
 
 
 def prepare_example(rq, tmp_dir):
-    if 'example-receptor' in rq.form:
+    print(rq.form['example-name'])
+    if 'example-receptor' == rq.form['example-name']:
         filename = 'receptor.pdb'
-    elif 'example-phenols' in rq.form:
+    elif 'example-phenols' == rq.form['example-name']:
         filename = 'phenols.sdf'
-    elif 'example-bax-inactive' in rq.form:
+    elif 'example-bax-inactive' == rq.form['example-name']:
         filename = '1f16_updated.cif'
-    elif 'example-bax-activated' in rq.form:
+    elif 'example-bax-activated' == rq.form['example-name']:
         filename = '2k7w_updated.cif'
     else:
         raise RuntimeError('Unknown example selected')

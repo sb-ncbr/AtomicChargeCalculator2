@@ -1,6 +1,9 @@
 'use strict';
 
 
+const spinner = '<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i>';
+
+
 function fill_paper($element, doi) {
     if (doi in publication_data) {
         $element.html(publication_data[doi].replace(/doi:(.*)/, '<a href="https://doi.org/$1">doi:$1</a>'));
@@ -16,11 +19,20 @@ function hide_parameters_publication(val) {
 }
 
 
+function disable_buttons() {
+    const $buttons = $('.btn');
+    $buttons.each(function () {
+        $(this).prop('disabled', true);
+    });
+}
+
+
 function init_index() {
     /* Allow submit only if file is selected */
     const $input = $('#file_input');
     const $settings = $('#settings');
     const $charges = $('#charges');
+    const $examples = $('button[name^="example"]');
 
     $settings.prop('disabled', true);
     $charges.prop('disabled', true);
@@ -35,25 +47,32 @@ function init_index() {
         }
     });
 
-    $settings.on('click', function () {
-        $settings.prop('disabled', true);
-        $charges.prop('disabled', true);
+    $examples.on('click', function () {
+        disable_buttons();
+        $(this).html(`${spinner} Computing...`);
+        $('#example-name').val($(this).prop('name'));
+        $('form').submit();
+    });
+
+    $settings.on('click', function (e) {
         if ($input[0].files[0].size > 10 * 1024 * 1024) {
             alert('Cannot upload file larger than 10 MB');
+            e.preventDefault();
         } else {
-            $settings.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Uploading...');
+            disable_buttons();
+            $settings.html(`${spinner} Uploading...`);
             $('#type').val('settings');
             $('form').submit();
         }
     });
 
-    $charges.on('click', function () {
-        $settings.prop('disabled', true);
-        $charges.prop('disabled', true);
+    $charges.on('click', function (e) {
         if ($input[0].files[0].size > 10 * 1024 * 1024) {
             alert('Cannot upload file larger than 10 MB');
+            e.preventDefault();
         } else {
-            $charges.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Computing...');
+            disable_buttons();
+            $charges.html(`${spinner} Computing...`);
             $('#type').val('charges');
             $('form').submit();
         }
@@ -129,7 +148,8 @@ function init_computation() {
 
     const $submit = $('#calculate');
     $submit.on('click', function () {
-        $submit.html('<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i> Computing...');
+        disable_buttons();
+        $submit.html(`${spinner} Computing...`);
         $submit.prop('disabled', true);
         $('form').submit();
     });
