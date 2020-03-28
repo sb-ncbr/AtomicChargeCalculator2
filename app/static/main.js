@@ -1,7 +1,8 @@
 'use strict';
 
 
-const spinner = '<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i>';
+const spinner = '<span class="spinner-border spinner-border-sm" role="status" ' +
+                'aria-hidden="true" style="animation-duration: 1.5s"></span>';
 
 
 function fill_paper($element, doi) {
