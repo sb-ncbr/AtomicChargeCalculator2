@@ -30,7 +30,7 @@
         </div>
         <hr>
         <div class="row">
-            <div class="form-group col-12 col-md-6">
+            <div class="form-group col-md-6">
                 <label class="font-weight-bold form-control-label" for="structure_select">Structure</label>
                 <select id="structure_select" name="structure_select" style="width:50%">
                     {% for k in structures %}
@@ -38,9 +38,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-md-6">
                 <fieldset class="row form-group mb-1">
-                        <legend class="font-weight-bold col-form-label col-lg-2 col-md-3 pb-0 pt-0">View</legend>
+                        <legend class="font-weight-bold col-form-label col pb-0 pt-0">View</legend>
                         <div class="col">
                             <div class="form-check form-check-inline" title="Cartoon representation">
                                 <input class="form-check-input" type="radio" name="view" id="view_cartoon"
@@ -60,19 +60,19 @@
                         </div>
                 </fieldset>
                 <fieldset class="row form-group mb-0">
-                        <legend class="font-weight-bold col-form-label col-lg-2 col-md-3 pb-0 pt-0">Coloring</legend>
+                        <legend class="font-weight-bold col-form-label col pb-0 pt-0">Coloring</legend>
                         <div class="col">
                             <div class="form-check form-check-inline col" title="Use coloring based on the structure">
                                 <input class="form-check-input" type="radio" name="colors" id="colors_structure"
                                        value="Structure">
                                 <label class="form-check-label" for="colors_structure">Structure</label>
                             </div>
-                            <div class="form-check form-check-inline col-lg-5" title="Use coloring based on the largest absolute charge value">
+                            <div class="form-check form-check-inline col-auto" title="Use coloring based on the largest absolute charge value">
                                 <input class="form-check-input" type="radio" name="colors" id="colors_relative"
                                        value="Relative" checked>
                                 <label class="form-check-label" for="colors_relative">Charges (relative)</label>
                             </div>
-                            <div class="form-check form-check-inline col-lg-5" title="Use coloring based on the specified values below">
+                            <div class="form-check form-check-inline col-auto" title="Use coloring based on the specified values below">
                                 <input class="form-check-input" type="radio" name="colors" id="colors_absolute"
                                        value="Absolute">
                                 <label class="form-check-label" for="colors_absolute">Charges (absolute)</label>
@@ -103,7 +103,7 @@
         <hr>
 
         <div class="row">
-            <div class="col-12 col-md-6">
+            <div class="col-8">
                 <a href="{{ url_for('download_charges', r=comp_id) }}" class="btn btn-success" id="download">Download
                     charges</a>
                 {% if logs %}
@@ -111,8 +111,10 @@
                         logs</a>
                 {% endif %}
             </div>
-            <div class="col-12 col-md-6 text-md-right">
+            <div class="col">
                 <a href="{{ url_for('setup', r=comp_id) }}" class="btn btn-secondary">Back to setup</a>
+            </div>
+            <div class="col">
                 <a href="{{ url_for('main_site') }}" class="btn btn-primary">Back to main page</a>
             </div>
         </div>
