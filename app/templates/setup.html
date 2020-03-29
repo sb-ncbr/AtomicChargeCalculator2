@@ -2,6 +2,10 @@
 
 {% block title %} Atomic Charge Calculator II – Setup computation {% endblock title %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-select/bootstrap-select.min.css') }}">
+{% endblock styles %}
+
 {% block body %}
 <div class="container p-3">
     <div class="d-none mt-5 d-lg-block"></div>
@@ -24,7 +28,8 @@
             <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label class="font-weight-bold" for="method_selection">Method</label>
-                    <select class="form-control" name="method_select" id="method_selection" style="width:auto;">
+                    <br>
+                    <select class="form-control selectpicker" data-width="auto" name="method_select" id="method_selection">
                         <optgroup label="3D" id="optgroup3D">
                         </optgroup>
                         <optgroup label="2D" id="optgroup2D">
@@ -47,7 +52,7 @@
                     <small class="form-text text-muted">
                         The most suitable parameters are shown first.
                     </small>
-                    <select class="form-control" name="parameters_select" id="parameters_selection" style="width:auto;">
+                    <select class="form-control selectpicker" data-width="auto" name="parameters_select" id="parameters_selection">
                     </select>
                 </div>
             </div>
@@ -79,6 +84,9 @@
 
 {% block scripts %}
     {{ super() }}
+
+    <script src="{{ url_for('static', filename='bootstrap-select/bootstrap-select.min.js') }}"></script>
+
     <script>
         const method_data = $.parseJSON('{{ methods | tojson | safe }}');
         const parameter_data = $.parseJSON('{{ parameters | tojson | safe }}');

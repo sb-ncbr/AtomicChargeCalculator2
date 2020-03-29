@@ -2,7 +2,7 @@
 
 
 const spinner = '<span class="spinner-border spinner-border-sm" role="status" ' +
-                'aria-hidden="true" style="animation-duration: 1.5s"></span>';
+                  'aria-hidden="true" style="animation-duration: 1.5s"></span>';
 
 
 function fill_paper($element, doi) {
@@ -146,6 +146,8 @@ function init_setup() {
         } else {
             fill_paper($('#method_paper'), e.publication);
         }
+
+        $('.selectpicker').selectpicker('refresh');
     });
 
     $m_select.trigger('change');
@@ -178,10 +180,8 @@ function init_results() {
     let $min_value = $('#min_value');
     let $max_value = $('#max_value');
 
-    $select.select2({width: '100%'});
-    $select.on('select2:select', function () {
-        const id = $select.select2('data')[0].id;
-
+    $select.on('changed.bs.select', function () {
+        const id = $select.val();
         $.ajax({
             url: get_format_url + `&s=${id}`,
             success: function (format) {
@@ -222,7 +222,7 @@ function init_results() {
         let coloring = $('input[name=colors]:checked').val();
         if (coloring === 'Relative') {
             LiteMolChargesViewerEventQueue.send('lm-use-default-themes', {value: false});
-            const id = $select.select2('data')[0].id;
+            const id = $select.val();
             $min_value.val(-chg_range[id]);
             $max_value.val(chg_range[id]);
 
@@ -253,7 +253,7 @@ function init_results() {
         }
     });
 
-    $select.trigger('select2:select');
+    $select.trigger('changed.bs.select');
     $colors.filter(':checked').trigger('change');
 
 
