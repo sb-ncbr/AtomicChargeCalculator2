@@ -13,13 +13,15 @@
 \setulmarginsandblock{2.5cm}{*}{1}
 \checkandfixthelayout 
 
-
 \newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
 
 \setmainfont{TeX Gyre Pagella}
 
 \usepackage{xcolor}
+
 \hypersetup{
+    pdfauthor={Tomáš Raček},
+    pdfpagemode=UseOutlines,
     colorlinks,
     linkcolor={red!50!black},
     citecolor={blue!50!black},
@@ -31,7 +33,8 @@
 \begin{document}
 
 \chapter*{Short description of the methods}
-This section shortly describes the main idea of each method implemented in AtomicChargeCalculator II. Methods here are ordered according to the publication date.
+\addcontentsline{toc}{chapter}{Short description of the methods}
+This section shortly describes the main idea of each method implemented in Atomic Charge Calculator II. Methods here are ordered according to the publication date.
 
 For clarity, we use unifying naming scheme (which may differ from the one used in the original publication); the symbols used throughout the chapter: $q_i$ stands for charge on $i$th atom, $Q$ is the total molecular charge, $N$ is the number of atoms in a molecule and $R_{i, j}$ represents the Euclidean distance between atoms $i$ and $j$.
 
@@ -402,11 +405,48 @@ B_{i, j} &=& \exp\left[-\alpha\left(R_{i, j} - r_i - r_j\right)\right]
 
 where $D$ is an atom parameter, $\alpha$ is a common parameter and $r$ stands for covalent radius.
 
-\chapter*{Notes on the implementation}
-Following section presents some notes and discusses differences in implementation of the some methods compared to the description used in original publication.
+\chapter*{Complexity of implemented approaches}
+\addcontentsline{toc}{chapter}{Complexity of implemented approaches}
 
-\section*{EEM, SFKEEM, QEq, SMP/QEq, EQeq, EQeq+C}
-These methods have implemented support for \textit{cutoff} and \textit{cover} approaches introduced in the original AtomicChargeCalculator \cite{Ionescu2015} allowing to transparently compute charges for large molecules. 
+The following table summarizes information about computational costs of the implemented methods, both in terms of time and memory complexity (expressed using ${\mathcal O}$ notation). The symbol $N$ denotes the number of atoms, $M$ is the number of bonds.
+\bigskip
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Method & Time & Memory\\
+\midrule
+DelRe & $N^3$ & $N^2$\\
+PEOE  & $N + M$ & $N$\\
+Charge2 & $N + M$ & $1$\\
+EEM* & $N^3$ & $N^2$\\
+MPEOE & $N + M$& $N$\\
+QEq* & $N^3$ & $N^2$ \\
+ABEEM & $(N + M)^3$ & $(N + M)^2$\\
+GDAC & $N + M$ & $N$\\
+MGC & $N^3$& $N^2$\\
+SFKEEM* & $N^3$& $N^2$\\
+KCM & $N^3$ & $N^2$\\
+DENR & $N^3$& $N^2$\\
+TSEF & $N^3$ & $N^2$ \\
+SMP/QEq* & $N^3$& $N^2$\\
+VEEM & $N$& $1$ \\
+EQeq* & $N^3$ & $N^2$ \\
+EQeq+C* & $N^3$ & $N^2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\bigskip
+
+Methods marked with * can utilize \textit{cutoff} and \textit{cover} complexity reductions. These were introduced in the original AtomicChargeCalculator for EEM (\textit{EEM Cutoff} and \textit{EEM Cover}). Both represent \textit{divide and conquer} algorithms.
+
+Their idea is to divide the molecule into the overlapping fragments (spheres around individual atoms), solve the electronegativity equations for each fragment and then apply some correction to get a correct total charge. The time complexity is then reduced to ${\mathcal O}(R^6N+RN\log{N})$ and the space complexity to ${\mathcal O}(R^4N+N\log{N})$, where $R$ is the radius of the sphere. Further information is provided in the original publication \cite{Ionescu2015}.
+
+\chapter*{Notes on the implementation}
+\addcontentsline{toc}{chapter}{Notes on the implementation}
+
+Following section presents some notes and discusses differences in implementation of the some methods compared to the description used in original publication.
 
 \section*{GDAC}
 Only a subset of the parameters is used.
