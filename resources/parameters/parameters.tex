@@ -1,0 +1,96 @@
+\documentclass[oneside]{memoir}
+\usepackage{fontspec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[euler-digits,euler-hat-accent]{eulervm}
+
+\setlrmarginsandblock{3.5cm}{2.5cm}{*}
+\setulmarginsandblock{2.5cm}{*}{1}
+\checkandfixthelayout
+
+\definecolor{ACCgreen}{HTML}{28A745}
+
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\setmainfont{TeX Gyre Pagella}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\def\chapterheadstart{}
+\pagestyle{empty}
+
+\captionsetup{justification=raggedright,singlelinecheck=false}
+
+
+\begin{document}
+
+\begin{table}
+\renewcommand{\tablename}{\textbf{Supplementary table}}
+\renewcommand\thetable{\textbf{1}}
+\caption{List of all parameters included in ACC II.}
+\begin{tabular}{lll}
+\toprule
+\textbf{Method} & \textbf{Parameters name} & \textbf{Publication DOI}\\
+\midrule
+ABEEM & Yang 1997 & \href{https://doi.org/10.1021/jp9711048}{10.1021/jp9711048}\\
+Charge2 & Abraham 1982 & \href{https://doi.org/10.1002/jcc.540030316}{10.1002/jcc.540030316}\\
+DelRe & Del Re 1958 & \href{https://doi.org/10.1039/JR9580004031}{10.1039/JR9580004031}\\
+DENR & Rappe 1991 & \href{https://doi.org/10.1021/j100161a070}{10.1021/j100161a070}\\
+EEM & Baekelandt 1991 & \href{https://doi.org/10.1021/ja00018a003}{10.1021/ja00018a003}\\
+EEM & Bultinck 2002 (CHELPG) & \href{https://doi.org/10.1021/jp020547v}{10.1021/jp020547v}\\
+EEM & Bultinck 2002 (Hirshfeld) & \href{https://doi.org/10.1021/jp020547v}{10.1021/jp020547v}\\
+EEM & Bultinck 2002 (MK) & \href{https://doi.org/10.1021/jp020547v}{10.1021/jp020547v}\\
+EEM & Bultinck 2002 (Mulliken) & \href{https://doi.org/10.1021/jp020547v}{10.1021/jp020547v}\\
+EEM & Bultinck 2002 (NPA) & \href{https://doi.org/10.1021/jp020547v}{10.1021/jp020547v}\\
+EEM & Bultinck 2004 (AIM) & \href{https://doi.org/10.1021/jp046928l}{10.1021/jp046928l}\\
+EEM & Geidl 2015 (Cheminf\_b3lyp\_aim) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Geidl 2015 (Cheminf\_b3lyp\_mpa) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Geidl 2015 (Cheminf\_b3lyp\_npa) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Geidl 2015 (Cheminf\_hf\_aim) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Geidl 2015 (Cheminf\_hf\_mpa) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Geidl 2015 (Cheminf\_hf\_npa) & \href{https://doi.org/10.1186/s13321-015-0107-1}{10.1186/s13321-015-0107-1}\\
+EEM & Ionescu 2013 (EX-MPA\_6-31Gd\_PCM) & \href{https://doi.org/10.1021/ci400448n}{10.1021/ci400448n}\\
+EEM & Ionescu 2013 (EX-MPA\_6-31Gd\_gas) & \href{https://doi.org/10.1021/ci400448n}{10.1021/ci400448n}\\
+EEM & Ionescu 2013 (EX-NPA\_6-31Gd\_PCM) & \href{https://doi.org/10.1021/ci400448n}{10.1021/ci400448n}\\
+EEM & Ionescu 2013 (EX-NPA\_6-31Gd\_gas) & \href{https://doi.org/10.1021/ci400448n}{10.1021/ci400448n}\\
+EEM & Ouyang 2009 (124 calibrated set) & \href{https://doi.org/10.1039/b821696g}{10.1039/b821696g}\\
+EEM & Ouyang 2009 (131 calibrated set) & \href{https://doi.org/10.1039/b821696g}{10.1039/b821696g}\\
+EEM & Ouyang 2009 (hybridization-dependent) & \href{https://doi.org/10.1039/b821696g}{10.1039/b821696g}\\
+EEM & Racek 2016 (ccd2016\_mpa) & \href{https://doi.org/10.1186/s13321-016-0171-1}{10.1186/s13321-016-0171-1}\\
+EEM & Racek 2016 (ccd2016\_mpa2) & \href{https://doi.org/10.1186/s13321-016-0171-1}{10.1186/s13321-016-0171-1}\\
+EEM & Racek 2016 (ccd2016\_npa) & \href{https://doi.org/10.1186/s13321-016-0171-1}{10.1186/s13321-016-0171-1}\\
+EEM & Racek 2016 (ccd2016\_npa2) & \href{https://doi.org/10.1186/s13321-016-0171-1}{10.1186/s13321-016-0171-1}\\
+EEM & Svobodova 2007 (cbeg2) & \href{https://doi.org/10.3390/i8070572}{10.3390/i8070572}\\
+EEM & Svobodova 2007 (chal2) & \href{https://doi.org/10.3390/i8070572}{10.3390/i8070572}\\
+EEM & Svobodova 2007 (chm2) & \href{https://doi.org/10.3390/i8070572}{10.3390/i8070572}\\
+EEM & Svobodova 2007 (cmet2) & \href{https://doi.org/10.3390/i8070572}{10.3390/i8070572}\\
+EQeq+C & Martin-Noble 2015 (ATMO/H-I) & \href{https://doi.org/10.1021/acs.jctc.5b00037}{10.1021/acs.jctc.5b00037}\\
+EQeq+C & Martin-Noble 2015 (MOF/REPEAT) & \href{https://doi.org/10.1021/acs.jctc.5b00037}{10.1021/acs.jctc.5b00037}\\
+GDAC & Cho 2001 & \href{https://doi.org/10.1021/jp0023213}{10.1021/jp0023213}\\
+KCM & Yakovenko 2008 (initial) & \href{https://doi.org/10.1007/BFb0029840}{10.1007/BFb0029840}\\
+MPEOE & No 1990 (DP1) & \href{https://doi.org/10.1021/j100374a066}{10.1021/j100374a066}\\
+PEOE & Gasteiger 1980 & \href{https://doi.org/10.1016/0040-4020(80)80168-2}{10.1016/0040-4020(80)80168-2}\\
+QEq & Rappe 1991 & \href{https://doi.org/10.1021/j100161a070}{10.1021/j100161a070}\\
+SFKEEM & Chaves 2006 & \href{https://doi.org/10.1021/ci050505e}{10.1021/ci050505e}\\
+SMP/QEq & Zhang 2009 & \href{https://doi.org/10.1021/jp8063273}{10.1021/jp8063273}\\
+TSEF & Rappe 1991 & \href{https://doi.org/10.1021/j100161a070}{10.1021/j100161a070}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\end{document}
