@@ -51,7 +51,20 @@ Input file can be zipped. A size of input file is limited to 10 MB.
 \item[SDF] Both MOL V2000 and V3000 are supported.
 \end{description}
 
+\subsection*{How to set input charge values}
+
 Formal charges, if present, are read from an input file as well. Their sum is used as a total molecular charge, which is used by some methods (ABEEM, EEM, EQeq, Eqeq+C, QEq, SFKEEM, SMP/QEq, TSEF).
+
+Specification of input formal charges differs among supported file formats, ACC II reads the following:
+
+\begin{description}
+\item[SDF] \texttt{M  CHG} lines for MOL V2000; for MOL V3000 the charge is read from \texttt{CHG} property of \texttt{ATOM} records. See the \href{https://www.daylight.com/meetings/mug05/Kappler/ctfile.pdf}{documentation} of the format.
+\item[PDB*] Columns 79-80 of the \href{http://www.wwpdb.org/documentation/file-format-content/format33/sect9.html#ATOM}{\texttt{ATOM} record}.
+\item[mmCIF*] \href{http://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_atom_site.pdbx_formal_charge.html}{\texttt{\_atom\_site.pdbx\_formal\_charge}} record; or \href{http://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Items/_chem_comp.pdbx_formal_charge.html}{\texttt{\_chem\_comp.pdbx\_formal\_charge}} record in case of chemical components.
+\item[Mol2] Not supported.
+\end{description}
+
+\textbf{*} Read using the \href{https://project-gemmi.github.io/}{GEMMI} library.
 
 \section*{Computation settings}
 Based on the molecules provided (in all files), methods and parameters that are suitable for all structures are displayed. The parameter set is suitable for a given input if it covers all the atomic types contained in input files. A method is suitable if it has at least one suitable set of parameters; or uses no parameters. Additionally, some methods (namely ABEEM, DelRe, DENR, KCM, MGC) might be omitted if the input contains at least one big molecule, i.e., having over 20,000 atoms.
@@ -83,7 +96,7 @@ ACC II features fast LiteMol viewer to visualize calculated charges. There are t
 \end{figure*}
 
 Default is determined from the structure itself.
-Note that to visualize mmCIF files, they must contain \texttt{\_atom\_sites} category.
+Note that to visualize mmCIF files, they must contain \texttt{\_atom\_sites} category (chemical components won't work).
 
 \subsection*{Coloring options}
 Atoms are colored by charges by default – red for negative charges, blue for positive ones. When relative coloring is selected, the range for the colors is adjusted automatically based on the largest absolute value of a charge computed. To have comparable colors between different structures, absolute coloring should be used instead.
