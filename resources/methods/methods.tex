@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{bm}
+\usepackage{multirow}
 \usepackage[euler-digits,euler-hat-accent]{eulervm}
 \usepackage[bibstyle=numeric,backend=biber, sorting=none]{biblatex}
 \addbibresource[datatype=bibtex]{methods.bib}
@@ -498,7 +499,35 @@ For a given sphere radius $R$, these approaches effectively reduce the time and 
 
 \section*{Accuracy}
 
-Employing these approximative schemes might introduce some loss of accuracy when comparing with the original charges. However, in practice, as demonstrated in the \textit{Benchmark} section of the aforementioned file, the resulting RMSD values are in the order of thousandths $[e]$ when using double precision and radius of $12$ \AA\, as ACC II does.
+Employing these approximative schemes may introduce some loss of accuracy when comparing with the original charges. Their assessment was made for original ACC for EEM \cite{Ionescu2015} or in \cite{Sehnal2015} where author states that "according to tests, the EEM Cover method produces results that are practically identical to solving the EEM matrix for the full original system". Here, we present a simplified\footnote{Only for $R = 12~$\AA\,, which is used in ACC II.} version of the table taken from Appendix C:
+
+\begin{table}[h]
+\renewcommand{\thetable}{1}
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{PDB ID} & \textbf{\# of atoms} & \textbf{Total charge} & \textbf{Pearson} & \textbf{RMSD}\\
+\midrule
+\multirow{3}{*}{1lfg} & \multirow{3}{*}{5884}  &   0 & 0.9998 & 0.0080\\
+                      &                        & -10 & 0.9999 & 0.0064\\
+                      &                        &   8 & 0.9997 & 0.0094\\
+\midrule
+\multirow{3}{*}{35tu} & \multirow{3}{*}{13934} &   0 & 0.9999 & 0.0039\\
+                      &                        & -10 & 1.0000 & 0.0034\\
+                      &                        &   8 & 0.9999 & 0.0045\\
+\midrule
+\multirow{3}{*}{1tye} & \multirow{3}{*}{21013} &   0 & 1.0000 & 0.0033\\
+                      &                        & -10 & 1.0000 & 0.0030\\
+                      &                        &   8 & 0.9999 & 0.0037\\
+\midrule
+\multirow{3}{*}{1aoc} & \multirow{3}{*}{28708} &   0 & 1.0000 & 0.0021\\
+                      &                        & -10 & 1.0000 & 0.0019\\
+                      &                        &   8 & 1.0000 & 0.0024\\
+\bottomrule
+\end{tabular}
+\caption{Comparison of Full EEM vs. EEM Cover method for computing partial atomic charges. Parameters EX-NPA\_6-31Gd\_gas \cite{Ionescu2013} were used in the computation.}
+\end{center}
+\end{table}
 
 \chapter*{Notes on the implementation}
 \addcontentsline{toc}{chapter}{Notes on the implementation}
