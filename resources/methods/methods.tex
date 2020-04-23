@@ -439,9 +439,66 @@ EQeq+C* & $N^3$ & $N^2$\\
 
 \bigskip
 
-Methods marked with * can utilize \textit{cutoff} and \textit{cover} complexity reductions. These were introduced in the original AtomicChargeCalculator for EEM (\textit{EEM Cutoff} and \textit{EEM Cover}). Both represent \textit{divide and conquer} algorithms.
+Methods marked with * can utilize \textit{cutoff} and \textit{cover} complexity reductions described in the next section.
 
-Their idea is to divide the molecule into the overlapping fragments (spheres around individual atoms), solve the electronegativity equations for each fragment and then apply some correction to get a correct total charge. The time complexity is then reduced to ${\mathcal O}(R^6N+RN\log{N})$ and the space complexity to ${\mathcal O}(R^4N+N\log{N})$, where $R$ is the radius of the sphere. Further information is provided in the original publication \cite{Ionescu2015}.
+\chapter*{Cutoff and cover approaches}
+
+Solving the electronegativity equalization system of linear equations can be troublesome for very large structures as it requires, in general, ${\mathcal O}(N^3)$ steps and ${\mathcal O}(N^2)$ memory. The original AtomicChargeCalculator (ACC) introduced two \textit{divide and conquer} complexity reduction algorithms to overcome this issue. Since ACC only supports EEM, these approaches were called \textit{EEM Cutoff} and \textit{EEM Cover}. ACC~II extended these approaches to other applicable methods, referencing them simply as \textit{cutoff} and \textit{cover}.
+
+Here, we provide the description of these approaches as stated in the ACC publication's \cite{Ionescu2015} \href{https://static-content.springer.com/esm/art%3A10.1186%2Fs13321-015-0099-x/MediaObjects/13321_2015_99_MOESM1_ESM.pdf}{Additional file 1}:
+
+\begin{quote}
+
+\section*{EEM Cutoff}
+For each atom in the molecule, ACC generates a fragment made up of all atoms within a cutoff
+radius $R$ of the original atom. The values of the inter-atomic distances and EEM parameters are
+obtained in the same way as when solving the full EEM matrix. The total fragment charge $Q_F$
+is a quota of the total molecular charge $Q$, proportional to the number of atoms in the fragment
+($N_F$), and irrespective of the nature of these atoms:
+
+\begin{align*}
+Q_F = \frac{Q\cdot N_F}{N}
+\end{align*}
+
+Then ACC solves the EEM matrix equation for this fragment, and returns the charge for the
+atom used when generating the fragment. The same procedure is applied for all fragments,
+obtaining a set of charges for all the atoms in the molecule. Then, each atomic charge $q_i$
+is corrected by the addition of:
+
+\begin{align*}
+\frac{Q - \sum_{i = 1}^N q_i}{N}
+\end{align*}
+
+so that the sum of all atomic charges equals the total molecular charge $Q$.
+
+\section*{EEM Cover}
+The EEM Cover approach builds on the principles of EEM Cutoff to split the EEM matrix into
+smaller matrices. However, EEM Cover generates fragments only for a subset of atoms in the
+molecule. The procedure selects fragment-generating atoms so that: (i) no two such atoms are
+connected to each other, and (ii) each atom in the molecule has at least one neighbor (within
+two bonds) which was selected. This procedure ensures that each atom in the molecule will
+eventually contribute to at least one fragment, and thus the entire volume of the molecule is
+covered. ACC solves the EEM matrix equation for each fragment, and returns a list of charge
+contributions for all atoms encountered in the calculations. The charge on each atom in the
+molecule is then computed as the sum of its charge contributions from all fragments where the
+atom is present. Further, each atomic charge $q_i$ is corrected by the addition of:
+
+
+\begin{align*}
+\frac{Q - \sum_{i = 1}^N q_i}{N}
+\end{align*}
+
+so that the sum of all atomic charges equals the total molecular charge $Q$.
+
+\end{quote}
+
+\section*{Time and space complexity}
+
+For a given sphere radius $R$, these approaches effectively reduce the time and space complexity to ${\mathcal O}(R^6N + R^2N\log N)$ and ${\mathcal O}(R^4N + N\log N)$, respectively. \cite{Ionescu2015}
+
+\section*{Accuracy}
+
+Employing these approximative schemes might introduce some loss of accuracy when comparing with the original charges. However, in practice, as demonstrated in the \textit{Benchmark} section of the aforementioned file, the resulting RMSD values are in the order of thousandths $[e]$ when using double precision and radius of $12$ \AA\, as ACC II does.
 
 \chapter*{Notes on the implementation}
 \addcontentsline{toc}{chapter}{Notes on the implementation}
