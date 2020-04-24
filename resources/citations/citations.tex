@@ -1,0 +1,81 @@
+\documentclass[oneside]{memoir}
+\usepackage{fontspec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage[euler-digits,euler-hat-accent]{eulervm}
+
+\usepackage[bibstyle=numeric,backend=biber, sorting=none]{biblatex}
+\addbibresource[datatype=bibtex]{../methods.bib}
+
+\setlrmarginsandblock{2.5cm}{2.5cm}{*}
+\setulmarginsandblock{2.5cm}{*}{1}
+\checkandfixthelayout
+
+\definecolor{ACCgreen}{HTML}{28A745}
+
+\newcommand\ddfrac[2]{\frac{\displaystyle #1}{\displaystyle #2}}
+
+\setmainfont{TeX Gyre Pagella}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\def\chapterheadstart{}
+\pagestyle{empty}
+
+\captionsetup{justification=raggedright,singlelinecheck=false}
+
+
+\begin{document}
+\renewcommand{\bibname}{References}
+
+\begin{table}
+\renewcommand{\tablename}{\textbf{Supplementary table}}
+\renewcommand\thetable{\textbf{1}}
+\caption{Citation data of partial atomic charge calculation methods that have been mentioned in the article. Data were obtained on 31\textsuperscript{st} March 2020 from the Web of Science citation database (“All Databases” dataset) that can be accessed at \href{https://www.webofknowledge.com/}{https://www.webofknowledge.com/}.}
+\begin{tabular}{llllrrr}
+\toprule
+\addlinespace[0.5em]
+\multirow{2}{*}[5pt]{\textbf{Method}} & \multicolumn{5}{c}{\textbf{Publication}}                                                    & \multirow{2}{1cm}{\textbf{Total method cit. count}}\\ \\
+                                 & \textbf{Year} & \textbf{Author(s)} & \textbf{Journal} & \parbox{1cm}{\textbf{Cit. count}} & \textbf{Ref.} &\\
+\\
+\midrule
+DelRe   & 1958 & Del Re, G.                    & J. Chem. Soc.           &   531 & \cite{DelRe1958} &   531\\
+PEOE    & 1978 & Gasteiger, J. and Marsili, M. & Tetrahedron Lett.       &   254 & \cite{Gasteiger1978}   &      \\
+        & 1980 & Gasteiger, J. and Marsili, M. & Tetrahedron             & 3,104 & \cite{Gasteiger1980}   & 3,358\\
+Charge2 & 1982 & Abraham, R.J. and Hudson, B.  & J. Comput. Chem.        &    68 & \cite{Abraham1982}     &    68\\
+EEM     & 1986 & Mortier, W.J., et. al.        & J. Am. Chem. Soc.       &   722 & \cite{Mortier1986}     &   722\\
+MPEOE   & 1990 & No, K.T., et. al.             & J. Phys. Chem.          &   118 & \cite{No1990}          &   118\\
+QEq     & 1991 & Rappé, A.K. and Goddard, W.A. & J. Phys. Chem.          & 2,301 & \cite{Rappe1991}       & 2,301\\
+ABEEM   & 1997 & Yang, Z.-Z. and Wang, C.-S.   & J. Phys. Chem. A        &   154 & \cite{Yang1997}        &   154\\
+GDAC    & 2001 & Cho, K.H., et. al.            & J. Phys. Chem. B        &    24 & \cite{Cho2001}         &    24\\
+MGC     & 2000 & Oliferenko, A.A., et. al.     & Dokl. Chem.             &     6 & \cite{Oliferenko2000}  &      \\
+        & 2001 & Oliferenko, A.A., et. al.     & J. Phys. Org. Chem.     &    17 & \cite{Oliferenko2001}  &    23\\
+SFKEEM  & 2006 & Chaves, J., et. al.           & J. Chem. Inf. Model.    &    12 & \cite{Chaves2006}      &    12\\
+KCM     & 2008 & Yakovenko, O., et. al.        & J. Comput. Chem.        &    19 & \cite{Yakovenko2008}   &    19\\
+DENR    & 2008 & Shulga, D.A., et. al.         & SAR QSAR Environ. Res.  &    10 & \cite{Shulga2008}      &    10\\
+TSEF    & 2008 & Shulga, D.A., et. al.         & SAR QSAR Environ. Res.  &    10 & \cite{Shulga2008}      &    10\\
+SMP/QEq & 2009 & Zhang, M. and Fournier, R.    & J. Phys. Chem. A        &    12 & \cite{Zhang2009}       &    12\\
+VEEM    & 2011 & Wu, Y.-X., et. al.            & Chinese J. Chem. Phys.  &     4 & \cite{Wu2011}          &     4\\
+EQeq    & 2012 & Wilmer, C.E., et. al.         & J. Phys. Chem. Lett.    &   117 & \cite{Wilmer2012}      &   117\\
+EQeq+C  & 2015 & Martin-Noble, G.C., et. al.   & J. Chem. Theory Comput. &     8 & \cite{MartinNoble2015} &     8\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\printbibliography
+
+\end{document}
