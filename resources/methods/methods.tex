@@ -442,7 +442,29 @@ EQeq+C* & $N^3$ & $N^2$\\
 
 Methods marked with * can utilize \textit{cutoff} and \textit{cover} complexity reductions described in the next section.
 
+\chapter*{Assessment of charges quality}
+\addcontentsline{toc}{chapter}{Assessment of charges quality}
+
+In order to compare two sets of charges, two descriptors are commonly used. The first one is the Pearson's correlation coefficient ($R$); the second one is the root mean square deviation ($RMSD$). In the following sections, we denote the charge sets as $X = (x_1, \ldots, x_n)$ and $Y = (y_1, \ldots, y_n)$, $\overline{x}$ and $\overline{y}$ represent the arithmetic means of $x_i$ and $y_i$ values, respectively.
+
+\section*{Pearson's correlation coefficient (R)}
+
+Pearson's correlation coefficient describes the linear dependence between two sets of values. Its value ranges from -1 (negative correlation) through 0 (no correlation) to 1 (positive correlation). Sometimes, the value of squared Pearson's correlation coefficient ($R^2$) is used.
+
+\begin{align*}
+R(X, Y) = \ddfrac{\sum_{i = 1}^n (x_i - \overline{x})\cdot(y_i - \overline{y})}{\sqrt{\sum_{i = 1}^n(x_i - \overline{x})^2}\cdot\sqrt{\sum_{i = 1}^n(y_i - \overline{y})^2}}
+\end{align*}
+
+\section*{Root mean square deviation (RMSD)}
+
+Root mean square deviation is another measure which can be used to compare two sets of values. When RMSD is zero, the sets are identical. Otherwise, a smaller value indicates higher similarity.
+
+\begin{align*}
+RMSD(X, Y) =\sqrt{ \ddfrac{1}{n}\sum_{i = 1}^n (x_i - y_i)^2}
+\end{align*}
+
 \chapter*{Cutoff and cover approaches}
+\addcontentsline{toc}{chapter}{Cutoff and cover approaches}
 
 Solving the electronegativity equalization system of linear equations can be troublesome for very large structures as it requires, in general, ${\mathcal O}(N^3)$ steps and ${\mathcal O}(N^2)$ memory. The original AtomicChargeCalculator (ACC) introduced two \textit{divide and conquer} complexity reduction algorithms to overcome this issue. Since ACC only supports EEM, these approaches were called \textit{EEM Cutoff} and \textit{EEM Cover}. ACC~II extended these approaches to other applicable methods, referencing them simply as \textit{cutoff} and \textit{cover}.
 
@@ -499,14 +521,14 @@ For a given sphere radius $R$, these approaches effectively reduce the time and 
 
 \section*{Accuracy}
 
-Employing these approximative schemes may introduce some loss of accuracy when comparing with the original charges. Their assessment was made for original ACC for EEM \cite{Ionescu2015} or in \cite{Sehnal2015} where author states that "according to tests, the EEM Cover method produces results that are practically identical to solving the EEM matrix for the full original system". Here, we present a simplified\footnote{Only for $R = 12~$\AA\,, which is used in ACC II.} version of the table taken from Appendix C:
+Employing these approximative schemes may introduce some loss of accuracy when comparing with the original charges. Their assessment was made for original ACC for EEM \cite{Ionescu2015} or in \cite{Sehnal2015} where author states that "according to tests, the EEM Cover method produces results that are practically identical to solving the EEM matrix for the full original system". Here, we present a simplified\footnote{Only for $R = 12~$\AA\,, which is used in ACC II.} version of the table taken from \cite{Sehnal2015}:
 
 \begin{table}[h]
 \renewcommand{\thetable}{1}
 \begin{center}
 \begin{tabular}{lrrrr}
 \toprule
-\textbf{PDB ID} & \textbf{\# of atoms} & \textbf{Total charge} & \textbf{Pearson} & \textbf{RMSD}\\
+\textbf{PDB ID} & \textbf{\# of atoms} & \textbf{Total charge} & \textbf{R} & \textbf{RMSD}\\
 \midrule
 \multirow{3}{*}{1lfg} & \multirow{3}{*}{5884}  &   0 & 0.9998 & 0.0080\\
                       &                        & -10 & 0.9999 & 0.0064\\
