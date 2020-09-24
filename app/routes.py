@@ -1,15 +1,12 @@
 from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response, abort
-from werkzeug.utils import secure_filename
 from . import application, config
 from typing import Dict, IO
 
 import tempfile
-import magic
 import uuid
 import shutil
 import os
 import zipfile
-import subprocess
 from glob import glob
 
 from .files import convert_to_mmcif, prepare_file
