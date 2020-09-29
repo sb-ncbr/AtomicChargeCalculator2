@@ -10,7 +10,7 @@ import zipfile
 from glob import glob
 
 from .files import convert_to_mmcif, prepare_file
-from .method import method_data, parameter_data, publication_data
+from .method import method_data, parameter_data
 from .chargefw2 import calculate, get_suitable_methods
 from .parser import *
 
@@ -111,8 +111,7 @@ def setup():
         return redirect(url_for('results', r=comp_id))
 
     return render_template('setup.html', methods=method_data, parameters=parameter_data,
-                           publications=publication_data, suitable_methods=suitable_methods,
-                           suitable_parameters=suitable_parameters)
+                           suitable_methods=suitable_methods, suitable_parameters=suitable_parameters)
 
 
 def calculate_charges(method_name, parameters_name, tmp_dir):

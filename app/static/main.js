@@ -2,11 +2,13 @@
 
 
 const spinner = '<span class="spinner-border spinner-border-sm" role="status" ' +
-                  'aria-hidden="true" style="animation-duration: 1.5s"></span>';
+    'aria-hidden="true" style="animation-duration: 1.5s"></span>';
 
 
-function fill_paper($element, doi) {
-    if (doi in publication_data) {
+function fill_paper($element, publication_data, doi) {
+    if (doi === null) {
+        $element.html('None');
+    } else if (doi in publication_data) {
         $element.html(publication_data[doi].replace(/doi:(.*)/, '<a href="https://doi.org/$1">doi:$1</a>'));
     } else {
         $element.html(`<a href="https://doi.org/${doi}">${doi}</a>`);
@@ -84,7 +86,7 @@ function init_index() {
 }
 
 
-function init_setup() {
+function init_setup(publication_data) {
     const $m_select = $('#method_selection');
     const $m_group2d = $('#optgroup2D');
     const $m_group3d = $('#optgroup3D');
@@ -111,7 +113,7 @@ function init_setup() {
             return element.name === p_name;
         });
 
-        fill_paper($('#parameters_paper'), e.publication);
+        fill_paper($('#parameters_paper'), publication_data, e.publication);
     });
 
     /* Update method data on method select change */
@@ -141,11 +143,7 @@ function init_setup() {
 
         $('#method_name').text(e.full_name);
 
-        if (e.publication == null) {
-            $('#method_paper').text('None');
-        } else {
-            fill_paper($('#method_paper'), e.publication);
-        }
+        fill_paper($('#method_paper'), publication_data, e.publication);
 
         $('.selectpicker').selectpicker('refresh');
     });
@@ -273,7 +271,9 @@ $(function () {
     if (page === '/') {
         init_index();
     } else if (page === '/setup') {
-        init_setup();
+        $.getJSON('/static/publication_info.json', function (data) {
+            init_setup(data);
+        });
     } else if (page === '/results') {
         init_results();
     }
