@@ -46,7 +46,7 @@ sudo a2ensite 000-ACC2
 # Install packages needed for building ChargeFW2
 sudo apt-get install -y gcc g++ cmake make gdb libtool
 sudo apt-get install -y nlohmann-json3-dev libfmt-dev libnlopt-cxx-dev libeigen3-dev
-sudo apt-get install -y libboost-filesystem1.67-dev libboost-system1.67-dev libboost-program-options1.67-dev
+sudo apt-get install -y libboost-filesystem1.67-dev libboost-system1.67-dev libboost-program-options1.67-dev pybind11-dev
 
 # Set number of processes for make
 nproc=$(($(grep -c processor /proc/cpuinfo) + 1))
