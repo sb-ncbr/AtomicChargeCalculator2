@@ -1,6 +1,8 @@
 #!/bin/bash
 set -x
 
+# Assumes Ubuntu 22.04
+
 # Upgrade packages to latest versions
 sudo apt-get update
 sudo apt-get -y upgrade
@@ -44,24 +46,15 @@ sudo a2dissite 000-default
 sudo a2ensite 000-ACC2
 
 # Install packages needed for building ChargeFW2
-sudo apt-get install -y gcc g++ cmake make gdb libtool
-sudo apt-get install -y nlohmann-json3-dev libfmt-dev libnlopt-cxx-dev libeigen3-dev
-sudo apt-get install -y libboost-filesystem1.67-dev libboost-system1.67-dev libboost-program-options1.67-dev pybind11-dev
+sudo apt-get install -y git g++ cmake libnanoflann-dev gemmi-dev tao-pegtl-dev
+sudo apt-get install -y nlohmann-json3-dev libfmt-dev libeigen3-dev
+sudo apt-get install -y libboost-filesystem-dev libboost-system-dev libboost-program-options-dev pybind11-dev
 
 # Set number of processes for make
 nproc=$(($(grep -c processor /proc/cpuinfo) + 1))
 
-# Install nanoflann library from source
-wget 'https://github.com/jlblancoc/nanoflann/archive/v1.3.0.tar.gz' -O nanoflann.tar.gz
-tar xvzf nanoflann.tar.gz
-cd nanoflann-1.3.0 || exit 1
-mkdir build && cd build || exit 1
-cmake ..
-make -j${nproc} && sudo make install
-
 # Install latest version of ChargeFW2
 cd || exit 1
-sudo apt-get install -y git
 git clone https://github.com/krab1k/ChargeFW2.git ChargeFW2
 cd ChargeFW2 || exit 1
 mkdir build && cd build || exit 1
