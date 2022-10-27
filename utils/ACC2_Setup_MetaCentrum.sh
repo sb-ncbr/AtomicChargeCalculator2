@@ -47,7 +47,7 @@ sudo a2ensite 000-ACC2
 
 # Install packages needed for building ChargeFW2
 sudo apt-get install -y git g++ cmake libnanoflann-dev gemmi-dev tao-pegtl-dev
-sudo apt-get install -y nlohmann-json3-dev libfmt-dev libeigen3-dev
+sudo apt-get install -y nlohmann-json3-dev libfmt-dev libeigen3-dev python3-dev
 sudo apt-get install -y libboost-filesystem-dev libboost-system-dev libboost-program-options-dev pybind11-dev
 
 # Set number of processes for make
