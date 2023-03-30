@@ -25,5 +25,6 @@
   "10.1021/ci400448n": "Ionescu, C.-M., Geidl, S., Svobodová Vařeková, R., & Koča, J. (2013). Rapid Calculation of Accurate Atomic Charges for Proteins via the Electronegativity Equalization Method. Journal of Chemical Information and Modeling, 53(10), 2548–2558. doi:10.1021/ci400448n",
   "10.1007/BFb0029840": "Bergmann, D., & Hinze, J. (n.d.). Electronegativity and charge distribution. Structure and Bonding, 145–190. doi:10.1007/bfb0029840",
   "10.1063/1.2346671": "Nistor, R. A., Polihronov, J. G., Müser, M. H., & Mosey, N. J. (2006). A generalization of the charge equilibration method for nonmetallic materials. The Journal of chemical physics, 125(9), 094108. doi:10.1063/1.2346671",
-  "10.1186/s13321-021-00528-w": "Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., & Svobodová, R. (2021). Optimized SQE atomic charges for peptides accessible via a web application. Journal of cheminformatics, 13(1), 1-11. doi:10.1186/s13321-021-00528-w"
+  "10.1186/s13321-021-00528-w": "Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., & Svobodová, R. (2021). Optimized SQE atomic charges for peptides accessible via a web application. Journal of cheminformatics, 13(1), 1-11. doi:10.1186/s13321-021-00528-w",
+  "10.1021/ct200512e": "Verstraelen, T., Pauwels, E., De Proft, F., Van Speybroeck, V., Geerlings, P., & Waroquier, M. (2012). Assessment of atomic charge models for gas-phase computations on polypeptides. Journal of Chemical Theory and Computation, 8(2), 661-676. doi:10.1021/ct200512e"
 }
