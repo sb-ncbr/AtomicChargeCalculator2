@@ -50,8 +50,8 @@ sudo a2dissite 000-default
 sudo a2ensite 000-ACC2
 
 # install external dependencies
-bash install_chargefw2.sh
-bash install_acc2.sh
+bash update_chargefw2.sh
+bash update_acc2.sh
 
 # Setup scripts for easy update
 sudo cp update_chargefw2.sh /usr/local/bin/update_chargefw2
