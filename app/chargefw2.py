@@ -1,39 +1,61 @@
-import subprocess
 import os
+import subprocess
 from collections import Counter, defaultdict
 
+from .config import CHARGEFW2_DIR, LOG_DIR, PARAMETERS_DIRECTORY
 from .method import method_data
-from .config import PARAMETERS_DIRECTORY, CHARGEFW2_DIR, LOG_DIR
 
 
-def calculate(method_name, parameters_name, source, charge_out_dir):
+def calculate(method_name, parameters_name, input_file, charge_out_dir):
+    # setup chargefw2 arguments
+    chargefw2_binary = os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2')
+    
     logfile = os.path.join(LOG_DIR, 'computations')
-    args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'charges', '--method', method_name,
-            '--input-file', source, '--chg-out-dir', charge_out_dir, '--read-hetatm', '--log-file', logfile,
-            '--permissive-types']
+    args = [
+            chargefw2_binary,
+            '--mode', 'charges',
+            '--input-file', input_file,
+            '--method', method_name,
+            '--chg-out-dir', charge_out_dir,
+            '--log-file', logfile,
+            '--read-hetatm',
+            '--permissive-types'
+            ]
+    # check if method needs parameters
     if next(m for m in method_data if m['internal_name'] == method_name)['has_parameters']:
         args.extend(['--par-file', os.path.join(PARAMETERS_DIRECTORY, parameters_name)])
 
+    # run chargefw2
     calculation = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    print(' '.join(calculation.args))
+
     return calculation
 
 
 def get_suitable_methods(directory: str):
     suitable_methods = Counter()
-    for file in os.listdir(os.path.join(directory, 'input')):
-        fullname = os.path.join(directory, 'input', file)
 
-        args = [os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2'), '--mode', 'suitable-methods', '--read-hetatm',
-                '--permissive-types', '--input-file', fullname]
+    for file in os.listdir(os.path.join(directory, 'input')):
+        # setup chargefw2 arguments
+        chargefw2_binary = os.path.join(CHARGEFW2_DIR, 'bin', 'chargefw2')
+        input_file = os.path.join(directory, 'input', file)
+        args = [
+                chargefw2_binary,
+                '--mode', 'suitable-methods',
+                '--input-file', input_file,
+                '--read-hetatm',
+                '--permissive-types',
+                ]
+        
+        # run chargefw2
         calculation = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        print(' '.join(calculation.args))
-        if calculation.returncode:
-            output = calculation.stderr.decode('utf-8').strip()
-            print(output)
-            error = output.split('\n')[-1]
+        
+        # check if calculation was successful
+        if calculation.returncode != 0:
+            stderr_output = calculation.stderr.decode('utf-8').strip()
+            error = stderr_output.split('\n')[-1]
             raise RuntimeError(error)
 
+        # parse output
         for line in calculation.stdout.decode('utf-8').splitlines():
             if not line.strip():
                 continue
