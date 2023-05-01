@@ -72,16 +72,18 @@ def write_all_charges_to_mmcif_output(charges: Dict[str, Dict[Tuple[str, str], L
     document = cif.read_file(output_file_path)
     block = document.sole_block()
 
-    partial_atomic_charges_meta_prefix = "_partial_atomic_charges_meta."
-    partial_atomic_charges_prefix = "_partial_atomic_charges."
-    partial_atomic_charges_meta_attributes = ["id", "type", "method"]
-    partial_atomic_charges_attributes = ["type_id", "atom_id", "charge"]
+    sb_ncbr_partial_atomic_charges_meta_prefix = "_sb_ncbr_partial_atomic_charges_meta."
+    sb_ncbr_partial_atomic_charges_prefix = "_sb_ncbr_partial_atomic_charges."
+    sb_ncbr_partial_atomic_charges_meta_attributes = ["id", "type", "method"]
+    sb_ncbr_partial_atomic_charges_attributes = [
+        "type_id", "atom_id", "charge"]
 
-    block.find_mmcif_category(partial_atomic_charges_meta_prefix).erase()
-    block.find_mmcif_category(partial_atomic_charges_prefix).erase()
+    block.find_mmcif_category(
+        sb_ncbr_partial_atomic_charges_meta_prefix).erase()
+    block.find_mmcif_category(sb_ncbr_partial_atomic_charges_prefix).erase()
 
     metadata_loop = block.init_loop(
-        partial_atomic_charges_meta_prefix, partial_atomic_charges_meta_attributes)
+        sb_ncbr_partial_atomic_charges_meta_prefix, sb_ncbr_partial_atomic_charges_meta_attributes)
 
     for typeId, (method_internal_name, parameters_name) in enumerate(charges[output_filename]):
         method_name = get_method_name(method_internal_name)
@@ -92,7 +94,7 @@ def write_all_charges_to_mmcif_output(charges: Dict[str, Dict[Tuple[str, str], L
                                f"'{method_name}/{parameters_name}'"])
 
     charges_loop = block.init_loop(
-        partial_atomic_charges_prefix, partial_atomic_charges_attributes)
+        sb_ncbr_partial_atomic_charges_prefix, sb_ncbr_partial_atomic_charges_attributes)
 
     for typeId, (method_internal_name, parameters_name) in enumerate(charges[output_filename]):
         chgs = charges[output_filename][(
