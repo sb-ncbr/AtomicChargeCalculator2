@@ -167,7 +167,9 @@ let molstar;
 let typeId = 1;
 
 async function init_results() {
-    molstar = await MolstarPartialCharges.create("root");
+    molstar = await MolstarPartialCharges.create("root", {
+        SbNcbrPartialCharges: true
+    });
     mountControls();
     await load();
     // molstar must be first initialized
@@ -188,7 +190,7 @@ async function load() {
     const id = selection.value;
     const structure_url = `${get_structure_url}&s=${id}`;
 
-    await molstar.load(structure_url);
+    await molstar.load(structure_url, "mmcif", "ACC2");
     molstar.charges.setTypeId(typeId);
 
     if (molstar.type.isDefaultApplicable()) {
