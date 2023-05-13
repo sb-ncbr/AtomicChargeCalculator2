@@ -159,11 +159,11 @@ def calculate_charges(calculations: Dict[str, List[str]], tmp_dir: str, comp_id:
                 # and move output files to their respective directories
                 for output_filename in os.listdir(output_dir):
                     extension = os.path.splitext(output_filename)[1][1:]
-                    method = method_name
+                    structure_name = os.path.splitext(input_filename)[0]
                     parameters = parameters_name.split(".")[0]
                     if extension in ["txt", "pqr", "mol2"]:
                         os.rename(os.path.join(output_dir, output_filename),
-                                  os.path.join(output_dir, extension, f"{input_filename}-{method}_{parameters}.{extension}"))
+                                  os.path.join(output_dir, extension, f"{structure_name}-{parameters}.{extension}"))
 
         # save the mmCIF output file as a string
         # and move it to the cif directory
