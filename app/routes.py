@@ -1,49 +1,61 @@
-from flask import render_template, flash, request, send_from_directory, redirect, url_for, Response, abort
-from . import application, config
-from typing import Dict, IO
-
+import os
+import shutil
 import tempfile
 import uuid
-import shutil
-import os
-import zipfile
-from glob import glob
+from collections import defaultdict
+from typing import Dict, List, Tuple
 
-from .files import convert_to_mmcif, prepare_file
-from .method import method_data, parameter_data
+from flask import (Response, abort, flash, redirect, render_template, request,
+                   send_file, url_for)
+from gemmi import cif
+
+from . import application
 from .chargefw2 import calculate, get_suitable_methods
-from .parser import *
+from .files import prepare_example, prepare_file
+from .method import method_data, parameter_data
+from .parser import parse_txt
 
 request_data = {}
 
 
-def prepare_example(rq, tmp_dir):
-    print(rq.form['example-name'])
-    if 'example-receptor' == rq.form['example-name']:
-        filename = 'receptor.pdb'
-    elif 'example-phenols' == rq.form['example-name']:
-        filename = 'phenols.sdf'
-    elif 'example-bax-inactive' == rq.form['example-name']:
-        filename = '1f16_updated.cif'
-    elif 'example-bax-activated' == rq.form['example-name']:
-        filename = '2k7w_updated.cif'
-    else:
-        raise RuntimeError('Unknown example selected')
-    shutil.copy(os.path.join(config.EXAMPLES_DIR, filename), os.path.join(tmp_dir, 'input', filename))
+def get_method_name(method_name: str) -> str:
+    method_name = next(
+        method["name"]
+        for method in method_data
+        if method["internal_name"] == method_name
+    )
+    return method_name
 
 
-def update_computation_results(method_name: str, parameters_name: str, tmp_dir: str, comp_id: str):
-    charges, structures, formats, logs = calculate_charges(method_name, parameters_name, tmp_dir)
-    request_data[comp_id].update({'method': method_name,
-                                  'parameters': parameters_name,
-                                  'structures': structures,
-                                  'formats': formats,
-                                  'charges': charges,
-                                  'logs': logs})
+def get_parameters_name(method_name: str, parameters_filename: str) -> str:
+    if parameters_filename == 'NA':
+        return 'None'
+
+    parameters_name = next(
+        parameters["name"]
+        for parameters in parameter_data[method_name]
+        if parameters["filename"] == parameters_filename
+    )
+    return parameters_name
 
 
-def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
-    method_name = next(method['internal_name'] for method in method_data if method['internal_name'] in methods)
+def prepare_calculations(calculation_list: List[str]) -> Dict[str, List[str]]:
+    calculations: Dict[str, List[str]] = defaultdict(list)
+
+    for calculation in calculation_list:
+        method, parameters = calculation.split(" ")
+        calculations[method] += [parameters]
+
+    return calculations
+
+
+def calculate_charges_default(methods, parameters, tmp_dir: str, comp_id: str) -> None:
+    # use first method from suitable methods
+    method_name = next(
+        method["internal_name"]
+        for method in method_data
+        if method["internal_name"] in methods
+    )
 
     if method_name in parameters:
         parameters_name = parameters[method_name][0]
@@ -51,211 +63,258 @@ def calculate_charges_default(methods, parameters, tmp_dir, comp_id):
         # This value should not be used as we later check whether the method needs parameters
         parameters_name = None
 
-    update_computation_results(method_name, parameters_name, tmp_dir, comp_id)
-
-    return redirect(url_for('results', r=comp_id))
-
-
-@application.route('/', methods=['GET', 'POST'])
-def main_site():
-    if request.method == 'POST':
-        tmp_dir = tempfile.mkdtemp(prefix='compute_')
-        os.mkdir(os.path.join(tmp_dir, 'input'))
-        os.mkdir(os.path.join(tmp_dir, 'output'))
-        os.mkdir(os.path.join(tmp_dir, 'logs'))
-
-        if request.form['type'] in ['settings', 'charges']:
-            if not prepare_file(request, tmp_dir):
-                flash('Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif'
-                      ' and zip or tar.gz of those.', 'error')
-                return render_template('index.html')
-        elif request.form['type'] == 'example':
-            prepare_example(request, tmp_dir)
-        else:
-            raise RuntimeError('Bad type of input')
-
-        comp_id = str(uuid.uuid1())
-        try:
-            methods, parameters = get_suitable_methods(tmp_dir)
-        except RuntimeError as e:
-            flash(f'Error: {e}', 'error')
-            return render_template('index.html')
-
-        request_data[comp_id] = {'tmpdir': tmp_dir, 'suitable_methods': methods, 'suitable_parameters': parameters}
-
-        if request.form['type'] in ['charges', 'example']:
-            return calculate_charges_default(methods, parameters, tmp_dir, comp_id)
-        else:
-            return redirect(url_for('setup', r=comp_id))
-    else:
-        return render_template('index.html')
+    calculation = {method_name: [parameters_name]}
+    calculate_charges(calculation, tmp_dir, comp_id)
 
 
-@application.route('/setup', methods=['GET', 'POST'])
-def setup():
-    comp_id = request.args.get('r')
-    try:
-        tmp_dir = request_data[comp_id]['tmpdir']
-    except KeyError:
-        abort(404)
+def write_all_charges_to_mmcif_output(charges: Dict[str, Dict[Tuple[str, str], List[float]]], output_dir: str, output_filename: str) -> None:
+    output_file_path = os.path.join(output_dir, f"{output_filename}.fw2.cif")
+    document = cif.read_file(output_file_path)
+    block = document.sole_block()
 
-    suitable_methods = request_data[comp_id]['suitable_methods']
-    suitable_parameters = request_data[comp_id]['suitable_parameters']
+    sb_ncbr_partial_atomic_charges_meta_prefix = "_sb_ncbr_partial_atomic_charges_meta."
+    sb_ncbr_partial_atomic_charges_prefix = "_sb_ncbr_partial_atomic_charges."
+    sb_ncbr_partial_atomic_charges_meta_attributes = ["id", "type", "method"]
+    sb_ncbr_partial_atomic_charges_attributes = [
+        "type_id", "atom_id", "charge"]
 
-    if request.method == 'POST':
-        method_name = request.form.get('method_select')
-        parameters_name = request.form.get('parameters_select')
+    block.find_mmcif_category(
+        sb_ncbr_partial_atomic_charges_meta_prefix).erase()
+    block.find_mmcif_category(sb_ncbr_partial_atomic_charges_prefix).erase()
 
-        update_computation_results(method_name, parameters_name, tmp_dir, comp_id)
+    metadata_loop = block.init_loop(
+        sb_ncbr_partial_atomic_charges_meta_prefix, sb_ncbr_partial_atomic_charges_meta_attributes)
 
-        return redirect(url_for('results', r=comp_id))
+    for typeId, (method_internal_name, parameters_name) in enumerate(charges[output_filename]):
+        method_name = get_method_name(method_internal_name)
+        parameters_name = get_parameters_name(
+            method_internal_name, parameters_name)
+        metadata_loop.add_row([f"{typeId + 1}",
+                               "'empirical'",
+                               f"'{method_name}/{parameters_name}'"])
 
-    return render_template('setup.html', methods=method_data, parameters=parameter_data,
-                           suitable_methods=suitable_methods, suitable_parameters=suitable_parameters)
+    charges_loop = block.init_loop(
+        sb_ncbr_partial_atomic_charges_prefix, sb_ncbr_partial_atomic_charges_attributes)
+
+    for typeId, (method_internal_name, parameters_name) in enumerate(charges[output_filename]):
+        chgs = charges[output_filename][(
+            method_internal_name, parameters_name)]
+        for atomId, charge in enumerate(chgs):
+            charges_loop.add_row([f"{typeId + 1}",
+                                  f"{atomId + 1}",
+                                  f"{charge: .4f}"])
+
+    block.write_file(output_file_path)
 
 
-def calculate_charges(method_name, parameters_name, tmp_dir):
+def calculate_charges(calculations: Dict[str, List[str]], tmp_dir: str, comp_id: str):
     structures: Dict[str, str] = {}
-    charges: Dict[str, str] = {}
-    formats: Dict[str, str] = {}
     logs: Dict[str, str] = {}
 
-    for file in os.listdir(os.path.join(tmp_dir, 'input')):
-        res = calculate(method_name, parameters_name, os.path.join(tmp_dir, 'input', file),
-                        os.path.join(tmp_dir, 'output'))
+    input_dir = os.path.join(tmp_dir, "input")
+    output_dir = os.path.join(tmp_dir, "output")
+    log_dir = os.path.join(tmp_dir, "logs")
 
-        stderr = res.stderr.decode('utf-8')
+    for extension in ["cif", "pqr", "txt", "mol2"]:
+        os.makedirs(os.path.join(output_dir, extension), exist_ok=True)
 
-        with open(os.path.join(tmp_dir, 'logs', f'{file}.stdout'), 'w') as f_stdout:
-            f_stdout.write(res.stdout.decode('utf-8'))
+    # calculate charges for each structure in input directory
+    for input_filename in os.listdir(input_dir):
+        charges: Dict[str, Dict[Tuple[str, str],
+                                List[float]]] = defaultdict(dict)
+        for method_name in calculations:
+            for parameters_name in calculations[method_name]:
+                input_file_path = os.path.join(input_dir, input_filename)
 
-        with open(os.path.join(tmp_dir, 'logs', f'{file}.stderr'), 'w') as f_stderr:
-            f_stderr.write(stderr)
+                # run chargefw2
+                result = calculate(
+                    method_name,
+                    parameters_name,
+                    input_file_path,
+                    output_dir,
+                )
 
-        if stderr.strip():
-            logs['stderr'] = stderr
+                # save stdout and stderr to files
+                stdout = result.stdout.decode("utf-8")
+                stderr = result.stderr.decode("utf-8")
+                with open(os.path.join(log_dir, f"{input_filename}.stdout"), "w") as f_stdout:
+                    f_stdout.write(stdout)
+                with open(os.path.join(log_dir, f"{input_filename}.stderr"), "w") as f_stderr:
+                    f_stderr.write(stderr)
 
-        if res.returncode:
-            flash('Computation failed. See logs for details.', 'error')
+                # save logs
+                if stderr.strip():
+                    logs["stderr"] = stderr
+                if result.returncode != 0:
+                    flash("Computation failed. See logs for details.", "danger")
 
-        _, ext = os.path.splitext(file)
-        ext = ext.lower()
+                # save charges
+                with open(os.path.join(output_dir, f"{input_filename}.txt"), "r") as f:
+                    for molecule_name, chgs in parse_txt(f).items():
+                        molecule_name = molecule_name.split(":")[1].lower()
+                        charges[molecule_name].update(
+                            {(method_name, parameters_name): chgs})
 
-        tmp_structures: Dict[str, str] = {}
-        with open(os.path.join(tmp_dir, 'input', file)) as f:
-            if ext == '.sdf':
-                if get_MOL_versions(os.path.join(tmp_dir, 'input', file)) == {'V2000'}:
-                    tmp_structures.update(parse_sdf(f))
-                    fmt = 'SDF'
-                else:
-                    tmp_structures.update(convert_to_mmcif(f, 'sdf', file))
-                    fmt = 'mmCIF'
-            elif ext == '.mol2':
-                tmp_structures.update(convert_to_mmcif(f, 'mol2', file))
-                fmt = 'mmCIF'
-            elif ext == '.pdb':
-                tmp_structures.update(parse_pdb(f))
-                fmt = 'PDB'
-            elif ext == '.cif':
-                tmp_structures.update(parse_cif(f))
-                fmt = 'mmCIF'
-            else:
-                raise RuntimeError(f'Not supported format: {ext}')
+                # rename output files to avoid overwriting them
+                # and move output files to their respective directories
+                for output_filename in os.listdir(output_dir):
+                    extension = os.path.splitext(output_filename)[1][1:]
+                    structure_name = os.path.splitext(input_filename)[0]
+                    parameters = parameters_name.split(".")[0]
+                    if extension in ["txt", "pqr", "mol2"]:
+                        os.rename(os.path.join(output_dir, output_filename),
+                                  os.path.join(output_dir, extension, f"{structure_name}-{parameters}.{extension}"))
 
-        for s in tmp_structures:
-            formats[s] = fmt
+        # save the mmCIF output file as a string
+        # and move it to the cif directory
+        for output_filename in list(charges):
+            write_all_charges_to_mmcif_output(
+                charges, output_dir, output_filename)
+            with open(os.path.join(output_dir, f"{output_filename}.fw2.cif"), "r") as f:
+                structures[output_filename.upper()] = f.read()
+            os.rename(os.path.join(output_dir, f"{output_filename}.fw2.cif"),
+                      os.path.join(output_dir, "cif", f"{output_filename}.fw2.cif"))
 
-        structures.update(tmp_structures)
+    # save results to request_data
+    request_data[comp_id].update({
+        "structures": structures,
+        "logs": logs,
+    })
 
-        with open(os.path.join(tmp_dir, 'output', f'{file}.txt')) as f:
-            charges.update(parse_txt(f))
-    return charges, structures, formats, logs
+    return structures, logs
 
 
-@application.route('/results')
-def results():
-    comp_id = request.args.get('r')
+@application.route("/", methods=["GET", "POST"])
+def main_site():
+    if request.method == "GET":
+        return render_template("index.html")
+
+    # POST
+
+    # create temporary directories for computation
+    tmp_dir = tempfile.mkdtemp(prefix="compute_")
+    for d in ["input", "output", "logs"]:
+        os.mkdir(os.path.join(tmp_dir, d))
+
+    # prepare input files
+    if request.form["type"] in ["settings", "charges"]:
+        if not prepare_file(request, tmp_dir):
+            message = "Invalid file provided. Supported types are common chemical formats: sdf, mol2, pdb, cif and zip or tar.gz of those."
+            flash(message, "warning")
+            return render_template("index.html")
+    elif request.form["type"] == "example":
+        prepare_example(request, tmp_dir)
+    else:
+        raise RuntimeError("Bad type of input")
+
+    # prepare suitable methods and parameters
+    comp_id = str(uuid.uuid1())
+    try:
+        methods, parameters = get_suitable_methods(tmp_dir)
+    except RuntimeError as e:
+        flash(f"Error: {e}", "danger")
+        return render_template("index.html")
+
+    request_data[comp_id] = {
+        "tmpdir": tmp_dir,
+        "suitable_methods": methods,
+        "suitable_parameters": parameters,
+    }
+
+    # calculate charges with default method and parameters
+    if request.form["type"] in ["charges", "example"]:
+        calculate_charges_default(methods, parameters, tmp_dir, comp_id)
+        return redirect(url_for("results", r=comp_id, example_name=request.form['example-name']))
+
+    return redirect(url_for("setup", r=comp_id))
+
+
+@application.route("/setup", methods=["GET", "POST"])
+def setup():
+    comp_id = request.args.get("r")
     try:
         comp_data = request_data[comp_id]
     except KeyError:
         abort(404)
 
-    tmpdir = comp_data['tmpdir']
-    filename = glob(os.path.join(tmpdir, 'logs', '*.stdout'))[0]
-    parameters_name = 'None'
-    with open(filename) as f:
-        for line in f:
-            if line.startswith('Parameters:'):
-                _, parameters_name = line.split(' ', 1)
-                break
+    tmp_dir = comp_data["tmpdir"]
+    suitable_methods = comp_data["suitable_methods"]
+    suitable_parameters = comp_data["suitable_parameters"]
 
-    method_name = next(m for m in method_data if m['internal_name'] == comp_data['method'])['name']
+    if request.method == "GET":
+        return render_template(
+            "setup.html",
+            methods=method_data,
+            parameters=parameter_data,
+            suitable_methods=suitable_methods,
+            suitable_parameters=suitable_parameters,
+        )
 
-    chg_range = {}
-    for struct, charges in comp_data['charges'].items():
-        chg_range[struct] = max(abs(float(chg)) for chg in charges.split()[1:])
+    calculation_list = request.form.getlist("calculation_item")
+    calculations = prepare_calculations(calculation_list)
 
-    logs = ''
-    if 'stderr' in comp_data['logs']:
-        logs = comp_data['logs']['stderr']
-        flash('Some errors occured during the computation, see log for details.')
+    calculate_charges(calculations, tmp_dir, comp_id)
 
-    return render_template('results.html', method_name=method_name, comp_id=comp_id, parameters_name=parameters_name,
-                           structures=comp_data['structures'].keys(), chg_range=chg_range, logs=logs)
+    return redirect(url_for("results", r=comp_id))
 
 
-@application.route('/download')
-def download_charges():
-    comp_id = request.args.get('r')
-    comp_data = request_data[comp_id]
-    tmpdir = comp_data['tmpdir']
-    method = comp_data['method']
-
-    with zipfile.ZipFile(os.path.join(tmpdir, 'charges.zip'), 'w', compression=zipfile.ZIP_DEFLATED) as f:
-        for file in os.listdir(os.path.join(tmpdir, 'output')):
-            f.write(os.path.join(tmpdir, 'output', file), arcname=file)
-
-    return send_from_directory(tmpdir, 'charges.zip', as_attachment=True, attachment_filename=f'{method}_charges.zip',
-                               cache_timeout=0)
-
-
-@application.route('/structure')
-def get_structure():
-    comp_id = request.args.get('r')
-    structure_id = request.args.get('s')
-    comp_data = request_data[comp_id]
-
-    return Response(comp_data['structures'][structure_id], mimetype='text/plain')
-
-
-@application.route('/format')
-def get_format():
-    comp_id = request.args.get('r')
-    structure_id = request.args.get('s')
-    comp_data = request_data[comp_id]
-    return Response(comp_data['formats'][structure_id], mimetype='text/plain')
-
-
-@application.route('/charges')
-def get_charges():
-    comp_id = request.args.get('r')
-    structure_id = request.args.get('s')
-    comp_data = request_data[comp_id]
+@application.route("/results")
+def results():
+    comp_id = request.args.get("r")
+    example_name = request.args.get("example_name")
     try:
-        return Response(comp_data['charges'][structure_id], mimetype='text/plain')
+        comp_data = request_data[comp_id]
     except KeyError:
-        print(f'Requested charges were not found for {structure_id}')
-        return Response('---No charges---', mimetype='text/plain')
+        abort(404)
+
+    logs = ""
+    if "stderr" in comp_data["logs"]:
+        logs = comp_data["logs"]["stderr"]
+        flash("Some errors occured during the computation, see log for details.", "danger")
+
+    return render_template(
+        "results.html",
+        comp_id=comp_id,
+        example_name=example_name,
+        structures=comp_data["structures"].keys(),
+        logs=logs,
+    )
 
 
-@application.route('/logs')
-def get_logs():
-    comp_id = request.args.get('r')
+@application.route("/download")
+def download_charges():
+    comp_id = request.args.get("r")
+    comp_data = request_data[comp_id]
+    tmpdir = comp_data["tmpdir"]
+
+    shutil.make_archive(os.path.join(tmpdir, "charges"),
+                        "zip", os.path.join(tmpdir, "output"))
+
+    return send_file(
+        f"{tmpdir}/charges.zip",
+        as_attachment=True,
+        download_name=f"charges.zip",
+        max_age=0,
+    )
+
+
+@application.route("/structure")
+def get_structure():
+    comp_id = request.args.get("r")
+    structure_id = request.args.get("s")
     comp_data = request_data[comp_id]
 
-    return Response(comp_data['logs']['stderr'], mimetype='text/plain')
+    return Response(comp_data["structures"][structure_id], mimetype="text/plain")
+
+
+@application.route("/logs")
+def get_logs():
+    comp_id = request.args.get("r")
+    comp_data = request_data[comp_id]
+
+    return Response(comp_data["logs"]["stderr"], mimetype="text/plain")
 
 
 @application.errorhandler(404)
 def page_not_found(error):
-    return render_template('404.html'), 404
+    return render_template("404.html"), 404
