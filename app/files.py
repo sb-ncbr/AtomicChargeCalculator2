@@ -7,7 +7,12 @@ from werkzeug.utils import secure_filename
 
 from . import config
 
-ALLOWED_INPUT_EXTENSION = ['.sdf', '.mol2', '.pdb', '.cif']
+ALLOWED_INPUT_EXTENSION = [
+    '.sdf',
+    '.mol2',
+    '.pdb', '.ent',
+    '.cif'
+]
 
 
 def check_extension(filename: str):
