@@ -28,14 +28,12 @@ def get_method_name(method_name: str) -> str:
 
 
 def get_parameters_name(method_name: str, parameters_filename: str) -> str:
-    if parameters_filename == 'NA':
-        return 'None'
-
-    parameters_name = next(
+    # return 'None' if method does not support parameters
+    parameters_name = next((
         parameters["name"]
         for parameters in parameter_data[method_name]
         if parameters["filename"] == parameters_filename
-    )
+    ), 'None')
     return parameters_name
 
 
@@ -160,10 +158,12 @@ def calculate_charges(calculations: Dict[str, List[str]], tmp_dir: str, comp_id:
                 for output_filename in os.listdir(output_dir):
                     extension = os.path.splitext(output_filename)[1][1:]
                     structure_name = os.path.splitext(input_filename)[0]
-                    parameters = parameters_name.split(".")[0]
+                    method = get_method_name(method_name)
+                    parameters = get_parameters_name(
+                        method_name, parameters_name)
                     if extension in ["txt", "pqr", "mol2"]:
                         os.rename(os.path.join(output_dir, output_filename),
-                                  os.path.join(output_dir, extension, f"{structure_name}-{parameters}.{extension}"))
+                                  os.path.join(output_dir, extension, f"{structure_name}-{method}-{parameters}.{extension}"))
 
         # save the mmCIF output file as a string
         # and move it to the cif directory
