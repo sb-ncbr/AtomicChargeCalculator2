@@ -13,7 +13,7 @@ from . import application
 from .chargefw2 import calculate, get_suitable_methods
 from .files import prepare_example, prepare_file
 from .method import method_data, parameter_data
-from .parser import parse_txt
+from .parser import parse_txt, sanitize_name
 
 request_data = {}
 
@@ -164,6 +164,10 @@ def calculate_charges(calculations: Dict[str, List[str]], tmp_dir: str, comp_id:
                     if extension in ["txt", "pqr", "mol2"]:
                         os.rename(os.path.join(output_dir, output_filename),
                                   os.path.join(output_dir, extension, f"{structure_name}-{method}-{parameters}.{extension}"))
+                    if extension in ["cif"]:
+                        sanitized_output_filename = sanitize_name(output_filename.replace(".fw2.cif", "")).lower()
+                        os.rename(os.path.join(output_dir, output_filename),
+                                  os.path.join(output_dir, f"{sanitized_output_filename}.fw2.cif"))
 
         # save the mmCIF output file as a string
         # and move it to the cif directory
