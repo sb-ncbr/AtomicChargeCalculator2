@@ -5,7 +5,7 @@
 {% block styles %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/dist/css/bootstrap-select.min.css"
     integrity="sha256-wiMI7buOV5UBzdWN4s4kXqE/LZ794hx5oJOOIQlDBaM=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar-partial-charges@1.2.0/dist/style.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar-partial-charges@1.2.1/dist/style.min.css">
 {% endblock styles %}
 
 {% block body %}
@@ -146,7 +146,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha256-GRJrh0oydT1CwS36bBeJK/2TggpaUQC6GzTaTQdZm0k=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.18/js/bootstrap-select.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/molstar-partial-charges@1.2.0/dist/molstar.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/molstar-partial-charges@1.2.1/dist/molstar.umd.js"></script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 <script>
     const get_structure_url = '{{ url_for("get_structure", r=comp_id) }}';
