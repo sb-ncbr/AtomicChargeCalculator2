@@ -20,11 +20,19 @@ class ChargeFW2Service:
     def get_available_methods(self) -> list[str]:
         return self.chargefw2.get_available_methods()
 
+    async def get_suitable_methods(self, file: UploadFile) -> list[str]:
+        workdir = self.io.create_tmp_dir("suitable-methods")
+        new_file_path = await self.io.store_upload_file(file, workdir)
+        molecules = await self.read_molecules(new_file_path)
+
+        return self.chargefw2.get_suitable_methods(molecules)
+
     def get_available_parameters(self, method: str) -> list[str]:
         return self.chargefw2.get_available_parameters(method)
 
-    def read_molecules(self, file_path: str) -> Molecules:
-        return self.chargefw2.molecules(file_path)
+    async def read_molecules(self, file_path: str) -> Molecules:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(self.executor, self.chargefw2.molecules, file_path)
 
     async def calculate_charges(
         self, files: list[UploadFile], method_name: str, parameters_name: str | None = None
