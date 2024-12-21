@@ -76,4 +76,6 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-interaction --no-ansi
 COPY ./app /acc2/app
 
-ENTRYPOINT ["fastapi", "run", "app/main.py", "--workers", "4", "--host", "0.0.0.0", "--port", "8000"]
+WORKDIR /acc2/app
+
+CMD ["gunicorn", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--timeout", "60", "--bind", "0.0.0.0:8000", "main:app"]

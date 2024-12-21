@@ -16,6 +16,8 @@ python-dotenv = "^1.0.1"
 aiofiles = "^24.1.0"
 pydantic-settings = "^2.6.1"
 dependency-injector = "^4.43.0"
+uvicorn-worker = "^0.2.0"
+gunicorn = "^23.0.0"
 
 
 [build-system]

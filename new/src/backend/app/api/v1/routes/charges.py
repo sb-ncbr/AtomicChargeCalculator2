@@ -1,13 +1,15 @@
-import aiofiles
-from fastapi import Depends, HTTPException, UploadFile, status
+import asyncio
+from fastapi import Depends, UploadFile
 from fastapi.routing import APIRouter
 from core.integrations.chargefw2.base import ChargeFW2Base
 from core.dependency_injection.container import Container
 from dependency_injector.wiring import inject, Provide
-from api.v1.schemas.response import ResponseMultiple, ResponseSingle
+from api.v1.schemas.response import ResponseMultiple
+from services.chargefw2 import ChargeFW2Service
 
 charges_router = APIRouter(prefix="/charges", tags=["charges"])
 
+queue = asyncio.Queue()
 
 @charges_router.get("/methods", tags=["charges", "methods"])
 @inject
@@ -16,20 +18,16 @@ async def available_methods(chargefw2: ChargeFW2Base = Depends(Provide[Container
     return ResponseMultiple(data=methods, total_count=len(methods), page_size=len(methods))
 
 
-# Testing purposes
 @charges_router.post(
-    "/file-upload",
-    openapi_extra={"x-allowed-file-types": ["sdf", "mol2", "pdb", "cif"]},  # example
+    "/calculate",
+    tags=["charges", "calculate"],
+    openapi_extra={"x-allowed-file-types": ["sdf", "mol2", "pdb", "mmcif"]},  # example
 )
-async def file_upload(file: UploadFile):
-    path: str = f"/tmp/uploads/{file.filename}"
-    try:
-        async with aiofiles.open(path, "wb") as out_file:
-            chunk_size = 1024
-            while content := await file.read(chunk_size):
-                await out_file.write(content)
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong while uploading file."
-        )
-    return ResponseSingle(data=path)
+@inject
+async def calculate_charges(
+    files: list[UploadFile],
+    method_name: str,
+    parameters_name: str | None = None,
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+):
+    return await chargefw2.calculate_charges(files, method_name, parameters_name)

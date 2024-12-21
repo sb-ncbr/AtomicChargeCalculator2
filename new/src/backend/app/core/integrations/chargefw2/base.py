@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 
 from chargefw2 import Molecules
 
+Charges = Dict[str, list[float]]
+
 
 class ChargeFW2Base(ABC):
     """Service for interaction with the ChargeFW2 framework."""
@@ -60,7 +62,7 @@ class ChargeFW2Base(ABC):
         molecules: Molecules,
         method_name: str,
         parameters_name: Optional[str] = None,
-    ) -> Dict[str, list[float]]:
+    ) -> Charges:
         """Calculate partial atomic charges for a given molecules and method.
 
         Args:
