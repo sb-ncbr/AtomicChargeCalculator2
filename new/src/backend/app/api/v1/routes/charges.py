@@ -31,6 +31,13 @@ async def available_parameters(method_name: str, chargefw2: ChargeFW2Base = Depe
     parameters: list[str] = chargefw2.get_available_parameters(method_name)
     return ResponseMultiple(data=parameters, total_count=len(parameters), page_size=len(parameters))
 
+
+@charges_router.post("/info", tags=["charges", "info"])
+@inject
+async def info(file: UploadFile, chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service])):
+    return await chargefw2.info(file)
+
+
 @charges_router.post(
     "/calculate",
     tags=["charges", "calculate"],

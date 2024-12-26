@@ -32,7 +32,12 @@ class ChargeFW2Service:
 
     async def read_molecules(self, file_path: str) -> Molecules:
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(self.executor, self.chargefw2.molecules, file_path)
+
+        self.logger.info(f"Loading molecules from file {file_path}.")
+        molecules = await loop.run_in_executor(self.executor, self.chargefw2.molecules, file_path)
+        self.logger.info(f"Successfully loaded molecules from file {file_path}.")
+
+        return molecules
 
     async def calculate_charges(
         self, files: list[UploadFile], method_name: str, parameters_name: str | None = None
@@ -58,3 +63,16 @@ class ChargeFW2Service:
         # Process all files concurrently
         results = await asyncio.gather(*[process_file(file) for file in files])
         return results
+
+    async def info(self, file: UploadFile):
+        workdir = self.io.create_tmp_dir("info")
+        new_file_path = await self.io.store_upload_file(file, workdir)
+        try:
+            self.logger.info(f"Getting info for file {file.filename}.")
+            molecules = await self.read_molecules(new_file_path)
+            self.logger.info(f"Successfully got info for file {file.filename}.")
+
+            return molecules.info().to_dict()
+        except Exception as e:
+            self.logger.error(f"Error getting info for file {file.filename}: {e}")
+            return {"file": file.filename, "error": str(e)}
