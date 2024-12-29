@@ -7,7 +7,7 @@ from core.integrations.chargefw2.base import ChargeFW2Base
 class ChargeFW2Local(ChargeFW2Base):
     """Service for a direct interaction (via bindings) with the ChargeFW2 framework."""
 
-    def molecules(self, file_path: str) -> chargefw2.Molecules:
+    def molecules(self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False) -> chargefw2.Molecules:
         """Load molecules from a file
 
         Args:
@@ -15,7 +15,7 @@ class ChargeFW2Local(ChargeFW2Base):
         Returns:
             chargefw2.Molecules: Parsed molecules
         """
-        return chargefw2.Molecules(file_path)
+        return chargefw2.Molecules(file_path, read_hetatm, ignore_water)
 
     def get_available_methods(self) -> list[str]:
         """Get all available methods.

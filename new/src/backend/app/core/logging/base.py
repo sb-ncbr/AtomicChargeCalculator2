@@ -18,10 +18,7 @@ class LoggerBase(ABC):
         """Logs the provided message with 'warning' level.
 
         Args:
-            message (str): _description_
-
-        Raises:
-            NotImplementedError: _description_
+            message (str): Text to be logged.
         """
         raise NotImplementedError()
 

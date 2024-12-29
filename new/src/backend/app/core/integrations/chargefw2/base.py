@@ -10,14 +10,16 @@ class ChargeFW2Base(ABC):
     """Service for interaction with the ChargeFW2 framework."""
 
     @abstractmethod
-    def molecules(self, file_path: str) -> Molecules:
+    def molecules(self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False) -> Molecules:
         """Load molecules from a file
 
         Args:
-            file_path (str): _description_
+            file_path (str): File path from which to load molecules.
+            read_hetatm (bool, optional): Read HETATM records from PDB/mmCIF files. Defaults to True.
+            ignore_water (bool, optional): Discard water molecules from PDB/mmCIF files. Defaults to False.
 
         Returns:
-            _type_: _description_
+            Molecules: Parsed molecules
         """
         raise NotImplementedError()
 

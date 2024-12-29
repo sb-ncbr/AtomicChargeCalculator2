@@ -1,5 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from fastapi import UploadFile
 
 # Temporary solution to get Molecules class
@@ -10,12 +11,23 @@ from core.logging.base import LoggerBase
 from services.io import IOService
 
 
+@dataclass
+class ChargeCalculationResult:
+    file: str
+    charges: Charges | None = None
+    error: str | None = None
+
+
 class ChargeFW2Service:
-    def __init__(self, chargefw2: ChargeFW2Base, logger: LoggerBase, io: IOService):
+    def __init__(self, chargefw2: ChargeFW2Base, logger: LoggerBase, io: IOService, max_workers: int = 4):
         self.chargefw2 = chargefw2
         self.logger = logger
         self.io = io
-        self.executor = ThreadPoolExecutor(max_workers=4)
+        self.executor = ThreadPoolExecutor(max_workers)
+
+    async def _run_in_executor(self, func, *args):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(self.executor, func, *args)
 
     def get_available_methods(self) -> list[str]:
         return self.chargefw2.get_available_methods()
@@ -34,35 +46,38 @@ class ChargeFW2Service:
     def get_available_parameters(self, method: str) -> list[str]:
         return self.chargefw2.get_available_parameters(method)
 
-    async def read_molecules(self, file_path: str) -> Molecules:
-        loop = asyncio.get_event_loop()
-
+    async def read_molecules(self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False) -> Molecules:
         self.logger.info(f"Loading molecules from file {file_path}.")
-        molecules = await loop.run_in_executor(self.executor, self.chargefw2.molecules, file_path)
+        molecules = await self._run_in_executor(self.chargefw2.molecules, file_path, read_hetatm, ignore_water)
         self.logger.info(f"Successfully loaded molecules from file {file_path}.")
 
         return molecules
 
     async def calculate_charges(
-        self, files: list[UploadFile], method_name: str, parameters_name: str | None = None
-    ) -> list[dict[str, Charges]]:
+        self,
+        files: list[UploadFile],
+        method_name: str,
+        parameters_name: str | None = None,
+        read_hetatm: bool = True,
+        ignore_water: bool = False,
+    ) -> list[ChargeCalculationResult]:
         workdir = self.io.create_tmp_dir("calculations")
 
         async def process_file(file: UploadFile):
             new_file_path = await self.io.store_upload_file(file, workdir)
             try:
                 self.logger.info(f"Calculating charges for file {file.filename}.")
-                loop = asyncio.get_event_loop()
 
-                molecules = await self.read_molecules(new_file_path)
-                charges = await loop.run_in_executor(
-                    self.executor, self.chargefw2.calculate_charges, molecules, method_name, parameters_name
+                molecules = await self.read_molecules(new_file_path, read_hetatm, ignore_water)
+                charges = await self._run_in_executor(
+                    self.chargefw2.calculate_charges, molecules, method_name, parameters_name
                 )
+
                 self.logger.info(f"Successfully calculated charges for file {file.filename}.")
-                return {"file": file.filename, "charges": charges}
+                return ChargeCalculationResult(file=file.filename, charges=charges)
             except Exception as e:
                 self.logger.error(f"Error calculating charges for file {file.filename}: {e}")
-                return {"file": file.filename, "error": str(e)}
+                return ChargeCalculationResult(file=file.filename, error=str(e))
 
         # Process all files concurrently
         results = await asyncio.gather(*[process_file(file) for file in files])
