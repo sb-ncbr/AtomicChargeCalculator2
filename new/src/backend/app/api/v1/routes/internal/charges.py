@@ -1,11 +1,11 @@
 from typing import Annotated
-from fastapi import Depends, File, Path, Query, UploadFile
+from fastapi import Depends, File, HTTPException, Path, Query, UploadFile
 from fastapi.routing import APIRouter
-from core.integrations.chargefw2.base import ChargeFW2Base
 from core.dependency_injection.container import Container
 from dependency_injector.wiring import inject, Provide
-from api.v1.schemas.response import ResponseMultiple, ResponseSingle
+from api.v1.schemas.response import Response
 from services.chargefw2 import ChargeFW2Service
+
 
 charges_router = APIRouter(prefix="/charges", tags=["charges"])
 
@@ -15,13 +15,14 @@ charges_router = APIRouter(prefix="/charges", tags=["charges"])
     tags=["methods"],
 )
 @inject
-async def available_methods(chargefw2: ChargeFW2Base = Depends(Provide[Container.chargefw2])):
-    """
-    Returns the list of available methods for charge calculation.
-    """
+async def available_methods(chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service])):
+    """Returns the list of available methods for charge calculation."""
 
-    methods: list[str] = chargefw2.get_available_methods()
-    return ResponseMultiple(data=methods, total_count=len(methods), page_size=len(methods))
+    try:
+        methods = await chargefw2.get_available_methods()
+        return Response(data=methods)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting available methods." + str(e))
 
 
 @charges_router.post("/methods", tags=["methods"])
@@ -34,8 +35,11 @@ async def suitable_methods(
     **file**: File to get suitable methods for.
     """
 
-    methods: list[str] = await chargefw2.get_suitable_methods(file)
-    return ResponseMultiple(data=methods, total_count=len(methods), page_size=len(methods))
+    try:
+        methods = await chargefw2.get_suitable_methods(file)
+        return Response(data=methods)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting suitable methods." + str(e))
 
 
 @charges_router.get("/parameters/{method_name}", tags=["parameters"])
@@ -47,12 +51,15 @@ async def available_parameters(
             description='Method name to get parameters for. One of the available methods (list can be received from GET "/api/v1/methods").'
         ),
     ],
-    chargefw2: ChargeFW2Base = Depends(Provide[Container.chargefw2]),
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ):
     """Returns the list of available parameters for the provided method."""
 
-    parameters: list[str] = chargefw2.get_available_parameters(method_name)
-    return ResponseMultiple(data=parameters, total_count=len(parameters), page_size=len(parameters))
+    try:
+        parameters = await chargefw2.get_available_parameters(method_name)
+        return Response(data=parameters)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting available parameters." + str(e))
 
 
 @charges_router.post("/info", tags=["info"])
@@ -63,8 +70,11 @@ async def info(
 ):
     """Returns information about the provided file. Number of molecules, total atoms and individual atoms."""
 
-    info = await chargefw2.info(file)
-    return ResponseSingle(data=info)
+    try:
+        info = await chargefw2.info(file)
+        return Response(data=info)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting file information." + str(e))
 
 
 @charges_router.post(
@@ -85,5 +95,8 @@ async def calculate_charges(
 ):
     """Calculates partial atomic charges for the provided files. Returns a list of dictionaries with charges (decimal numbers)."""
 
-    charges = await chargefw2.calculate_charges(files, method_name, parameters_name, read_hetatm, ignore_water)
-    return ResponseMultiple(data=charges, total_count=len(charges), page_size=len(charges))
+    try:
+        charges = await chargefw2.calculate_charges(files, method_name, parameters_name, read_hetatm, ignore_water)
+        return Response(data=charges)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error calculating charges." + str(e))

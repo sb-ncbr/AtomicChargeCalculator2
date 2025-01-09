@@ -78,4 +78,4 @@ COPY ./app /acc2/app
 
 WORKDIR /acc2/app
 
-CMD ["gunicorn", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--timeout", "60", "--bind", "0.0.0.0:8000", "main:app"]
+CMD ["gunicorn", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--timeout", "600", "--bind", "0.0.0.0:8000", "main:web_app"]

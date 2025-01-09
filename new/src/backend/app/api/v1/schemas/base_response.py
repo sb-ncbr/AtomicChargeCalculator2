@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-class BaseSchema(BaseModel):
+class BaseResponseSchema(BaseModel):
     """Base schema. Also converts snake_case to camelCase property names."""
 
     model_config = ConfigDict(
