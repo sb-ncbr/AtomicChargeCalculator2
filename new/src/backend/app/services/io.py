@@ -14,8 +14,8 @@ class IOService:
         self.io = io
         self.logger = logger
 
-    def create_tmp_dir(self, name: str = "") -> str:
-        self.logger.info(f"Creating temporary directory with name: {name or '<empty>'}")
+    def create_tmp_dir(self, name: str) -> str:
+        self.logger.info(f"Creating temporary directory with name: {name}")
 
         path = self.io.create_tmp_dir(name)
 
@@ -25,7 +25,7 @@ class IOService:
 
     def remove_tmp_dir(self, path: str) -> None:
         self.logger.info(f"Clearing temporary directory {path}")
-        self.remove_tmp_dir(path)
+        self.io.remove_tmp_dir(path)
 
     def cp(self, path_from: str, path_to: str) -> str:
         self.logger.info(f"Copying from {path_from} to {path_to}.")
@@ -36,7 +36,7 @@ class IOService:
 
         return path
 
-    async def store_upload_file(self, file: UploadFile, dir: str) -> str | None:
+    async def store_upload_file(self, file: UploadFile, dir: str) -> str:
         os.makedirs(dir, exist_ok=True)
         path: str = os.path.join(dir, IOService.get_unique_filename(file.filename))
         chunk_size = 64 * 1024  # 64 KB
@@ -49,7 +49,7 @@ class IOService:
             return path
         except Exception as e:
             self.logger.error(f"Error storing file {file.filename}: {e}")
-            return None
+            raise e
 
     @staticmethod
     def get_unique_filename(filename: str) -> str:

@@ -14,7 +14,7 @@ class IOLocal(IOBase):
         return path
 
     def remove_tmp_dir(self, path: str) -> None:
-        os.removedirs(path)
+        shutil.rmtree(path)
 
     def cp(self, path_src: str, path_dst: str) -> str:
         return shutil.copy(path_src, path_dst)
