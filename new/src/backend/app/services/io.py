@@ -1,6 +1,4 @@
-# TODO: refactor so it's not just a wrapper with logger on top of io
 import os
-import uuid
 
 import aiofiles
 from fastapi import UploadFile
@@ -41,7 +39,7 @@ class IOService:
     async def store_upload_file(self, file: UploadFile, dir: str) -> str | None:
         os.makedirs(dir, exist_ok=True)
         path: str = os.path.join(dir, IOService.get_unique_filename(file.filename))
-        chunk_size = 1024
+        chunk_size = 64 * 1024  # 64 KB
         try:
             async with aiofiles.open(path, "wb") as out_file:
                 while content := await file.read(chunk_size):
@@ -53,6 +51,9 @@ class IOService:
             self.logger.error(f"Error storing file {file.filename}: {e}")
             return None
 
+    @staticmethod
     def get_unique_filename(filename: str) -> str:
+        import uuid
+
         base, ext = os.path.splitext(filename)
         return f"{str(uuid.uuid4())}_{base}{ext}"
