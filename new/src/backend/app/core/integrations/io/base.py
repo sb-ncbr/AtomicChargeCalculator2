@@ -1,7 +1,11 @@
+"""Base class for the file system interaction service."""
+
 from abc import ABC, abstractmethod
 
 
 class IOBase(ABC):
+    """Service for interaction with the file system."""
+
     @abstractmethod
     def create_tmp_dir(self, name: str = "") -> str:
         """Creates temporary directory.

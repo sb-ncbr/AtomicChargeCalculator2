@@ -1,3 +1,5 @@
+"""ChargeFW2 service for a direct interaction (via bindings) with the ChargeFW2 framework."""
+
 from typing import Dict, Optional
 import chargefw2
 
@@ -7,7 +9,9 @@ from core.integrations.chargefw2.base import ChargeFW2Base
 class ChargeFW2Local(ChargeFW2Base):
     """Service for a direct interaction (via bindings) with the ChargeFW2 framework."""
 
-    def molecules(self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False) -> chargefw2.Molecules:
+    def molecules(
+        self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False
+    ) -> chargefw2.Molecules:
         """Load molecules from a file
 
         Args:

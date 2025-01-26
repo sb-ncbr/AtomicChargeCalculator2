@@ -1,3 +1,5 @@
+"""Base class for ChargeFW2 integration."""
+
 from typing import Dict, Optional
 from abc import ABC, abstractmethod
 
@@ -10,7 +12,9 @@ class ChargeFW2Base(ABC):
     """Service for interaction with the ChargeFW2 framework."""
 
     @abstractmethod
-    def molecules(self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False) -> Molecules:
+    def molecules(
+        self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False
+    ) -> Molecules:
         """Load molecules from a file
 
         Args:
@@ -70,7 +74,7 @@ class ChargeFW2Base(ABC):
         Args:
             molecules (chargefw2.Molecules): Set of molecules.
             method_name (str): Method name to be used.
-            parameters_name (Optional[str], optional): Parameters to be used with provided method. Defaults to None.
+            parameters_name (Optional[str], optional):Parameters to be used with provided method. Defaults to None.
 
         Returns:
             Dict[str, list[float]]: Dictionary with molecule names as keys and list of charges (floats) as values.

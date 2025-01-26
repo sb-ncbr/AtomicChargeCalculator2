@@ -1,3 +1,5 @@
+"""Base class for logging service."""
+
 from abc import ABC, abstractmethod
 
 

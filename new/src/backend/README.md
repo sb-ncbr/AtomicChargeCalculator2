@@ -33,6 +33,12 @@ $ poetry install
 ```
 
 ### Startup
+We firstly need to start the database. This can be simply achieved by using an official postgresql docker image. Connection string is located in `.env` file.
+```bash
+$ docker run -it --rm -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:17-alpine
+```
+
+
 Application can now be started just by running the main file:
 
 ```bash

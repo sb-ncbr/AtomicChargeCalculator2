@@ -1,3 +1,5 @@
+"""Base response schema for all responses."""
+
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 

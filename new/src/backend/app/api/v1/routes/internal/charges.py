@@ -1,3 +1,5 @@
+"""Routes for internal charge calculation api."""
+
 from typing import Annotated
 from fastapi import Depends, File, HTTPException, Path, Query, UploadFile
 from fastapi.routing import APIRouter
@@ -15,14 +17,16 @@ charges_router = APIRouter(prefix="/charges", tags=["charges"])
     tags=["methods"],
 )
 @inject
-async def available_methods(chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service])):
+async def available_methods(
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+):
     """Returns the list of available methods for charge calculation."""
 
     try:
         methods = await chargefw2.get_available_methods()
         return Response(data=methods)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error getting available methods.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting available methods.") from e
 
 
 @charges_router.post("/methods", tags=["methods"])
@@ -38,8 +42,8 @@ async def suitable_methods(
     try:
         methods = await chargefw2.get_suitable_methods(file)
         return Response(data=methods)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error getting suitable methods.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting suitable methods.") from e
 
 
 @charges_router.get("/parameters/{method_name}", tags=["parameters"])
@@ -48,7 +52,10 @@ async def available_parameters(
     method_name: Annotated[
         str,
         Path(
-            description='Method name to get parameters for. One of the available methods (list can be received from GET "/api/v1/methods").'
+            description="""
+            Method name to get parameters for. 
+            One of the available methods (list can be received from GET "/api/v1/methods").
+            """
         ),
     ],
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
@@ -58,8 +65,8 @@ async def available_parameters(
     try:
         parameters = await chargefw2.get_available_parameters(method_name)
         return Response(data=parameters)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error getting available parameters.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting available parameters.") from e
 
 
 @charges_router.post("/info", tags=["info"])
@@ -68,13 +75,16 @@ async def info(
     file: Annotated[UploadFile, File(description="File for which to get information.")],
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ):
-    """Returns information about the provided file. Number of molecules, total atoms and individual atoms."""
+    """
+    Returns information about the provided file.
+    Number of molecules, total atoms and individual atoms.
+    """
 
     try:
-        info = await chargefw2.info(file)
-        return Response(data=info)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error getting file information.")
+        info_data = await chargefw2.info(file)
+        return Response(data=info_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error getting file information.") from e
 
 
 @charges_router.post(
@@ -89,14 +99,23 @@ async def calculate_charges(
     parameters_name: Annotated[
         str | None, Query(description="Parameters name to be used with the provided method.")
     ] = None,
-    read_hetatm: Annotated[bool, Query(description="Read HETATM records from PDB/mmCIF files.")] = True,
-    ignore_water: Annotated[bool, Query(description="Discard water molecules from PDB/mmCIF files.")] = False,
+    read_hetatm: Annotated[
+        bool, Query(description="Read HETATM records from PDB/mmCIF files.")
+    ] = True,
+    ignore_water: Annotated[
+        bool, Query(description="Discard water molecules from PDB/mmCIF files.")
+    ] = False,
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ):
-    """Calculates partial atomic charges for the provided files. Returns a list of dictionaries with charges (decimal numbers)."""
+    """
+    Calculates partial atomic charges for the provided files.
+    Returns a list of dictionaries with charges (decimal numbers).
+    """
 
     try:
-        charges = await chargefw2.calculate_charges(files, method_name, parameters_name, read_hetatm, ignore_water)
+        charges = await chargefw2.calculate_charges(
+            files, method_name, parameters_name, read_hetatm, ignore_water
+        )
         return Response(data=charges)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Error calculating charges.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error calculating charges.") from e

@@ -18,6 +18,8 @@ pydantic-settings = "^2.6.1"
 dependency-injector = "^4.43.0"
 uvicorn-worker = "^0.2.0"
 gunicorn = "^23.0.0"
+sqlalchemy = "^2.0.37"
+psycopg2 = "^2.9.10"
 
 
 [build-system]

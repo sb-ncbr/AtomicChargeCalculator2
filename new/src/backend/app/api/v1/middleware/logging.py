@@ -1,3 +1,5 @@
+"""Provides logging middleware for the application."""
+
 from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -9,6 +11,8 @@ RequestResponseEndpoint = Callable[[Request], Awaitable[Response]]
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
+    """Middleware for logging requests and responses."""
+
     def __init__(self, app):
         super().__init__(app)
         self.logger: LoggerBase = Container.logger_service()
