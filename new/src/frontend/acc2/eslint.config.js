@@ -6,6 +6,7 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import reactCompiler from "eslint-plugin-react-compiler";
 import tseslint from "typescript-eslint";
 import tsParser from "@typescript-eslint/parser";
 import path from "path";
@@ -45,6 +46,7 @@ export default tseslint.config(
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       "unused-imports": unusedImports,
+      "react-compiler": reactCompiler,
       react,
       prettier,
       perfectionist,
@@ -116,6 +118,8 @@ export default tseslint.config(
           partitionByComment: false,
         },
       ],
+
+      "react-compiler/react-compiler": "warn",
     },
   }
 );
