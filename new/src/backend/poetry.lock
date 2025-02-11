@@ -266,6 +266,43 @@ uvicorn = {version = ">=0.15.0", extras = ["standard"]}
 standard = ["uvicorn[standard] (>=0.15.0)"]
 
 [[package]]
+name = "gemmi"
+version = "0.7.0"
+description = "library for structural biology"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "gemmi-0.7.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:d5c26bf3a1cef9f6cc250dc5426cff5e44397186729a07ebb20fa9825198af95"},
+    {file = "gemmi-0.7.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:35abeee20456d5c0e9de0e91c5ea4c1b86d03db6f6feb25bc4ef45e44fded39f"},
+    {file = "gemmi-0.7.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2300eea898e5bda394c3721ce3873209303bd0402d83e4324d7f431b15f3bfe7"},
+    {file = "gemmi-0.7.0-cp310-cp310-win_amd64.whl", hash = "sha256:591ad3baba259a1d7398dc40d4691b51b4e79ffed3f29e19d012e117bfbb1992"},
+    {file = "gemmi-0.7.0-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:c830ed429ef208870e02f8c43ffc6e9b8abf1ecc5240208ff183270a8ee70c87"},
+    {file = "gemmi-0.7.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7c3c6ea7f5388e2e72cd5f6f98eeee6cf417cbd4bf86ba64cb89e96b52341b06"},
+    {file = "gemmi-0.7.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:49ee5c7a457b5dda1f1bff76b0b0dfdb2ef7499483a517e77ad5bb1628d5daa9"},
+    {file = "gemmi-0.7.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:bfe1ba4c28c917dfc695db680a0d0ea314741dd3b86b574a219896ae41c50683"},
+    {file = "gemmi-0.7.0-cp311-cp311-win_amd64.whl", hash = "sha256:7f08814ccd49e9cb4e5a6f134f64a83cd9ebcde2dfc7d1fda8c88610336f6263"},
+    {file = "gemmi-0.7.0-cp312-cp312-macosx_10_14_x86_64.whl", hash = "sha256:de55132d9d1c235f44e5ac220816b37b00db4e68bd1fb9641171cc90c5584a4a"},
+    {file = "gemmi-0.7.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:26967752d52060a822c0ae9e4bd17839f65712f8dafd68fd0953976b7366e143"},
+    {file = "gemmi-0.7.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ae8163b58a2523b3d3415993ce5180f67b3b6bbf2a355d9122e4826b24215448"},
+    {file = "gemmi-0.7.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:51d67b793fe755788cfea6e24427f250950d7a8d3c3e28c53255efeaa238cb1d"},
+    {file = "gemmi-0.7.0-cp312-cp312-win_amd64.whl", hash = "sha256:1b0a28f8fc03b5777e53f4368ddf53d99d35f96ac2476d95c14f96e468903de2"},
+    {file = "gemmi-0.7.0-cp313-cp313-macosx_10_14_x86_64.whl", hash = "sha256:2cf89eca009b3d91ab5b864790989e5b372718b437a4ab6e1356d712280f156c"},
+    {file = "gemmi-0.7.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:7241fb1560b637d78ab0cc60f7d4ad370d97a990663bf485b729de3d1361ded1"},
+    {file = "gemmi-0.7.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4074576d236c86c26da2d4e267bd7a8ad74bf9e0988d9dbc65146b20623de810"},
+    {file = "gemmi-0.7.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:bb311ba9b9085eb8ccd666d574a0b511b6bc5161d0f72459f8f95652234100ad"},
+    {file = "gemmi-0.7.0-cp313-cp313-win_amd64.whl", hash = "sha256:0bb168e79709ac4733b2a02ce1395e4621d128a13f9da06f9157e13ede6af825"},
+    {file = "gemmi-0.7.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:86fe913d0f64bafd0d83c026a3a19767052568b1411c4d68633e4ff240b3222d"},
+    {file = "gemmi-0.7.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:eb97903ba7009a4db555c13d2613bc181101d233c040077ee8c1b58a208cf28a"},
+    {file = "gemmi-0.7.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5d04d6b72e8eb65a21937b6b20f725bb5202cb9802ac93af853fb240f4535c5f"},
+    {file = "gemmi-0.7.0-cp38-cp38-win_amd64.whl", hash = "sha256:70cbbd521103214e09d63b3421a6cd2c538c102a8f51eb254cbe09693e6804d0"},
+    {file = "gemmi-0.7.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:f066058db50e016b0e0d9f38cf50391065792a3d70e790bcb4c942de0892471c"},
+    {file = "gemmi-0.7.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:48e9fbf91b6b6e21a474abec1e70370eff59c343b888f244ee9f57393fbe54da"},
+    {file = "gemmi-0.7.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:375937479efefa738dd34613e8342c784580f7699cf03e2bb967100b1b97a9ea"},
+    {file = "gemmi-0.7.0-cp39-cp39-win_amd64.whl", hash = "sha256:900b86286bdbd4aa8f393b372e3c984ab62cd67b5bb7b77de2bc24073aa768cb"},
+    {file = "gemmi-0.7.0.tar.gz", hash = "sha256:758604664b20d0ea59e81ff757fd40572f69918e65ac2e6c690709fbd9ebc0c5"},
+]
+
+[[package]]
 name = "greenlet"
 version = "3.1.1"
 description = "Lightweight in-process concurrent programming"
@@ -1370,4 +1407,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1365ee7f6838b9210d190519f992da39526414484e1afd80d851fdfc8d6d173c"
+content-hash = "a590bb46a1320bb661303e06796617b2e0a01179f51fdc58d1f54fb3927804eb"

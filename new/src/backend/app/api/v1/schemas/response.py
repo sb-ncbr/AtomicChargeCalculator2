@@ -7,7 +7,6 @@ class Response[T](BaseResponseSchema):
     """Response schema for a single item."""
 
     success: bool = True
-    status_code: int = 200
     data: T
 
 
@@ -16,4 +15,3 @@ class ResponseError(BaseResponseSchema):
 
     success: bool = False
     message: str
-    status_code: int = 400

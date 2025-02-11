@@ -10,7 +10,7 @@ from core.models.calculation import (
     ChargeCalculationConfig,
     CalculationDto,
     CalculationsFilters,
-    ChargeCalculationResult,
+    ChargeCalculationPart,
 )
 
 from db.models.calculation import Calculation
@@ -56,7 +56,7 @@ class CalculationsRepository:
             return CalculationDto.model_validate(calculation) if calculation else None
 
     def store(
-        self, calculation_result: ChargeCalculationResult, config: ChargeCalculationConfig
+        self, calculation_result: ChargeCalculationPart, config: ChargeCalculationConfig
     ) -> CalculationDto:
         """Store a single calculation result in the database."""
 
@@ -77,7 +77,7 @@ class CalculationsRepository:
             return CalculationDto.model_validate(calculation)
 
     def store_multiple(
-        self, calculation_results: list[ChargeCalculationResult], config: ChargeCalculationConfig
+        self, calculation_results: list[ChargeCalculationPart], config: ChargeCalculationConfig
     ) -> None:
         """Store multiple calculation results in the database."""
 

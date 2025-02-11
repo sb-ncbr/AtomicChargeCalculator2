@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from pydantic import UUID4, BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 from core.integrations.chargefw2.base import Charges
@@ -25,15 +25,15 @@ class CalculationsFilters:
 class ChargeCalculationConfig:
     """Configuration for charge calculation"""
 
-    method: str
+    method: str | None
     parameters: str | None
     read_hetatm: bool = True
     ignore_water: bool = False
 
 
 @dataclass
-class ChargeCalculationResult:
-    """Result of charge calculation"""
+class ChargeCalculationPart:
+    """Result of charge calculation for a single file."""
 
     file: str
     file_hash: str
@@ -44,28 +44,26 @@ class ChargeCalculationResult:
 class CalculationDto(BaseModel):
     """Calculation data transfer object"""
 
-    id: UUID4
-    method: str
-    parameters: str | None
-    read_hetatm: bool
-    ignore_water: bool
+    file: str
     charges: dict
     success: bool = True
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
     @staticmethod
-    def from_result(
-        result: ChargeCalculationResult, config: ChargeCalculationConfig
-    ) -> "CalculationDto":
+    def from_result(result: ChargeCalculationPart) -> "CalculationDto":
         """Create DTO from calculation result"""
 
         return CalculationDto(
-            id=result.id,
-            method=config.method,
-            parameters=config.parameters,
-            read_hetatm=config.read_hetatm,
-            ignore_water=config.ignore_water,
+            file=result.file,
             charges=result.charges,
             success=result.charges is not None,
         )
+
+
+@dataclass
+class ChargeCalculationResult:
+    """Result of charge calculation"""
+
+    config: ChargeCalculationConfig
+    calculations: list[CalculationDto]
