@@ -66,6 +66,18 @@ class IOBase(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def path_exists(self, path: str) -> bool:
+        """Check if the provided path exists.
+
+        Args:
+            path (str): Path to verify.
+
+        Returns:
+            bool: True if the path exists, otherwise False.
+        """
+        raise NotImplementedError()
+
     @staticmethod
     def get_unique_filename(filename: str) -> str:
         """Generate unique filename."""

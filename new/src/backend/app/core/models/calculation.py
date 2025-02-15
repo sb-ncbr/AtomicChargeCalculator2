@@ -29,6 +29,7 @@ class ChargeCalculationConfig:
     parameters: str | None
     read_hetatm: bool = True
     ignore_water: bool = False
+    permissive_types: bool = False
 
 
 @dataclass

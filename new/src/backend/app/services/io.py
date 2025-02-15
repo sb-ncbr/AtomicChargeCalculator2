@@ -65,6 +65,18 @@ class IOService:
             self.logger.error(f"Error storing file {file.filename}: {e}")
             raise e
 
-    async def listdir(self, directory: str) -> list[str]:
+    def listdir(self, directory: str) -> list[str]:
         """List directory contents."""
         return self.io.listdir(directory)
+
+    def path_exists(self, path: str) -> bool:
+        """Check if path exists."""
+        return self.io.path_exists(path)
+
+    def get_input_path(self, computation_id: str) -> str:
+        """Get path to input directory."""
+        return os.path.join(self.workdir, computation_id, "input")
+
+    def get_charges_path(self, computation_id: str) -> str:
+        """Get path to charges directory."""
+        return os.path.join(self.workdir, computation_id, "charges")

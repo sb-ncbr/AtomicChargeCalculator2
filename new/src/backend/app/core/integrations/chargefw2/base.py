@@ -1,6 +1,6 @@
 """Base class for ChargeFW2 integration."""
 
-from typing import Dict, Optional
+from typing import Dict
 from abc import ABC, abstractmethod
 
 from chargefw2 import Molecules
@@ -13,7 +13,11 @@ class ChargeFW2Base(ABC):
 
     @abstractmethod
     def molecules(
-        self, file_path: str, read_hetatm: bool = True, ignore_water: bool = False
+        self,
+        file_path: str,
+        read_hetatm: bool = True,
+        ignore_water: bool = False,
+        permissive_types: bool = False,
     ) -> Molecules:
         """Load molecules from a file
 
@@ -67,7 +71,8 @@ class ChargeFW2Base(ABC):
         self,
         molecules: Molecules,
         method_name: str,
-        parameters_name: Optional[str] = None,
+        parameters_name: str | None = None,
+        chg_out_dir: str | None = None,
     ) -> Charges:
         """Calculate partial atomic charges for a given molecules and method.
 

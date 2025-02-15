@@ -1,9 +1,11 @@
 """Charge calculation routes."""
 
 import asyncio
-from typing import Annotated
+import os
+from typing import Annotated, Literal
 import uuid
 from fastapi import Depends, File, Path, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from dependency_injector.wiring import inject, Provide
 
@@ -11,12 +13,12 @@ from api.v1.constants import ALLOWED_FILE_TYPES, MAX_SETUP_FILES_SIZE
 from api.v1.schemas.response import Response
 
 from core.dependency_injection.container import Container
-from core.models.calculation import ChargeCalculationConfig, ChargeCalculationResult
+from core.models.calculation import ChargeCalculationConfig
 from core.models.molecule_info import MoleculeInfo
 from core.models.paging import PagingFilters
 from core.models.setup import Setup
 from core.models.suitable_methods import SuitableMethods
-from core.exceptions.http import BadRequestError
+from core.exceptions.http import BadRequestError, NotFoundError
 
 
 from services.io import IOService
@@ -111,51 +113,16 @@ async def info(
         ) from e
 
 
-# @charges_router.post("/calculate/old", tags=["calculate"])
-# @inject
-# async def calculate_charges(
-#     files: list[UploadFile],
-#     method_name: Annotated[str, Query(description="Method name to calculate charges with.")],
-#     parameters_name: Annotated[
-#         str | None, Query(description="Parameters name to be used with the provided method.")
-#     ] = None,
-#     read_hetatm: Annotated[
-#         bool, Query(description="Read HETATM records from PDB/mmCIF files.")
-#     ] = True,
-#     ignore_water: Annotated[
-#         bool, Query(description="Discard water molecules from PDB/mmCIF files.")
-#     ] = False,
-#     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-# ):
-#     """
-#     Calculates partial atomic charges for the provided files.
-#     Returns a list of dictionaries with charges (decimal numbers).
-#     """
-
-#     try:
-#         config = ChargeCalculationConfig(
-#             method=method_name,
-#             parameters=parameters_name,
-#             read_hetatm=read_hetatm,
-#             ignore_water=ignore_water,
-#         )
-#         calculations = await chargefw2.calculate_charges(files, config)
-#         return Response(
-#             data=calculations, total_count=len(calculations), page_size=len(calculations)
-#         )
-#     except Exception as e:
-#         raise BadRequestError(
-#             status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error calculating charges. {str(e)}"
-#         ) from e
-
-
 @charges_router.post("/calculate", tags=["calculate"])
 @inject
 async def calculate_charges(
     computation_id: Annotated[str, Query(description="UUID of the computation.")],
     configs: list[ChargeCalculationConfig],
+    response_format: Annotated[
+        Literal["mmcif", "raw"], Query(description="Output format.")
+    ] = "raw",
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-) -> Response[list[ChargeCalculationResult]]:
+):
     """
     Calculates partial atomic charges for files in the provided directory.
     Returns a list of dictionaries with charges (decimal numbers).
@@ -168,6 +135,11 @@ async def calculate_charges(
         calculations = await asyncio.gather(
             *[chargefw2.calculate_charges(computation_id, config) for config in configs]
         )
+
+        if response_format == "mmcif":
+            data = chargefw2.write_to_mmcif(computation_id, calculations)
+            return Response(data=data)
+
         return Response(data=calculations)
     except Exception as e:
         raise BadRequestError(
@@ -187,7 +159,6 @@ async def setup(
 ) -> Response[Setup]:
     """Stores the provided files on disk and returns the computation id."""
 
-    # TODO: move closure somewhere else
     def is_ext_valid(filename: str) -> bool:
         parts = filename.rsplit(".", 1)
         ext = parts[-1]
@@ -211,13 +182,36 @@ async def setup(
 
     try:
         computation_id = str(uuid.uuid4())
-        tmp_dir = io.create_tmp_dir(computation_id)
+        tmp_dir = io.create_tmp_dir(io.get_input_path(computation_id))
         await asyncio.gather(*[io.store_upload_file(file, tmp_dir) for file in files])
 
         return Response(data={"computationId": computation_id})
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error uploading files. {str(e)}"
+        ) from e
+
+
+@charges_router.get("/mmcif", tags=["mmcif"])
+@inject
+async def get_mmcif(
+    computation_id: Annotated[str, Query(description="UUID of the computation.")],
+    molecule: Annotated[str, Query(description="Molecule name.")],
+    io: IOService = Depends(Provide[Container.io_service]),
+) -> FileResponse:
+    """Returns a mmcif file for the provided molecule in the computation."""
+
+    try:
+        path = os.path.join(io.get_charges_path(computation_id), f"{molecule.lower()}.fw2.cif")
+        if not io.path_exists(path):
+            raise FileNotFoundError()
+
+        return FileResponse(path=path)
+    except FileNotFoundError as e:
+        raise NotFoundError(detail=f"MMCIF file for molecule '{molecule}' not found.") from e
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting MMCIF. {str(e)}"
         ) from e
 
 

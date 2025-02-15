@@ -46,3 +46,6 @@ class IOLocal(IOBase):
         os.rename(tmp_path, new_filename)
 
         return new_filename, file_hash
+
+    def path_exists(self, path: str) -> bool:
+        return os.path.exists(path)
