@@ -3,9 +3,7 @@ import { Card } from "../ui/card";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
@@ -16,14 +14,100 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { Separator } from "../ui/separator";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useEffect, useState } from "react";
 import { cn } from "@acc2/lib/utils";
+import { useAvailableParametersMutation } from "@acc2/hooks/mutations/use-available-parameters-mutation";
+import { Busy } from "../ui/busy";
+import { useFormContext } from "react-hook-form";
+import { FormField, FormItem } from "../ui/form";
+import { SetupFormType } from "@acc2/pages/setup";
 
-export type ParametersProps = HTMLAttributes<HTMLElement>;
+export type ParametersProps = { method: string } & HTMLAttributes<HTMLElement>;
 
-export const Parameters = ({ className, ...props }: ParametersProps) => {
+type ParametersSelectorProps = {
+  parameters: string[];
+};
+
+const ParametersSelector = ({ parameters }: ParametersSelectorProps) => {
+  const form = useFormContext<SetupFormType>();
+
+  useEffect(() => {
+    form.setValue("parameters", parameters?.[0]);
+  }, [parameters]);
+
   return (
-    <Card {...props} className={cn("rounded-none p-4 mt-4", className)}>
+    <FormField
+      control={form.control}
+      name="parameters"
+      render={({ field }) => (
+        <FormItem>
+          <Select
+            {...field}
+            onValueChange={field.onChange}
+            disabled={parameters.length === 0}
+          >
+            <SelectTrigger className="w-[180px] border-2 mb-4">
+              <SelectValue placeholder="Parameters" />
+            </SelectTrigger>
+            <SelectContent>
+              {parameters.map((parameters, index) => (
+                <SelectItem key={index} value={parameters}>
+                  {parameters}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormItem>
+      )}
+    ></FormField>
+  );
+};
+
+const ParametersPublication = () => {
+  return (
+    <>
+      <h4 className="text-sm font-bold">Publication</h4>
+      <p className="text-sm">
+        Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., &
+        Svobodová, R. (2021). Optimized SQE atomic charges for peptides
+        accessible via a web application. Journal of cheminformatics, 13(1),
+        1-11. doi:10.1186/s13321-021-00528-w
+      </p>
+    </>
+  );
+};
+
+export const Parameters = ({
+  method,
+  className,
+  ...props
+}: ParametersProps) => {
+  const parametersMutation = useAvailableParametersMutation();
+  const [parameters, setParameters] = useState<string[]>([]);
+
+  const getParameters = async () => {
+    if (!method) {
+      return;
+    }
+
+    const response = await parametersMutation.mutateAsync(method);
+    if (!response.success) {
+      return;
+    }
+
+    setParameters(response.data);
+  };
+
+  useEffect(() => {
+    getParameters();
+  }, [method]);
+
+  return (
+    <Card
+      {...props}
+      className={cn("rounded-none p-4 mt-4 relative", className)}
+    >
+      <Busy isBusy={parametersMutation.isPending} />
       <h3 className="capitalize font-bold text-xl mb-2">
         Parameters
         <TooltipProvider>
@@ -37,33 +121,9 @@ export const Parameters = ({ className, ...props }: ParametersProps) => {
           </Tooltip>
         </TooltipProvider>
       </h3>
-      <Select>
-        <SelectTrigger className="w-[180px] border-2 mb-4">
-          <SelectValue placeholder="Parameters" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>2D</SelectLabel>
-            <SelectItem value="light">Light</SelectItem>
-            <SelectItem value="dark">Dark</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-          </SelectGroup>
-          <SelectGroup>
-            <SelectLabel>3D</SelectLabel>
-            <SelectItem value="light3d">Light</SelectItem>
-            <SelectItem value="dark3d">Dark</SelectItem>
-            <SelectItem value="system3d">System</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+      <ParametersSelector parameters={parameters} />
       <Separator className="my-4" />
-      <h4 className="text-sm font-bold">Publication</h4>
-      <p className="text-sm">
-        Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., &
-        Svobodová, R. (2021). Optimized SQE atomic charges for peptides
-        accessible via a web application. Journal of cheminformatics, 13(1),
-        1-11. doi:10.1186/s13321-021-00528-w
-      </p>
+      <ParametersPublication />
     </Card>
   );
 };

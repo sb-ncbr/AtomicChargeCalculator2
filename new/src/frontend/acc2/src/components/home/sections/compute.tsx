@@ -43,6 +43,7 @@ export const Compute = () => {
     await computationMutation.mutateAsync(
       {
         computationId: setupResponse.data.computationId,
+        computations: [],
       },
       {
         onError: (error) => toast.error(error.message),

@@ -29,25 +29,32 @@ export type ComputeResponse = {
 };
 
 export const compute = async (
-  computationId: string
+  computationId: string,
+  computations: { method?: string; parameters?: string }[]
 ): Promise<Response<ComputeResponse>> => {
-  const response = await api.post(
-    `/charges/${computationId}/calculate`,
-    [
-      {
-        method: null,
-        parameters: null,
-        read_hetatm: true,
-        ignore_water: false,
-        permissive_types: false,
-      },
-    ],
-    {
-      params: {
-        response_format: "none",
-      },
-    }
-  );
+  const data = computations.map((comp) => ({
+    method: comp.method ?? null,
+    parameters: comp.parameters ?? null,
+    read_hetatm: true,
+    ignore_water: false,
+    permissive_types: false,
+  }));
+
+  if (computations.length === 0) {
+    data.push({
+      method: null,
+      parameters: null,
+      read_hetatm: true,
+      ignore_water: false,
+      permissive_types: false,
+    });
+  }
+
+  const response = await api.post(`/charges/${computationId}/calculate`, data, {
+    params: {
+      response_format: "none",
+    },
+  });
   return response.data;
 };
 
