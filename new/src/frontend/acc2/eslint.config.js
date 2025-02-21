@@ -2,6 +2,7 @@ import react from "eslint-plugin-react";
 import prettier from "eslint-plugin-prettier";
 import perfectionist from "eslint-plugin-perfectionist";
 import unusedImports from "eslint-plugin-unused-imports";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
@@ -47,12 +48,14 @@ export default tseslint.config(
       "react-refresh": reactRefresh,
       "unused-imports": unusedImports,
       "react-compiler": reactCompiler,
+      "@tanstack/query": pluginQuery,
       react,
       prettier,
       perfectionist,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      ...pluginQuery.configs["flat/recommended"],
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },

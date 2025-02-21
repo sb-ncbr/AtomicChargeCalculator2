@@ -9,13 +9,12 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from dependency_injector.wiring import inject, Provide
 
-from api.v1.constants import ALLOWED_FILE_TYPES, MAX_SETUP_FILES_SIZE
+from api.v1.constants import ALLOWED_FILE_TYPES, CHARGES_OUTPUT_EXTENSION, MAX_SETUP_FILES_SIZE
 from api.v1.schemas.response import Response
 
 from core.dependency_injection.container import Container
 from core.models.calculation import ChargeCalculationConfig
 from core.models.molecule_info import MoleculeInfo
-from core.models.paging import PagingFilters
 from core.models.setup import Setup
 from core.models.suitable_methods import SuitableMethods
 from core.exceptions.http import BadRequestError, NotFoundError
@@ -113,13 +112,13 @@ async def info(
         ) from e
 
 
-@charges_router.post("/calculate", tags=["calculate"])
+@charges_router.post("/{computation_id}/calculate", tags=["calculate"])
 @inject
 async def calculate_charges(
-    computation_id: Annotated[str, Query(description="UUID of the computation.")],
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
     configs: list[ChargeCalculationConfig],
     response_format: Annotated[
-        Literal["mmcif", "raw"], Query(description="Output format.")
+        Literal["mmcif", "raw", "none"], Query(description="Output format.")
     ] = "raw",
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ):
@@ -135,10 +134,13 @@ async def calculate_charges(
         calculations = await asyncio.gather(
             *[chargefw2.calculate_charges(computation_id, config) for config in configs]
         )
+        mmcif_data = chargefw2.write_to_mmcif(computation_id, calculations)
+
+        if response_format == "none":
+            return
 
         if response_format == "mmcif":
-            data = chargefw2.write_to_mmcif(computation_id, calculations)
-            return Response(data=data)
+            return Response(data=mmcif_data)
 
         return Response(data=calculations)
     except Exception as e:
@@ -192,16 +194,28 @@ async def setup(
         ) from e
 
 
-@charges_router.get("/mmcif", tags=["mmcif"])
+@charges_router.get("/{computation_id}/mmcif", tags=["mmcif"])
 @inject
 async def get_mmcif(
-    computation_id: Annotated[str, Query(description="UUID of the computation.")],
-    molecule: Annotated[str, Query(description="Molecule name.")],
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
+    molecule: Annotated[str | None, Query(description="Molecule name.")] = None,
     io: IOService = Depends(Provide[Container.io_service]),
 ) -> FileResponse:
     """Returns a mmcif file for the provided molecule in the computation."""
 
     try:
+        charges_path = io.get_charges_path(computation_id)
+        if not io.path_exists(charges_path):
+            raise FileNotFoundError()
+
+        if molecule is None:
+            molecules = [file for file in io.listdir(charges_path) if file.endswith(".fw2.cif")]
+
+            if len(molecules) == 0:
+                raise FileNotFoundError()
+
+            return FileResponse(path=os.path.join(charges_path, molecules[0]))
+
         path = os.path.join(io.get_charges_path(computation_id), f"{molecule.lower()}.fw2.cif")
         if not io.path_exists(path):
             raise FileNotFoundError()
@@ -215,20 +229,41 @@ async def get_mmcif(
         ) from e
 
 
-@charges_router.get("/calculations", tags=["calculations"])
+@charges_router.get("/{computation_id}/molecules", tags=["molecules"])
 @inject
-async def get_calculations(
-    page: Annotated[int, Query(description="Page number.")] = 1,
-    page_size: Annotated[int, Query(description="Number of items per page.")] = 10,
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-):
-    """Returns all calculations stored in the database."""
-
+async def get_molecules(
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
+    io: IOService = Depends(Provide[Container.io_service]),
+) -> Response[list[str]]:
+    """Returns the list of molecules in the provided computation."""
     try:
-        filters = PagingFilters(page=page, page_size=page_size)
-        calculations = chargefw2.get_calculations(filters)
-        return calculations  # use Response here
+        charges_path = io.get_charges_path(computation_id)
+        molecule_files = [
+            file for file in io.listdir(charges_path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
+        ]
+        molecules = [file.replace(CHARGES_OUTPUT_EXTENSION, "") for file in molecule_files]
+
+        return Response(data=sorted(molecules))
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting calculations. {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting molecules. {str(e)}"
         ) from e
+
+
+# @charges_router.get("/calculations", tags=["calculations"])
+# @inject
+# async def get_calculations(
+#     page: Annotated[int, Query(description="Page number.")] = 1,
+#     page_size: Annotated[int, Query(description="Number of items per page.")] = 10,
+#     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+# ):
+#     """Returns all calculations stored in the database."""
+
+#     try:
+#         filters = PagingFilters(page=page, page_size=page_size)
+#         calculations = chargefw2.get_calculations(filters)
+#         return calculations  # use Response here
+#     except Exception as e:
+#         raise BadRequestError(
+#             status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting calculations. {str(e)}"
+#         ) from e

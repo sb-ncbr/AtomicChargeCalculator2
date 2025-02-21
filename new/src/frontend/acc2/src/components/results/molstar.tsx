@@ -2,26 +2,27 @@ import MolstarPartialCharges from "molstar-partial-charges";
 import { HTMLAttributes, useEffect } from "react";
 import { Card } from "../ui/card";
 import { cn } from "@acc2/lib/utils";
+import { useBusyContext } from "@acc2/hooks/contexts/use-busy-context";
 
-export type MolstarProps = {} & HTMLAttributes<HTMLElement>;
+export type MolstarProps = {
+  setMolstar: React.Dispatch<
+    React.SetStateAction<MolstarPartialCharges | undefined>
+  >;
+} & HTMLAttributes<HTMLElement>;
 
-export const MolStarWrapper = ({ className, ...props }: MolstarProps) => {
+export const MolStarWrapper = ({
+  setMolstar,
+  className,
+  ...props
+}: MolstarProps) => {
+  const { addBusy, removeBusy } = useBusyContext();
   const setup = async () => {
-    const molstar = await MolstarPartialCharges.create("molstar", {
+    addBusy();
+    const molstar = await MolstarPartialCharges.create("molstar-root", {
       SbNcbrPartialCharges: true,
     });
-
-    try {
-      await molstar.load(
-        `${location.origin}/propofol.fw2.cif`,
-        "mmcif",
-        "ACC2"
-      );
-    } catch (e) {
-      console.log("Caught error", e);
-    }
-    await molstar.color.relative();
-    await molstar.type.ballAndStick();
+    removeBusy();
+    setMolstar(molstar);
   };
 
   useEffect(() => {
@@ -36,9 +37,7 @@ export const MolStarWrapper = ({ className, ...props }: MolstarProps) => {
         className
       )}
     >
-      <div className="w-full h-full relative">
-        <div id="molstar"></div>
-      </div>
+      <div id="molstar-root" className="w-full h-full relative"></div>
     </Card>
   );
 };
