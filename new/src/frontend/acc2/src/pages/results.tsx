@@ -9,7 +9,7 @@ import { ControlsContextProvider } from "@acc2/contexts/controls-context";
 import { useMoleculesMutation } from "@acc2/hooks/mutations/use-molecules-mutation";
 import { useTitle } from "@acc2/hooks/use-title";
 import MolstarPartialCharges from "molstar-partial-charges";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
