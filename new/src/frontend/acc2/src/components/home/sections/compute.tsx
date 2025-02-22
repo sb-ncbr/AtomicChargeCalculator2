@@ -107,11 +107,16 @@ export const Compute = () => {
             </p>
           </div>
           <div className="flex gap-4 flex-col xs:flex-row">
-            <Button type="submit" disabled={!form.formState.isValid}>
+            <Button
+              type="submit"
+              title="Direct computation of charges using automatically selected empirical charge calculation method."
+              disabled={!form.formState.isValid}
+            >
               Compute
             </Button>
             <Button
               type="button"
+              title="Selection of empirical charge calculation method and its parameters."
               variant={"secondary"}
               disabled={!form.formState.isValid}
               onClick={() => onSetup(form.getValues())}
