@@ -9,6 +9,8 @@ import { MolstarChargesetControls } from "./chargeset-controls";
 import { MolstarStructureControls } from "./structure-controls";
 import { useBusyContext } from "@acc2/hooks/contexts/use-busy-context";
 import { useControlsContext } from "@acc2/hooks/contexts/use-controls-context";
+import { toast } from "sonner";
+import { handleApiError } from "@acc2/api/base";
 
 export type ControlsProps = {
   computationId: string;
@@ -34,12 +36,13 @@ export const Controls = ({
     await mmcifMutation.mutateAsync(
       { molecule },
       {
+        onError: (error) => toast.error(handleApiError(error)),
         onSuccess: () => setMmcifLoaded(true),
       }
     );
+
     await molstar.color.relative();
     context.set.methodNames(molstar.charges.getMethodNames());
-
     removeBusy();
   };
 

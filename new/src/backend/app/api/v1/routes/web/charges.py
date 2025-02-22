@@ -137,7 +137,7 @@ async def calculate_charges(
         mmcif_data = chargefw2.write_to_mmcif(computation_id, calculations)
 
         if response_format == "none":
-            return
+            return Response(data=None)
 
         if response_format == "mmcif":
             return Response(data=mmcif_data)

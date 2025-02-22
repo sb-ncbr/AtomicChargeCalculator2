@@ -1,3 +1,4 @@
+import { handleApiError } from "@acc2/api/base";
 import { Calculations } from "@acc2/components/setup/calculations";
 import { Method } from "@acc2/components/setup/method";
 import { Parameters } from "@acc2/components/setup/parameters";
@@ -10,7 +11,6 @@ import { Separator } from "@acc2/components/ui/separator";
 import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
 import { useTitle } from "@acc2/hooks/use-title";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -43,7 +43,6 @@ export const Setup = () => {
       computations: [],
     },
   });
-  const watchForm = form.watch();
 
   const computationId = searchParams.get("comp_id");
   if (!computationId) {
@@ -58,9 +57,7 @@ export const Setup = () => {
         computations: data.computations,
       },
       {
-        onError: (error) => {
-          toast.error(error.message);
-        },
+        onError: (error) => toast.error(handleApiError(error)),
         onSuccess: () => {
           navigate({
             pathname: "/results",
@@ -70,10 +67,6 @@ export const Setup = () => {
       }
     );
   };
-
-  useEffect(() => {
-    console.log("watch", watchForm);
-  }, [watchForm]);
 
   return (
     <main className="mx-auto w-full selection:text-white selection:bg-primary mb-12">
@@ -92,7 +85,7 @@ export const Setup = () => {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 xxl:grid-cols-2 gap-4">
                 <Method computationId={computationId} />
-                <Parameters method={watchForm.method} />
+                <Parameters />
               </div>
               <Button
                 type="button"
@@ -102,8 +95,8 @@ export const Setup = () => {
                   form.setValue("computations", [
                     ...form.getValues("computations"),
                     {
-                      method: watchForm.method,
-                      parameters: watchForm.parameters,
+                      method: form.getValues("method"),
+                      parameters: form.getValues("parameters"),
                     },
                   ])
                 }
@@ -111,7 +104,7 @@ export const Setup = () => {
                 Add To Calculation
               </Button>
               <Separator className="my-4" />
-              <Calculations calculations={watchForm.computations} />
+              <Calculations />
               <div className="self-start mt-4">
                 <Button
                   type="submit"

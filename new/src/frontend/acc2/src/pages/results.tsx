@@ -1,3 +1,4 @@
+import { handleApiError } from "@acc2/api/base";
 import { MolstarColoringType } from "@acc2/components/results/controls/coloring-controls";
 import { Controls } from "@acc2/components/results/controls/controls";
 import { MolstarViewType } from "@acc2/components/results/controls/view-controls";
@@ -42,18 +43,13 @@ export const Results = () => {
   }
 
   const loadMolecules = async () => {
-    const response = await moleculesMutation.mutateAsync(computationId, {
-      onError: () => {
-        toast.error("Unable to load computation data.");
+    await moleculesMutation.mutateAsync(computationId, {
+      onError: (error) => {
+        toast.error(handleApiError(error));
         navigate("/");
       },
+      onSuccess: (molecules) => setMolecules(molecules),
     });
-
-    if (!response.success) {
-      navigate("/");
-      return;
-    }
-    setMolecules(response.data);
   };
 
   useEffect(() => {

@@ -6,16 +6,11 @@ import { cn } from "@acc2/lib/utils";
 import { useFormContext } from "react-hook-form";
 import { SetupFormType } from "@acc2/pages/setup";
 
-export type CalculationsProps = {
-  calculations: { method: string; parameters?: string }[];
-} & HTMLAttributes<HTMLElement>;
+export type CalculationsProps = HTMLAttributes<HTMLElement>;
 
-export const Calculations = ({
-  calculations,
-  className,
-  ...props
-}: CalculationsProps) => {
+export const Calculations = ({ className, ...props }: CalculationsProps) => {
   const form = useFormContext<SetupFormType>();
+  const calculations = form.watch("computations");
 
   const removeFromCalculaions = (index: number) => {
     const computations = form.getValues("computations");

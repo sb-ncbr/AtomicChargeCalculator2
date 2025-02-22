@@ -82,7 +82,6 @@ const MethodPublication = () => {
 export const Method = ({ computationId, className, ...props }: MethodProps) => {
   const { data: suitableMethods, isPending } =
     useSuitableMethodsQuery(computationId);
-  const methods = suitableMethods?.success ? suitableMethods.data.methods : [];
 
   return (
     <Card
@@ -91,7 +90,7 @@ export const Method = ({ computationId, className, ...props }: MethodProps) => {
     >
       <Busy isBusy={isPending}></Busy>
       <h3 className="capitalize font-bold text-xl mb-2">Method</h3>
-      <MethodSelector methods={methods} />
+      <MethodSelector methods={suitableMethods?.methods ?? []} />
       <Separator className="my-4" />
       <MethodPublication />
     </Card>

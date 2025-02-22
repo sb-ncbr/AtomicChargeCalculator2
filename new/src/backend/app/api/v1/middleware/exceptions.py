@@ -10,5 +10,5 @@ async def http_exception_handler(_: Request, exception: HTTPException):
     """Handle HTTP exceptions and return a JSON response with the error message."""
     return JSONResponse(
         status_code=exception.status_code,
-        content=ResponseError(message=exception.detail).model_dump_json(),
+        content=ResponseError(message=exception.detail).model_dump(),
     )

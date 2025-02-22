@@ -1,9 +1,14 @@
 import { api } from "./base";
-import { Response } from "./types";
+import { ApiResponse } from "./types";
 
-export const getAvailableMethods = async (): Promise<Response<string[]>> => {
-  const response = await api.get("/charges/methods");
-  return response.data;
+export const getAvailableMethods = async (): Promise<string[]> => {
+  const response = await api.get<ApiResponse<string[]>>("/charges/methods");
+
+  if (!response.data.success) {
+    throw new Error(response.data.message);
+  }
+
+  return response.data.data;
 };
 
 export type SuitableMethods = {
@@ -15,11 +20,16 @@ export type SuitableMethods = {
 
 export const getSuitableMethods = async (
   computationId: string
-): Promise<Response<SuitableMethods>> => {
-  const response = await api.post(
+): Promise<SuitableMethods> => {
+  const response = await api.post<ApiResponse<SuitableMethods>>(
     "/charges/methods",
     {},
     { params: { computation_id: computationId } }
   );
-  return response.data;
+
+  if (!response.data.success) {
+    throw new Error(response.data.message);
+  }
+
+  return response.data.data;
 };

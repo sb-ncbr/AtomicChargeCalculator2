@@ -11,6 +11,7 @@ import { useComputationSetupMutation } from "@acc2/hooks/mutations/use-computati
 import { toast } from "sonner";
 import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
 import { Busy } from "@acc2/components/ui/busy";
+import { handleApiError } from "@acc2/api/base";
 
 const computeSchema = z.object({
   files: z
@@ -33,46 +34,38 @@ export const Compute = () => {
   });
 
   const onSubmit = async (data: ComputeType) => {
-    const setupResponse = await setupMutation.mutateAsync(data.files);
-
-    if (!setupResponse.success) {
-      console.log(setupResponse.message);
-      return;
-    }
+    const setupResponse = await setupMutation.mutateAsync(data.files, {
+      onError: (error) => toast.error(handleApiError(error)),
+    });
 
     await computationMutation.mutateAsync(
       {
-        computationId: setupResponse.data.computationId,
+        computationId: setupResponse.computationId,
         computations: [],
       },
       {
-        onError: (error) => toast.error(error.message),
+        onError: (error) => toast.error(handleApiError(error)),
+        onSuccess: () =>
+          navigate({
+            pathname: "results",
+            search: createSearchParams({
+              comp_id: setupResponse.computationId,
+            }).toString(),
+          }),
       }
     );
-
-    navigate({
-      pathname: "results",
-      search: createSearchParams({
-        comp_id: setupResponse.data.computationId,
-      }).toString(),
-    });
   };
 
   const onSetup = async (data: ComputeType) => {
-    const response = await setupMutation.mutateAsync(data.files, {
+    await setupMutation.mutateAsync(data.files, {
       onError: () => toast.error("Unable to upload file(s). Try again later."),
-    });
-
-    if (!response.success) {
-      console.error(response.message);
-      return;
-    }
-
-    navigate({
-      pathname: "setup",
-      search: createSearchParams({
-        comp_id: response.data.computationId,
-      }).toString(),
+      onSuccess: ({ computationId }) =>
+        navigate({
+          pathname: "setup",
+          search: createSearchParams({
+            comp_id: computationId,
+          }).toString(),
+        }),
     });
   };
 
@@ -93,7 +86,7 @@ export const Compute = () => {
               {...form.register("files")}
               id="files"
               type="file"
-              accept=".sdf,.mol2,.pdb,.mmcif,.cif"
+              // accept=".sdf,.mol2,.pdb,.mmcif,.cif"
               className="border-2 border-primary cursor-pointer xs:w-fit"
               multiple
             />

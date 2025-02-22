@@ -1,23 +1,30 @@
 import { api } from "./base";
-import { Response } from "./types";
+import { ApiResponse } from "./types";
 
 export type SetupResponse = {
   computationId: string;
 };
 
-export const setup = async (
-  files: FileList
-): Promise<Response<SetupResponse>> => {
+export const setup = async (files: FileList): Promise<SetupResponse> => {
   const formData = new FormData();
   for (const file of files) {
     formData.append("files", file);
   }
-  const response = await api.postForm("/charges/setup", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
+  const response = await api.postForm<ApiResponse<SetupResponse>>(
+    "/charges/setup",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message);
+  }
+
+  return response.data.data;
 };
 
 export type ComputeResponse = {
@@ -31,7 +38,7 @@ export type ComputeResponse = {
 export const compute = async (
   computationId: string,
   computations: { method?: string; parameters?: string }[]
-): Promise<Response<ComputeResponse>> => {
+): Promise<ComputeResponse> => {
   const data = computations.map((comp) => ({
     method: comp.method ?? null,
     parameters: comp.parameters ?? null,
@@ -50,17 +57,33 @@ export const compute = async (
     });
   }
 
-  const response = await api.post(`/charges/${computationId}/calculate`, data, {
-    params: {
-      response_format: "none",
-    },
-  });
-  return response.data;
+  const response = await api.post<ApiResponse<ComputeResponse>>(
+    `/charges/${computationId}/calculate`,
+    data,
+    {
+      params: {
+        response_format: "none",
+      },
+    }
+  );
+
+  if (!response.data?.success) {
+    throw new Error(response.data.message);
+  }
+
+  return response.data.data;
 };
 
 export const getMolecules = async (
   computationId: string
-): Promise<Response<string[]>> => {
-  const response = await api.get(`/charges/${computationId}/molecules`);
-  return response.data;
+): Promise<string[]> => {
+  const response = await api.get<ApiResponse<string[]>>(
+    `/charges/${computationId}/molecules`
+  );
+
+  if (!response.data.success) {
+    throw Error(response.data.message);
+  }
+
+  return response.data.data;
 };

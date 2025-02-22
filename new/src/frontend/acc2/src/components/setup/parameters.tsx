@@ -21,8 +21,8 @@ import { Busy } from "../ui/busy";
 import { useFormContext } from "react-hook-form";
 import { FormField, FormItem } from "../ui/form";
 import { SetupFormType } from "@acc2/pages/setup";
-
-export type ParametersProps = { method: string } & HTMLAttributes<HTMLElement>;
+import { toast } from "sonner";
+import { handleApiError } from "@acc2/api/base";
 
 type ParametersSelectorProps = {
   parameters: string[];
@@ -77,11 +77,11 @@ const ParametersPublication = () => {
   );
 };
 
-export const Parameters = ({
-  method,
-  className,
-  ...props
-}: ParametersProps) => {
+export type ParametersProps = HTMLAttributes<HTMLElement>;
+
+export const Parameters = ({ className, ...props }: ParametersProps) => {
+  const form = useFormContext<SetupFormType>();
+  const method = form.watch("method");
   const parametersMutation = useAvailableParametersMutation();
   const [parameters, setParameters] = useState<string[]>([]);
 
@@ -90,12 +90,10 @@ export const Parameters = ({
       return;
     }
 
-    const response = await parametersMutation.mutateAsync(method);
-    if (!response.success) {
-      return;
-    }
-
-    setParameters(response.data);
+    await parametersMutation.mutateAsync(method, {
+      onError: (error) => toast.error(handleApiError(error)),
+      onSuccess: (parameters) => setParameters(parameters),
+    });
   };
 
   useEffect(() => {
