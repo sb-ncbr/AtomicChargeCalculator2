@@ -25,9 +25,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends ${DEPS} && \
     apt-get clean && rm -rf /var/lib/apt/lists*
 
-RUN git clone --depth 1 https://github.com/sb-ncbr/ChargeFW2.git && \
+RUN git clone -b development --depth 1 https://github.com/pilatmartin/ChargeFW2.git && \
         cd ChargeFW2 && \
-        git checkout master && \
         mkdir build && \
         cd build && \
         cmake .. -DCMAKE_INSTALL_PREFIX=. -DPYTHON_MODULE=ON && \
@@ -59,7 +58,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        python3 && \
+        gcc \
+        python3-dev \
+        libpq-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry

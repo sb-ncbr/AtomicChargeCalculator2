@@ -1,7 +1,6 @@
 """Database connection manager."""
 
-from contextlib import contextmanager, AbstractContextManager
-from typing import Callable
+from contextlib import contextmanager
 from sqlalchemy import create_engine, orm
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -25,7 +24,7 @@ class Database:
         Base.metadata.create_all(self._engine)
 
     @contextmanager
-    def session(self) -> Callable[..., AbstractContextManager[orm.Session]]:
+    def session(self):
         """Provide a transactional scope around a series of operations."""
 
         session: orm.Session = self._session_factory()

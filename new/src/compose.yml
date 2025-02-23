@@ -1,0 +1,30 @@
+services:
+  api:
+    build: ./backend
+    ports: 
+      - "8000:8000"
+    networks:
+      - acc2-network
+    depends_on:
+      - db    
+    environment:
+      - DB_URL=postgresql://postgres:postgres@db:5432/postgres
+  
+  db:
+    image: postgres:17-alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - acc2-network
+    
+networks:
+  acc2-network:
+
+volumes:
+  db-data:
