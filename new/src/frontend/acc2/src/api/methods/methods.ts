@@ -1,5 +1,6 @@
-import { api } from "./base";
-import { ApiResponse } from "./types";
+import { api } from "../base";
+import { ApiResponse } from "../types";
+import { SuitableMethods } from "./types";
 
 export const getAvailableMethods = async (): Promise<string[]> => {
   const response = await api.get<ApiResponse<string[]>>("/charges/methods");
@@ -9,13 +10,6 @@ export const getAvailableMethods = async (): Promise<string[]> => {
   }
 
   return response.data.data;
-};
-
-export type SuitableMethods = {
-  methods: string[];
-  parameters: {
-    [key: string]: string[];
-  };
 };
 
 export const getSuitableMethods = async (

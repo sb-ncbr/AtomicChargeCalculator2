@@ -1,98 +1,96 @@
-import { HTMLAttributes, useEffect } from "react";
+import { HTMLAttributes } from "react";
 import { Card } from "../ui/card";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
 import { cn } from "@acc2/lib/utils";
-import { useSuitableMethodsQuery } from "@acc2/hooks/queries/use-suitable-methods-query";
-import { Busy } from "../ui/busy";
-import { FormField, FormItem } from "../ui/form";
-import { useFormContext } from "react-hook-form";
-
-export type MethodProps = {
-  computationId: string;
-} & HTMLAttributes<HTMLElement>;
+import { Method as MethodType, SuitableMethods } from "@acc2/api/methods/types";
+import { usePublicationQuery } from "@acc2/hooks/queries/use-publication-query";
 
 export type MethodSelectorProps = {
-  methods: string[];
+  methods: MethodType[];
+  onMethodChange: (method: string) => void;
 };
 
-const MethodSelector = ({ methods }: MethodSelectorProps) => {
-  const form = useFormContext();
-
-  useEffect(() => {
-    form.setValue("method", methods?.[0]);
-  }, [methods]);
-
+const MethodSelector = ({ methods, onMethodChange }: MethodSelectorProps) => {
   return (
-    <FormField
-      control={form.control}
-      name="method"
-      render={({ field }) => (
-        <FormItem>
-          <Select
-            {...field}
-            onValueChange={field.onChange}
-            defaultValue={field.value}
-          >
-            <SelectTrigger className="w-[180px] border-2 mb-4">
-              <SelectValue placeholder="Method" />
-            </SelectTrigger>
-            <SelectContent>
+    <Select
+      onValueChange={onMethodChange}
+      defaultValue={methods?.[0].internalName}
+    >
+      <SelectTrigger className="w-fit min-w-[220px] max-w-full border-2 mb-4">
+        <SelectValue placeholder="Method" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {Object.entries(Object.groupBy(methods, ({ type }) => type)).map(
+            ([type, methods]) => (
               <SelectGroup>
+                <SelectLabel>{type}</SelectLabel>
                 {methods.map((method, index) => (
-                  <SelectItem key={index} value={method}>
-                    {method}
+                  <SelectItem key={index} value={method.internalName}>
+                    {method.name}
                   </SelectItem>
                 ))}
               </SelectGroup>
-            </SelectContent>
-          </Select>
-        </FormItem>
-      )}
-    ></FormField>
+            )
+          )}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 };
 
-const MethodPublication = () => {
-  // TODO: change to actual publication
+type MethodPublicationProps = {
+  method?: MethodType;
+};
+
+const MethodPublication = ({ method }: MethodPublicationProps) => {
+  const { data: publication } = usePublicationQuery(method);
+
   return (
     <>
       <h4 className="text-sm font-bold">Full Name</h4>
-      <p className="text-sm mb-2">
-        Split-charge equilibration with parametrized initial charges
-      </p>
-      <h4 className="text-sm font-bold">Publication</h4>
-      <p className="text-sm">
-        Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., &
-        Svobodová, R. (2021). Optimized SQE atomic charges for peptides
-        accessible via a web application. Journal of cheminformatics, 13(1),
-        1-11. doi:10.1186/s13321-021-00528-w
-      </p>
+      <p className="text-sm mb-2">{method?.fullName}</p>
+      {publication && (
+        <>
+          <h4 className="text-sm font-bold">Publication</h4>
+          <p className="text-sm">{publication}</p>
+        </>
+      )}
     </>
   );
 };
 
-export const Method = ({ computationId, className, ...props }: MethodProps) => {
-  const { data: suitableMethods, isPending } =
-    useSuitableMethodsQuery(computationId);
+export type MethodProps = {
+  suitableMethods: SuitableMethods;
+  currentMethod?: MethodType;
+  onMethodChange: (method: string) => void;
+} & HTMLAttributes<HTMLElement>;
 
+export const Method = ({
+  suitableMethods,
+  currentMethod,
+  onMethodChange,
+  className,
+  ...props
+}: MethodProps) => {
   return (
-    <Card
-      {...props}
-      className={cn("rounded-none p-4 mt-4 relative", className)}
-    >
-      <Busy isBusy={isPending}></Busy>
+    <Card {...props} className={cn("rounded-none p-4 mt-4", className)}>
       <h3 className="capitalize font-bold text-xl mb-2">Method</h3>
-      <MethodSelector methods={suitableMethods?.methods ?? []} />
+      <MethodSelector
+        methods={suitableMethods?.methods ?? []}
+        onMethodChange={onMethodChange}
+      />
       <Separator className="my-4" />
-      <MethodPublication />
+      <MethodPublication method={currentMethod} />
     </Card>
   );
 };

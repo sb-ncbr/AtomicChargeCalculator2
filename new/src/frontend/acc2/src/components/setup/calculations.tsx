@@ -4,7 +4,7 @@ import { Card } from "../ui/card";
 import { HTMLAttributes } from "react";
 import { cn } from "@acc2/lib/utils";
 import { useFormContext } from "react-hook-form";
-import { SetupFormType } from "@acc2/pages/setup";
+import { SetupFormType } from "@acc2/components/setup/setup";
 
 export type CalculationsProps = HTMLAttributes<HTMLElement>;
 
@@ -31,8 +31,8 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
             className="w-fit flex justify-between rounded-sm"
             variant={"secondary"}
           >
-            <span>{method}</span>
-            {parameters && <span>&nbsp;({parameters})</span>}
+            <span>{method.name}</span>
+            {parameters && <span>&nbsp;({parameters.name})</span>}
             <X
               height={10}
               width={10}

@@ -22,7 +22,9 @@ from core.models.calculation import (
     ChargeCalculationResult,
 )
 from core.models.molecule_info import MoleculeInfo
+from core.models.method import Method
 from core.models.paging import PagingFilters, PagedList
+from core.models.parameters import Parameters
 from core.models.suitable_methods import SuitableMethods
 
 from db.repositories.calculations_repository import CalculationsRepository
@@ -53,7 +55,7 @@ class ChargeFW2Service:
             self.executor if executor is None else executor, func, *args
         )
 
-    def get_available_methods(self) -> list[str]:
+    def get_available_methods(self) -> list[Method]:
         """Get available methods for charge calculation."""
 
         try:
@@ -63,6 +65,20 @@ class ChargeFW2Service:
             return methods
         except Exception as e:
             self.logger.error(f"Error getting available methods: {e}")
+            raise e
+
+    async def get_parameters_metadata(self, parameters: str) -> list[Parameters]:
+        """Get parameters metadata for charge calculation."""
+
+        try:
+            self.logger.info(f"Getting parameters metadata: {parameters}")
+            parameters_metadata = await self._run_in_executor(
+                self.chargefw2.get_parameters_metadata, parameters
+            )
+
+            return parameters_metadata
+        except Exception as e:
+            self.logger.error(f"Error getting parameters metadata: {e}")
             raise e
 
     async def get_suitable_methods(self, computation_id: str) -> SuitableMethods:
@@ -81,7 +97,6 @@ class ChargeFW2Service:
                 methods: list[tuple[str, list[str]]] = await self._run_in_executor(
                     self.chargefw2.get_suitable_methods, molecules
                 )
-
                 for method, parameters in methods:
                     if not parameters or len(parameters) == 0:
                         suitable_methods[(method,)] += 1
@@ -105,14 +120,25 @@ class ChargeFW2Service:
                 if len(pair) == 2:
                     parameters[pair[0]].append(pair[1])
 
-            return SuitableMethods(methods=methods, parameters=parameters)
+            # Add metadata to methods and paremeters
+            all_methods_with_metadata = self.get_available_methods()
+            methods_with_metadata = [
+                m for m in all_methods_with_metadata if m.internal_name in methods
+            ]
+            parameters_with_metadata = {
+                method: [Parameters(**(await self.get_parameters_metadata(p))) for p in params]
+                for method, params in parameters.items()
+            }
+            return SuitableMethods(
+                methods=methods_with_metadata, parameters=parameters_with_metadata
+            )
         except Exception as e:
             self.logger.error(
                 f"Error getting suitable methods for computation id '{computation_id}': {e}"
             )
             raise e
 
-    async def get_available_parameters(self, method: str) -> list[str]:
+    async def get_available_parameters(self, method: str) -> list[Parameters]:
         """Get available parameters for charge calculation method."""
 
         try:
@@ -121,7 +147,7 @@ class ChargeFW2Service:
                 self.chargefw2.get_available_parameters, method
             )
 
-            return parameters
+            return [Parameters(**(await self.get_parameters_metadata(p))) for p in parameters]
         except Exception as e:
             self.logger.error(f"Error getting available parameters for method {method}: {e}")
             raise e
@@ -249,11 +275,9 @@ class ChargeFW2Service:
             if not config.method:
                 # No method provided -> use most suitable method and parameters
                 suitable = await self.get_suitable_methods(computation_id)
-                config.method = suitable.methods[0]
-                parameters: list[str] = suitable.parameters.get(config.method, [])
-                config.parameters = (
-                    parameters[0].replace(".json", "") if len(parameters) > 0 else None
-                )
+                config.method = suitable.methods[0].internal_name
+                parameters = suitable.parameters.get(config.method, [])
+                config.parameters = parameters[0].internal_name if len(parameters) > 0 else None
                 self.logger.info(
                     f"""No method provided. 
                         Using method '{config.method}' with parameters '{config.parameters}'."""
@@ -263,14 +287,10 @@ class ChargeFW2Service:
             inputs = self.io.listdir(workdir)
             results = await asyncio.gather(
                 *[process_file(file) for file in inputs],
-                return_exceptions=True,
+                return_exceptions=False,  # TODO: what should happen if only one computation fails?
             )
             # Filter out exceptions
-            calculations = [
-                CalculationDto.from_result(result)
-                for result in results
-                if isinstance(result, CalculationDto)
-            ]
+            calculations = [CalculationDto.from_result(result) for result in results]
             return ChargeCalculationResult(
                 config=config,
                 calculations=calculations,

@@ -34,26 +34,27 @@ export const Compute = () => {
   });
 
   const onSubmit = async (data: ComputeType) => {
-    const setupResponse = await setupMutation.mutateAsync(data.files, {
+    await setupMutation.mutateAsync(data.files, {
       onError: (error) => toast.error(handleApiError(error)),
-    });
-
-    await computationMutation.mutateAsync(
-      {
-        computationId: setupResponse.computationId,
-        computations: [],
+      onSuccess: async (setupResponse) => {
+        await computationMutation.mutateAsync(
+          {
+            computationId: setupResponse.computationId,
+            computations: [],
+          },
+          {
+            onError: (error) => toast.error(handleApiError(error)),
+            onSuccess: () =>
+              navigate({
+                pathname: "results",
+                search: createSearchParams({
+                  comp_id: setupResponse.computationId,
+                }).toString(),
+              }),
+          }
+        );
       },
-      {
-        onError: (error) => toast.error(handleApiError(error)),
-        onSuccess: () =>
-          navigate({
-            pathname: "results",
-            search: createSearchParams({
-              comp_id: setupResponse.computationId,
-            }).toString(),
-          }),
-      }
-    );
+    });
   };
 
   const onSetup = async (data: ComputeType) => {

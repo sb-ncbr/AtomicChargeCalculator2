@@ -1,4 +1,4 @@
-import { getAvailableMethods } from "@acc2/api/methods";
+import { getAvailableMethods } from "@acc2/api/methods/methods";
 import { useQuery } from "@tanstack/react-query";
 
 export const useAvailableMethodsQuery = () => {

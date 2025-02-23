@@ -14,98 +14,90 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { Separator } from "../ui/separator";
-import { HTMLAttributes, useEffect, useState } from "react";
+import { HTMLAttributes, SetStateAction } from "react";
 import { cn } from "@acc2/lib/utils";
-import { useAvailableParametersMutation } from "@acc2/hooks/mutations/use-available-parameters-mutation";
-import { Busy } from "../ui/busy";
-import { useFormContext } from "react-hook-form";
-import { FormField, FormItem } from "../ui/form";
-import { SetupFormType } from "@acc2/pages/setup";
-import { toast } from "sonner";
-import { handleApiError } from "@acc2/api/base";
+import { Parameters as ParametersType } from "@acc2/api/parameters/types";
+import { usePublicationQuery } from "@acc2/hooks/queries/use-publication-query";
 
 type ParametersSelectorProps = {
-  parameters: string[];
+  currentParameters: ParametersType | undefined;
+  parameters: ParametersType[];
+  disabled: boolean;
+  onParametersChange: React.Dispatch<
+    SetStateAction<ParametersType | undefined>
+  >;
 };
 
-const ParametersSelector = ({ parameters }: ParametersSelectorProps) => {
-  const form = useFormContext<SetupFormType>();
-
-  useEffect(() => {
-    form.setValue("parameters", parameters?.[0]);
-  }, [parameters]);
-
+const ParametersSelector = ({
+  currentParameters,
+  parameters,
+  disabled,
+  onParametersChange,
+}: ParametersSelectorProps) => {
   return (
-    <FormField
-      control={form.control}
-      name="parameters"
-      render={({ field }) => (
-        <FormItem>
-          <Select
-            {...field}
-            onValueChange={field.onChange}
-            disabled={parameters.length === 0}
-          >
-            <SelectTrigger className="w-[180px] border-2 mb-4">
-              <SelectValue placeholder="Parameters" />
-            </SelectTrigger>
-            <SelectContent>
-              {parameters.map((parameters, index) => (
-                <SelectItem key={index} value={parameters}>
-                  {parameters}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormItem>
-      )}
-    ></FormField>
+    <Select
+      onValueChange={(value) => {
+        if (value) {
+          onParametersChange(parameters.find((p) => p.internalName === value));
+        }
+      }}
+      value={currentParameters?.internalName}
+      disabled={disabled}
+    >
+      <SelectTrigger className="w-fit min-w-[220px] max-w-full border-2 mb-4">
+        <SelectValue placeholder="Parameters" />
+      </SelectTrigger>
+      <SelectContent>
+        {parameters?.map((parameters, index) => (
+          <SelectItem key={index} value={parameters.internalName}>
+            {parameters.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 
-const ParametersPublication = () => {
+type ParametersPublicationProps = {
+  parameters?: ParametersType;
+};
+
+const ParametersPublication = ({ parameters }: ParametersPublicationProps) => {
+  const { data: publication } = usePublicationQuery(parameters);
+
   return (
     <>
-      <h4 className="text-sm font-bold">Publication</h4>
-      <p className="text-sm">
-        Schindler, O., Raček, T., Maršavelski, A., Koča, J., Berka, K., &
-        Svobodová, R. (2021). Optimized SQE atomic charges for peptides
-        accessible via a web application. Journal of cheminformatics, 13(1),
-        1-11. doi:10.1186/s13321-021-00528-w
-      </p>
+      {parameters && (
+        <>
+          <h4 className="text-sm font-bold">Publication</h4>
+          <p className="text-sm">{publication}</p>
+        </>
+      )}
     </>
   );
 };
 
-export type ParametersProps = HTMLAttributes<HTMLElement>;
+export type ParametersProps = {
+  currentParameters: ParametersType | undefined;
+  parametersList: ParametersType[];
+  onParametersChange: React.Dispatch<
+    React.SetStateAction<ParametersType | undefined>
+  >;
+} & HTMLAttributes<HTMLElement>;
 
-export const Parameters = ({ className, ...props }: ParametersProps) => {
-  const form = useFormContext<SetupFormType>();
-  const method = form.watch("method");
-  const parametersMutation = useAvailableParametersMutation();
-  const [parameters, setParameters] = useState<string[]>([]);
-
-  const getParameters = async () => {
-    if (!method) {
-      return;
-    }
-
-    await parametersMutation.mutateAsync(method, {
-      onError: (error) => toast.error(handleApiError(error)),
-      onSuccess: (parameters) => setParameters(parameters),
-    });
-  };
-
-  useEffect(() => {
-    getParameters();
-  }, [method]);
-
+export const Parameters = ({
+  currentParameters,
+  parametersList,
+  onParametersChange,
+  className,
+  ...props
+}: ParametersProps) => {
   return (
     <Card
       {...props}
       className={cn("rounded-none p-4 mt-4 relative", className)}
     >
-      <Busy isBusy={parametersMutation.isPending} />
+      {/* <Busy isBusy={parametersMutation.isPending} /> */}
       <h3 className="capitalize font-bold text-xl mb-2">
         Parameters
         <TooltipProvider>
@@ -119,9 +111,14 @@ export const Parameters = ({ className, ...props }: ParametersProps) => {
           </Tooltip>
         </TooltipProvider>
       </h3>
-      <ParametersSelector parameters={parameters} />
+      <ParametersSelector
+        currentParameters={currentParameters}
+        disabled={parametersList.length === 0}
+        parameters={parametersList}
+        onParametersChange={onParametersChange}
+      />
       <Separator className="my-4" />
-      <ParametersPublication />
+      <ParametersPublication parameters={currentParameters} />
     </Card>
   );
 };

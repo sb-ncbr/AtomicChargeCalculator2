@@ -14,7 +14,9 @@ from api.v1.schemas.response import Response
 
 from core.dependency_injection.container import Container
 from core.models.calculation import ChargeCalculationConfig
+from core.models.method import Method
 from core.models.molecule_info import MoleculeInfo
+from core.models.parameters import Parameters
 from core.models.setup import Setup
 from core.models.suitable_methods import SuitableMethods
 from core.exceptions.http import BadRequestError, NotFoundError
@@ -33,15 +35,16 @@ charges_router = APIRouter(prefix="/charges", tags=["charges"])
 @inject
 async def available_methods(
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-) -> Response[list[str]]:
+) -> Response[list[Method]]:
     """Returns the list of available methods for charge calculation."""
 
     try:
-        methods = await chargefw2.get_available_methods()
-        return Response[list[str]](data=methods)
+        methods = chargefw2.get_available_methods()
+        return Response[list[Method]](data=methods)
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting available methods."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error getting available methods.",
         ) from e
 
 
@@ -73,11 +76,11 @@ async def available_parameters(
         ),
     ],
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-) -> Response[list[str]]:
+) -> Response[list[Parameters]]:
     """Returns the list of available parameters for the provided method."""
 
-    methods = await chargefw2.get_available_methods()
-    if method_name not in methods:
+    methods = chargefw2.get_available_methods()
+    if not any(method.internal_name == method_name for method in methods):
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Method '{method_name}' not found.",
@@ -85,7 +88,7 @@ async def available_parameters(
 
     try:
         parameters = await chargefw2.get_available_parameters(method_name)
-        return Response[list[str]](data=parameters)
+        return Response[list[Parameters]](data=parameters)
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -143,7 +146,7 @@ async def calculate_charges(
         return Response(data=calculations)
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error calculating charges. {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error calculating charges."
         ) from e
 
 

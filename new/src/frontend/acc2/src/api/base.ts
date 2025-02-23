@@ -1,9 +1,11 @@
 import axios, { AxiosError } from "axios";
 import { ErrorResponse } from "./types";
 
-// TODO: move to .env?
-// export const baseApiUrl = "http://147.251.245.170:8080/api/v1/web";
-export const baseApiUrl = "http://localhost:8000/api/v1/web";
+export const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
+
+if (!baseApiUrl) {
+  throw new Error("BASE_API_URL environment variable is not defined.");
+}
 
 export const api = axios.create({
   baseURL: baseApiUrl,

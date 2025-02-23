@@ -1,10 +1,11 @@
-import { api } from "./base";
-import { ApiResponse } from "./types";
+import { api } from "../base";
+import { ApiResponse } from "../types";
+import { Parameters } from "./types";
 
 export const getAvailableParameters = async (
   method: string
-): Promise<string[]> => {
-  const response = await api.get<ApiResponse<string[]>>(
+): Promise<Parameters[]> => {
+  const response = await api.get<ApiResponse<Parameters[]>>(
     `/charges/parameters/${method}`
   );
 

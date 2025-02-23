@@ -4,6 +4,7 @@ from typing import Dict
 from abc import ABC, abstractmethod
 
 from chargefw2 import Molecules
+from core.models.method import Method
 
 Charges = Dict[str, list[float]]
 
@@ -34,7 +35,7 @@ class ChargeFW2Base(ABC):
     @abstractmethod
     def get_available_methods(
         self,
-    ) -> list[str]:
+    ) -> list[Method]:
         """Get all available methods.
 
         Returns:
@@ -55,7 +56,7 @@ class ChargeFW2Base(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_suitable_methods(self, molecules: Molecules) -> list[tuple[str, list[str]]]:
+    def get_suitable_methods(self, molecules: Molecules) -> list[tuple[str, list[dict]]]:
         """Get methods and parameters that are suitable for a given set of molecules.
 
         Args:
@@ -63,6 +64,18 @@ class ChargeFW2Base(ABC):
 
         Returns:
             list[tuple[str, list[str]]]: List of tuples containing method name and parameters for that method.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_parameters_metadata(self, parameters: str) -> list[dict]:
+        """Get metadata for parameters.
+
+        Args:
+            parameters_name (str): Internal parameters name.
+
+        Returns:
+            dict: Dictionary with parameters metadata (name and publication).
         """
         raise NotImplementedError()
 

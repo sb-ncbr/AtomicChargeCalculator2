@@ -1,4 +1,4 @@
-import { compute } from "@acc2/api/compute";
+import { compute } from "@acc2/api/compute/compute";
 import { useMutation } from "@tanstack/react-query";
 
 type ComputationMutationData = {
