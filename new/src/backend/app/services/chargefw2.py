@@ -53,12 +53,12 @@ class ChargeFW2Service:
             self.executor if executor is None else executor, func, *args
         )
 
-    async def get_available_methods(self) -> list[str]:
+    def get_available_methods(self) -> list[str]:
         """Get available methods for charge calculation."""
 
         try:
             self.logger.info("Getting available methods.")
-            methods = await self._run_in_executor(self.chargefw2.get_available_methods)
+            methods = self.chargefw2.get_available_methods()
 
             return methods
         except Exception as e:
@@ -263,11 +263,17 @@ class ChargeFW2Service:
             inputs = self.io.listdir(workdir)
             results = await asyncio.gather(
                 *[process_file(file) for file in inputs],
-                return_exceptions=False,
+                return_exceptions=True,
             )
+            # Filter out exceptions
+            calculations = [
+                CalculationDto.from_result(result)
+                for result in results
+                if isinstance(result, CalculationDto)
+            ]
             return ChargeCalculationResult(
                 config=config,
-                calculations=[CalculationDto.from_result(result) for result in results],
+                calculations=calculations,
             )
         except Exception as e:
             self.logger.error(f"Error calculating charges: {str(e)}")

@@ -88,7 +88,8 @@ async def available_parameters(
         return Response[list[str]](data=parameters)
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting available parameters."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error getting available parameters for method '{method_name}'.",
         ) from e
 
 
@@ -118,8 +119,8 @@ async def calculate_charges(
     computation_id: Annotated[str, Path(description="UUID of the computation.")],
     configs: list[ChargeCalculationConfig],
     response_format: Annotated[
-        Literal["mmcif", "raw", "none"], Query(description="Output format.")
-    ] = "raw",
+        Literal["charges", "none"], Query(description="Output format.")
+    ] = "charges",
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ):
     """
@@ -134,13 +135,10 @@ async def calculate_charges(
         calculations = await asyncio.gather(
             *[chargefw2.calculate_charges(computation_id, config) for config in configs]
         )
-        mmcif_data = chargefw2.write_to_mmcif(computation_id, calculations)
+        _ = chargefw2.write_to_mmcif(computation_id, calculations)
 
         if response_format == "none":
             return Response(data=None)
-
-        if response_format == "mmcif":
-            return Response(data=mmcif_data)
 
         return Response(data=calculations)
     except Exception as e:
@@ -190,7 +188,7 @@ async def setup(
         return Response(data={"computationId": computation_id})
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error uploading files. {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error uploading files."
         ) from e
 
 
@@ -225,7 +223,8 @@ async def get_mmcif(
         raise NotFoundError(detail=f"MMCIF file for molecule '{molecule}' not found.") from e
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting MMCIF. {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong while getting MMCIF data.",
         ) from e
 
 
@@ -238,15 +237,20 @@ async def get_molecules(
     """Returns the list of molecules in the provided computation."""
     try:
         charges_path = io.get_charges_path(computation_id)
+        if not io.path_exists(charges_path):
+            raise FileNotFoundError()
         molecule_files = [
             file for file in io.listdir(charges_path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
         ]
         molecules = [file.replace(CHARGES_OUTPUT_EXTENSION, "") for file in molecule_files]
 
         return Response(data=sorted(molecules))
+    except FileNotFoundError as e:
+        raise NotFoundError(detail=f"Computation '{computation_id}' not found.") from e
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting molecules. {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong while getting molecules.",
         ) from e
 
 
