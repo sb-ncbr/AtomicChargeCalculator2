@@ -29,7 +29,7 @@ class Container(containers.DeclarativeContainer):
     io = providers.Singleton(IOLocal)
 
     # database
-    db = providers.Singleton(Database, db_url=os.environ.get("DB_URL"))
+    db = providers.Singleton(Database, db_url=os.environ.get("ACC2_DB_URL"))
 
     # repositories
     calculations_repository = providers.Factory(

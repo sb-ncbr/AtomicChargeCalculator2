@@ -77,7 +77,7 @@ export const Compute = () => {
           <Progress value={25} className="rounded-none" />
         </div>
       )} */}
-      <Busy isBusy={computationMutation.isPending} />
+      <Busy isBusy={computationMutation.isPending || setupMutation.isPending} />
       <h2 className="text-5xl text-primary font-bold">Compute</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

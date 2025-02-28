@@ -210,14 +210,18 @@ async def get_mmcif(
             raise FileNotFoundError()
 
         if molecule is None:
-            molecules = [file for file in io.listdir(charges_path) if file.endswith(".fw2.cif")]
+            molecules = [
+                file for file in io.listdir(charges_path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
+            ]
 
             if len(molecules) == 0:
                 raise FileNotFoundError()
 
             return FileResponse(path=os.path.join(charges_path, molecules[0]))
 
-        path = os.path.join(io.get_charges_path(computation_id), f"{molecule.lower()}.fw2.cif")
+        path = os.path.join(
+            io.get_charges_path(computation_id), molecule.lower() + CHARGES_OUTPUT_EXTENSION
+        )
         if not io.path_exists(path):
             raise FileNotFoundError()
 
@@ -228,6 +232,44 @@ async def get_mmcif(
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Something went wrong while getting MMCIF data.",
+        ) from e
+
+
+@charges_router.get("/examples/{example_id}/mmcif", tags=["examples", "mmcif"])
+@inject
+async def get_example_mmcif(
+    example_id: Annotated[str, Path(description="ID of the example.", example="phenols")],
+    molecule: Annotated[str | None, Query(description="Molecule name.")] = None,
+    io: IOService = Depends(Provide[Container.io_service]),
+) -> FileResponse:
+    """Returns a mmcif file for the provided molecule in the example."""
+    try:
+        examples_path = io.get_example_path(example_id)
+        if not io.path_exists(examples_path):
+            raise FileNotFoundError()
+
+        if molecule is None:
+            molecules = [
+                file
+                for file in io.listdir(examples_path)
+                if file.endswith(CHARGES_OUTPUT_EXTENSION)
+            ]
+
+            if len(molecules) == 0:
+                raise FileNotFoundError()
+
+            return FileResponse(path=os.path.join(examples_path, molecules[0]))
+
+        path = os.path.join(
+            io.get_example_path(example_id), molecule.lower() + CHARGES_OUTPUT_EXTENSION
+        )
+        if not io.path_exists(path):
+            raise FileNotFoundError()
+
+        return FileResponse(path=path)
+    except FileNotFoundError as e:
+        raise NotFoundError(
+            detail=f"MMCIF file for molecule '{molecule}' in example '{example_id}' not found."
         ) from e
 
 
@@ -250,6 +292,32 @@ async def get_molecules(
         return Response(data=sorted(molecules))
     except FileNotFoundError as e:
         raise NotFoundError(detail=f"Computation '{computation_id}' not found.") from e
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong while getting molecules.",
+        ) from e
+
+
+@charges_router.get("/examples/{example_id}/molecules", tags=["examples", "molecules"])
+@inject
+async def get_example_molecules(
+    example_id: Annotated[str, Path(description="Id of the example.", example="phenols")],
+    io: IOService = Depends(Provide[Container.io_service]),
+) -> Response[list[str]]:
+    """Returns the list of molecules in the provided computation."""
+    try:
+        charges_path = io.get_example_path(example_id)
+        if not io.path_exists(charges_path):
+            raise FileNotFoundError()
+        molecule_files = [
+            file for file in io.listdir(charges_path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
+        ]
+        molecules = [file.replace(CHARGES_OUTPUT_EXTENSION, "") for file in molecule_files]
+
+        return Response(data=sorted(molecules))
+    except FileNotFoundError as e:
+        raise NotFoundError(detail=f"Example '{example_id}' not found.") from e
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,

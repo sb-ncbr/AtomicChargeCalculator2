@@ -3,16 +3,18 @@
 import os
 
 
+from dotenv import load_dotenv
 from fastapi import UploadFile
 
 from core.logging.base import LoggerBase
 from core.integrations.io.base import IOBase
 
 
+load_dotenv()
+
+
 class IOService:
     """Service for handling file operations."""
-
-    workdir: str = os.path.join("/", "tmp", "acc2")
 
     def __init__(self, io: IOBase, logger: LoggerBase):
         self.io = io
@@ -41,6 +43,17 @@ class IOService:
             self.io.remove_tmp_dir(path)
         except Exception as e:
             self.logger.error(f"Unable to remove temporary directory '{path}': {e}")
+            raise e
+
+    def create_dir(self, path: str) -> None:
+        """Create directory."""
+
+        self.logger.info(f"Creating directory {path}")
+
+        try:
+            self.io.create_dir(path)
+        except Exception as e:
+            self.logger.error(f"Unable to create directory '{path}': {e}")
             raise e
 
     def cp(self, path_from: str, path_to: str) -> str:
@@ -75,8 +88,12 @@ class IOService:
 
     def get_input_path(self, computation_id: str) -> str:
         """Get path to input directory."""
-        return os.path.join(self.workdir, computation_id, "input")
+        return os.path.join(self.io.tmp_workdir, computation_id, "input")
 
     def get_charges_path(self, computation_id: str) -> str:
         """Get path to charges directory."""
-        return os.path.join(self.workdir, computation_id, "charges")
+        return os.path.join(self.io.tmp_workdir, computation_id, "charges")
+
+    def get_example_path(self, example_id: str) -> str:
+        """Get path to example directory."""
+        return os.path.join(os.environ.get("ACC2_EXAMPLES_DIR"), example_id)

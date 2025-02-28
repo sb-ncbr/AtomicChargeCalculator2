@@ -32,7 +32,7 @@ const MethodSelector = ({ methods, onMethodChange }: MethodSelectorProps) => {
         <SelectGroup>
           {Object.entries(Object.groupBy(methods, ({ type }) => type)).map(
             ([type, methods]) => (
-              <SelectGroup>
+              <SelectGroup key={type}>
                 <SelectLabel>{type}</SelectLabel>
                 {methods.map((method, index) => (
                   <SelectItem key={index} value={method.internalName}>

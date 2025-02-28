@@ -6,13 +6,18 @@ export const ResultsPage = () => {
   useTitle("Results");
 
   const [searchParams, _setSearchParams] = useSearchParams();
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   const computationId = searchParams.get("comp_id");
-  if (!computationId) {
-    navigator("/");
+  const exampleId = searchParams.get("example_id");
+  if (!computationId && !exampleId) {
+    navigate("/");
     return null;
   }
 
-  return <Results computationId={computationId} />;
+  if (exampleId) {
+    return <Results computationId={`examples/${exampleId}`} />;
+  }
+
+  return <Results computationId={computationId!} />;
 };

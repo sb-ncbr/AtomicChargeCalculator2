@@ -3,15 +3,27 @@ import Bax from "@acc2/assets/images/bax.png";
 import Receptor from "@acc2/assets/images/receptor.png";
 import { Example } from "../example";
 import { Section } from "../section";
+import { createSearchParams, useNavigate } from "react-router";
 
 export const Examples = () => {
+  const navigate = useNavigate();
+
+  const goToExample = async (exampleId: string) => {
+    navigate({
+      pathname: "/results",
+      search: createSearchParams({
+        example_id: exampleId,
+      }).toString(),
+    });
+  };
+
   return (
     <Section title="Examples">
       <div className="grid grid-cols-1 gap-8 h-full xl:grid-cols-3">
         <Example
           title="Dissociating hydrogens"
           image={{ src: Propofol, alt: "Propofol" }}
-          actions={[{ name: "Phenols", action: () => {} }]}
+          actions={[{ name: "Phenols", action: () => goToExample("phenols") }]}
         >
           <p>
             This example focuses on acid dissociation of seven phenolic drugs,
@@ -61,8 +73,8 @@ export const Examples = () => {
           title="Apoptotic protein activation"
           image={{ src: Bax, alt: "Bax" }}
           actions={[
-            { name: "Activated", action: () => {} },
-            { name: "Inactive", action: () => {} },
+            { name: "Activated", action: () => goToExample("1f16") },
+            { name: "Inactive", action: () => goToExample("2k72") },
           ]}
         >
           <p>
@@ -112,7 +124,9 @@ export const Examples = () => {
         <Example
           title="Transmembrane protein"
           image={{ src: Receptor, alt: "Receptor" }}
-          actions={[{ name: "Receptor", action: () => {} }]}
+          actions={[
+            { name: "Receptor", action: () => goToExample("receptor") },
+          ]}
         >
           <p>
             The nicotinic acetylcholine receptor passes the cell membrane (see

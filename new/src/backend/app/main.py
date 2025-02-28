@@ -1,8 +1,11 @@
 """Main module for the application."""
 
-from typing import Tuple
-from fastapi import FastAPI, HTTPException
+import os
+import shutil
+
 from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from typing import Tuple
 
 from api.v1.routes.web.charges import charges_router as web_charges_router
 from api.v1.routes.web.auth import auth_router
@@ -14,46 +17,44 @@ from api.v1.middleware.exceptions import http_exception_handler
 from core.dependency_injection.container import Container
 
 
-PREFIX = "/api/v1"
+PREFIX = "/v1"
 WEB_PREFIX = f"{PREFIX}/web"
-load_dotenv()
 
 
 def create_apps() -> Tuple[FastAPI, FastAPI]:
-    """Creates FastAPI apps with routers and middleware."""
+    """Creates FastAPI aps with routers and middleware."""
+
+    if not load_dotenv():
+        raise EnvironmentError("Could not load environment variables.")
+
+    # Move example files to example directory
+    if not (examples_dir := os.environ.get("ACC2_EXAMPLES_DIR")):
+        raise EnvironmentError("ACC2_EXAMPLES_DIR environment variable is not set.")
+
+    try:
+        shutil.copytree("examples", examples_dir, dirs_exist_ok=True)
+    except Exception as e:
+        raise EnvironmentError(f"Could not copy example files. {str(e)}") from e
 
     # Create DI container
     container = Container()
 
-    # Create database
     db = container.db()
     db.create_database()
 
-    # Create FastAPI app
-    web_app = FastAPI()
-    # internal_app = FastAPI()
+    app = FastAPI()
 
-    # Wire dependencies
     container.wire()
 
-    # Add web middleware
-    web_app.add_middleware(LoggingMiddleware)
-    web_app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_middleware(LoggingMiddleware)
+    app.add_exception_handler(HTTPException, http_exception_handler)
 
-    # Add internal middleware
-    # internal_app.add_middleware(LoggingMiddleware)
-    # internal_app.add_exception_handler(HTTPException, http_exception_handler)
+    app.include_router(router=web_charges_router, prefix=WEB_PREFIX)
+    app.include_router(router=auth_router, prefix=WEB_PREFIX)
+    app.include_router(router=protonation_router, prefix=WEB_PREFIX)
+    app.include_router(router=user_router, prefix=WEB_PREFIX)
 
-    # Add web routers
-    web_app.include_router(router=web_charges_router, prefix=WEB_PREFIX)
-    web_app.include_router(router=auth_router, prefix=WEB_PREFIX)
-    web_app.include_router(router=protonation_router, prefix=WEB_PREFIX)
-    web_app.include_router(router=user_router, prefix=WEB_PREFIX)
-
-    # Add internal routers
-    # internal_app.include_router(router=charges_router, prefix=PREFIX)
-
-    return web_app
+    return app
 
 
 web_app = create_apps()

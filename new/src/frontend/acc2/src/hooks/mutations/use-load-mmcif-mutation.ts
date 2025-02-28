@@ -8,8 +8,9 @@ export const useLoadMmcifMutation = (
 ) => {
   return useMutation({
     mutationFn: async ({ molecule = "" }: { molecule?: string }) => {
+      const search = molecule ? `?molecule=${molecule}` : "";
       await molstar.load(
-        `${baseApiUrl}/charges/${computationId}/mmcif?molecule=${molecule}`,
+        `${baseApiUrl}/charges/${computationId}/mmcif${search}`,
         "mmcif",
         "ACC2"
       );

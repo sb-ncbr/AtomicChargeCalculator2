@@ -2,13 +2,17 @@
 
 import logging
 import os
+
+from dotenv import load_dotenv
 from core.logging.base import LoggerBase
+
+load_dotenv()
 
 
 class FileLogger(LoggerBase):
     """Service for logging to file."""
 
-    logdir = "/tmp/acc2/logs"
+    logdir = os.environ.get("ACC2_LOG_DIR")
 
     def __init__(self, file_name: str = "logs.log") -> None:
         super().__init__()

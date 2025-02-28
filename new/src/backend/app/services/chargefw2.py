@@ -406,7 +406,7 @@ class ChargeFW2Service:
             self.logger.error(f"Error getting info for file {file.filename}: {str(e)}")
             raise e
         finally:
-            self.io.remove_tmp_dir(workdir)
+            self.io.remove_tmp_dir("info")
 
     def get_calculations(self, filters: PagingFilters) -> PagedList[CalculationDto]:
         """Get all calculations stored in the database."""

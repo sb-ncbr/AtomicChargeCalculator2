@@ -7,6 +7,7 @@ export const setup = async (files: FileList): Promise<SetupResponse> => {
   for (const file of files) {
     formData.append("files", file);
   }
+
   const response = await api.postForm<ApiResponse<SetupResponse>>(
     "/charges/setup",
     formData,

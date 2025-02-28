@@ -13,16 +13,16 @@ from .base import IOBase
 class IOLocal(IOBase):
     """Local IO operations."""
 
-    workdir: str = os.path.join("/", "tmp", "acc2")
+    tmp_workdir: str = os.path.join("/", "tmp", "acc2")
 
     def create_tmp_dir(self, name: str = "") -> str:
-        path = os.path.join(IOLocal.workdir, name)
+        path = os.path.join(IOLocal.tmp_workdir, name)
         os.makedirs(path, exist_ok=True)
 
         return path
 
-    def remove_tmp_dir(self, path: str) -> None:
-        shutil.rmtree(path)
+    def remove_tmp_dir(self, dir_name: str) -> None:
+        shutil.rmtree(os.path.join(IOLocal.tmp_workdir, dir_name))
 
     def cp(self, path_src: str, path_dst: str) -> str:
         return shutil.copy(path_src, path_dst)

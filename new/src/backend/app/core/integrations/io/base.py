@@ -15,16 +15,16 @@ class IOBase(ABC):
         """Creates temporary directory.
 
         Returns:
-                str: Path to te created temporary directory.
+                str: Name of the temporary directory which will be created.
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def remove_tmp_dir(self, path: str) -> None:
+    def remove_tmp_dir(self, dir_name: str) -> None:
         """Removes temporary directory.
 
         Args:
-            name (str): Path to the temporary directory which will be removed.
+            name (str): Name of the temporary directory which will be removed.
         """
         raise NotImplementedError()
 
