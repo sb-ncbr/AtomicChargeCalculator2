@@ -42,7 +42,7 @@ def create_apps() -> Tuple[FastAPI, FastAPI]:
     db = container.db()
     db.create_database()
 
-    app = FastAPI()
+    app = FastAPI(root_path="/api")
 
     container.wire()
 

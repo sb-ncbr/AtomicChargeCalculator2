@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prod": "serve -s dist",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -41,6 +42,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-router": "^7.1.5",
+    "serve": "^14.2.4",
     "sonner": "^2.0.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",

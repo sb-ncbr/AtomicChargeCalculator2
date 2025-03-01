@@ -29,6 +29,7 @@ from core.models.suitable_methods import SuitableMethods
 
 from db.repositories.calculations_repository import CalculationsRepository
 
+from api.v1.constants import CHARGES_OUTPUT_EXTENSION
 from services.io import IOService
 
 
@@ -407,6 +408,60 @@ class ChargeFW2Service:
             raise e
         finally:
             self.io.remove_tmp_dir("info")
+
+    def get_calculation_molecules(self, path: str) -> list[str]:
+        """Returns molecules stored in the provided path.
+
+        Args:
+            path (str): Path to computation results.
+
+        Raises:
+            FileNotFoundError: If the provided path does not exist.
+
+        Returns:
+            list[str]: List of molecule names.
+        """
+        if not self.io.path_exists(path):
+            raise FileNotFoundError()
+
+        molecule_files = [
+            file for file in self.io.listdir(path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
+        ]
+        molecules = [file.replace(CHARGES_OUTPUT_EXTENSION, "") for file in molecule_files]
+
+        return molecules
+
+    def get_molecule_mmcif(self, path: str, molecule: str | None) -> str:
+        """Returns a mmcif file for the provided molecule in the provided path.
+
+        Args:
+            path (str): Path to computation results.
+            molecule (str | None): Molecule name. Will return the first one if not provided.
+
+        Raises:
+            FileNotFoundError: If the provided path or molecule does not exist.
+
+        Returns:
+            str: Path to the mmcif file.
+        """
+        if not self.io.path_exists(path):
+            raise FileNotFoundError()
+
+        if molecule is None:
+            molecules = [
+                file for file in self.io.listdir(path) if file.endswith(CHARGES_OUTPUT_EXTENSION)
+            ]
+
+            if len(molecules) == 0:
+                raise FileNotFoundError()
+
+            return os.path.join(path, molecules[0])
+
+        path = os.path.join(path, molecule.lower() + CHARGES_OUTPUT_EXTENSION)
+        if not self.io.path_exists(path):
+            raise FileNotFoundError()
+
+        return path
 
     def get_calculations(self, filters: PagingFilters) -> PagedList[CalculationDto]:
         """Get all calculations stored in the database."""
