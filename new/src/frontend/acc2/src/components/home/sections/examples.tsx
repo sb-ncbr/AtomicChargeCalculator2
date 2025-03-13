@@ -74,7 +74,7 @@ export const Examples = () => {
           image={{ src: Bax, alt: "Bax" }}
           actions={[
             { name: "Activated", action: () => goToExample("1f16") },
-            { name: "Inactive", action: () => goToExample("2k72") },
+            { name: "Inactive", action: () => goToExample("2k7w") },
           ]}
         >
           <p>

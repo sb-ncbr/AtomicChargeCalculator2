@@ -5,27 +5,29 @@ import os
 import shutil
 
 import aiofiles
+from dotenv import load_dotenv
 from fastapi import UploadFile
 
 from .base import IOBase
+
+load_dotenv()
 
 
 class IOLocal(IOBase):
     """Local IO operations."""
 
-    tmp_workdir: str = os.path.join("/", "tmp", "acc2")
-
-    def create_tmp_dir(self, name: str = "") -> str:
-        path = os.path.join(IOLocal.tmp_workdir, name)
+    def mkdir(self, path: str) -> str:
         os.makedirs(path, exist_ok=True)
-
         return path
 
-    def remove_tmp_dir(self, dir_name: str) -> None:
-        shutil.rmtree(os.path.join(IOLocal.tmp_workdir, dir_name))
+    def rmdir(self, path: str) -> None:
+        shutil.rmtree(path)
 
     def cp(self, path_src: str, path_dst: str) -> str:
         return shutil.copy(path_src, path_dst)
+
+    def zip(self, path: str, destination: str) -> str:
+        return shutil.make_archive(destination, "zip", path)
 
     def listdir(self, directory: str = ".") -> list[str]:
         return os.listdir(directory)

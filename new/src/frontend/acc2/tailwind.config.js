@@ -83,6 +83,15 @@ module.exports = {
       maxWidth: {
         content: "1400px",
       },
+      height: {
+        header: "100px",
+        footer: "120px",
+        main: "calc(100vh - 100px - 120px)",
+      },
+      minHeight: {
+        // height without header and footer
+        main: "calc(100vh - 100px - 120px)",
+      },
     },
     fontFamily: {
       muni: ["Muni", "sans-serif"],

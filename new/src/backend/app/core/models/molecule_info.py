@@ -15,7 +15,7 @@ class AtomTypeCount:
 
 
 @dataclass
-class MoleculeInfo:
+class MoleculeSetStats:
     """Information about the molecules in the provided file."""
 
     total_molecules: int

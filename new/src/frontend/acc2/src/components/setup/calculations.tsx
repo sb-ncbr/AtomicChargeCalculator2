@@ -28,7 +28,7 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
         {calculations?.map(({ method, parameters }, index) => (
           <Badge
             key={index}
-            className="w-fit flex justify-between rounded-sm"
+            className="w-fit flex justify-between rounded"
             variant={"secondary"}
           >
             <span>{method.name}</span>

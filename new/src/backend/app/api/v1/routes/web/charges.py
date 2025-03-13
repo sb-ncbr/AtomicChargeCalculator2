@@ -1,8 +1,10 @@
 """Charge calculation routes."""
 
 import asyncio
-from typing import Annotated, Literal
+import traceback
 import uuid
+
+from typing import Annotated, Literal
 from fastapi import Depends, File, Path, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
@@ -12,15 +14,17 @@ from api.v1.constants import ALLOWED_FILE_TYPES, MAX_SETUP_FILES_SIZE
 from api.v1.schemas.response import Response
 
 from core.dependency_injection.container import Container
-from core.models.calculation import ChargeCalculationConfig
+from core.models.calculation import CalculationSetPreviewDto, ChargeCalculationConfig
 from core.models.method import Method
-from core.models.molecule_info import MoleculeInfo
+from core.models.molecule_info import MoleculeSetStats
+from core.models.paging import PagedList
 from core.models.parameters import Parameters
 from core.models.setup import Setup
 from core.models.suitable_methods import SuitableMethods
 from core.exceptions.http import BadRequestError, NotFoundError
 
 
+from db.repositories.calculation_set_repository import CalculationSetFilters
 from services.io import IOService
 from services.chargefw2 import ChargeFW2Service
 
@@ -100,7 +104,7 @@ async def available_parameters(
 async def info(
     file: Annotated[UploadFile, File(description="File for which to get information.")],
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-) -> Response[MoleculeInfo]:
+) -> Response[MoleculeSetStats]:
     """
     Returns information about the provided file.
     Number of molecules, total atoms and individual atoms.
@@ -131,19 +135,23 @@ async def calculate_charges(
     """
 
     if configs is None or len(configs) == 0:
-        raise BadRequestError(status_code=status.HTTP_400_BAD_REQUEST, detail="No config provided.")
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No configurations provided.",
+        )
+
+    if chargefw2.get_calculation_set(computation_id) is None:
+        raise NotFoundError(detail=f"Computation '{computation_id}' not found.")
 
     try:
-        calculations = await asyncio.gather(
-            *[chargefw2.calculate_charges(computation_id, config) for config in configs]
-        )
-        _ = chargefw2.write_to_mmcif(computation_id, calculations)
+        calculations = await chargefw2.calculate_charges_multi(computation_id, configs)
 
         if response_format == "none":
             return Response(data=None)
 
         return Response(data=calculations)
     except Exception as e:
+        print(traceback.format_exc())
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error calculating charges."
         ) from e
@@ -157,7 +165,9 @@ async def calculate_charges(
 )
 @inject
 async def setup(
-    files: list[UploadFile], io: IOService = Depends(Provide[Container.io_service])
+    files: list[UploadFile],
+    io: IOService = Depends(Provide[Container.io_service]),
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ) -> Response[Setup]:
     """Stores the provided files on disk and returns the computation id."""
 
@@ -184,13 +194,16 @@ async def setup(
 
     try:
         computation_id = str(uuid.uuid4())
-        tmp_dir = io.create_tmp_dir(io.get_input_path(computation_id))
-        await asyncio.gather(*[io.store_upload_file(file, tmp_dir) for file in files])
+        workdir = io.get_input_path(computation_id)
+        io.create_dir(workdir)
+        await asyncio.gather(*[io.store_upload_file(file, workdir) for file in files])
+        chargefw2.store_calculation_set(computation_id, [])
 
         return Response(data={"computationId": computation_id})
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error uploading files."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error uploading files.",
         ) from e
 
 
@@ -229,7 +242,7 @@ async def get_example_mmcif(
     try:
         examples_path = io.get_example_path(example_id)
         mmcif_path = chargefw2.get_molecule_mmcif(examples_path, molecule)
-        return Response(path=mmcif_path)
+        return FileResponse(path=mmcif_path)
     except FileNotFoundError as e:
         raise NotFoundError(
             detail=f"MMCIF file for molecule '{molecule}' in example '{example_id}' not found."
@@ -283,20 +296,49 @@ async def get_example_molecules(
         ) from e
 
 
-# @charges_router.get("/calculations", tags=["calculations"])
-# @inject
-# async def get_calculations(
-#     page: Annotated[int, Query(description="Page number.")] = 1,
-#     page_size: Annotated[int, Query(description="Number of items per page.")] = 10,
-#     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-# ):
-#     """Returns all calculations stored in the database."""
+@charges_router.get("/calculations", tags=["calculations"])
+@inject
+async def get_calculations(
+    page: Annotated[int, Query(description="Page number.")] = 1,
+    page_size: Annotated[int, Query(description="Number of items per page.")] = 10,
+    order_by: Annotated[Literal["created_at"], Query(description="Order by field.")] = "created_at",
+    order: Annotated[Literal["asc", "desc"], Query(description="Order direction.")] = "desc",
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+) -> Response[PagedList[CalculationSetPreviewDto]]:
+    """Returns all calculations stored in the database."""
 
-#     try:
-#         filters = PagingFilters(page=page, page_size=page_size)
-#         calculations = chargefw2.get_calculations(filters)
-#         return calculations  # use Response here
-#     except Exception as e:
-#         raise BadRequestError(
-#             status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error getting calculations. {str(e)}"
-#         ) from e
+    try:
+        filters = CalculationSetFilters(
+            order=order, order_by=order_by, page=page, page_size=page_size
+        )
+        calculations = chargefw2.get_calculations(filters)
+        return Response(data=calculations)
+    except Exception as e:
+        print(traceback.format_exc())
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting calculations."
+        ) from e
+
+
+@charges_router.get("/{computation_id}/download", tags=["download"])
+@inject
+async def download_charges(
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
+    io: IOService = Depends(Provide[Container.io_service]),
+):
+    """Returns a zip file with all charges for the provided computation."""
+
+    try:
+        charges_path = io.get_charges_path(computation_id)
+        if not io.path_exists(charges_path):
+            raise FileNotFoundError()
+
+        archive_path = io.zip_charges(charges_path)
+
+        return FileResponse(path=archive_path, media_type="application/zip")
+    except FileNotFoundError as e:
+        raise NotFoundError(detail=f"Computation '{computation_id}' not found.") from e
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error downloading charges."
+        ) from e

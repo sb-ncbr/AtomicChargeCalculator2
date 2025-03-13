@@ -18,10 +18,10 @@ from core.dependency_injection.container import Container
 
 
 PREFIX = "/v1"
-WEB_PREFIX = f"{PREFIX}/web"
+WEB_PREFIX = f"{PREFIX}"
 
 
-def create_apps() -> Tuple[FastAPI, FastAPI]:
+def create_app() -> FastAPI:
     """Creates FastAPI aps with routers and middleware."""
 
     if not load_dotenv():
@@ -39,8 +39,6 @@ def create_apps() -> Tuple[FastAPI, FastAPI]:
     # Create DI container
     container = Container()
 
-    db = container.db()
-    db.create_database()
 
     app = FastAPI(root_path="/api")
 
@@ -49,12 +47,12 @@ def create_apps() -> Tuple[FastAPI, FastAPI]:
     app.add_middleware(LoggingMiddleware)
     app.add_exception_handler(HTTPException, http_exception_handler)
 
-    app.include_router(router=web_charges_router, prefix=WEB_PREFIX)
-    app.include_router(router=auth_router, prefix=WEB_PREFIX)
-    app.include_router(router=protonation_router, prefix=WEB_PREFIX)
-    app.include_router(router=user_router, prefix=WEB_PREFIX)
+    app.include_router(router=web_charges_router, prefix=PREFIX)
+    app.include_router(router=auth_router, prefix=PREFIX)
+    app.include_router(router=protonation_router, prefix=PREFIX)
+    app.include_router(router=user_router, prefix=PREFIX)
 
     return app
 
 
-web_app = create_apps()
+web_app = create_app()

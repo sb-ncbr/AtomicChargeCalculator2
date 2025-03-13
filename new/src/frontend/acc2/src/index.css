@@ -4,7 +4,8 @@
 
 /* ... */
 
-body, #root {
+body,
+#root {
   min-height: 100vh;
 }
 
@@ -117,8 +118,8 @@ button:focus-visible {
   }
 } */
 
-@layer base {  
-  :root  {
+@layer base {
+  :root {
     --background: 142 100% 100%;
     --foreground: 142 5% 10%;
     --card: 142 50% 100%;
@@ -140,7 +141,7 @@ button:focus-visible {
     --ring: 142 100% 34.3%;
     --radius: 0rem;
   }
-  .dark  {
+  .dark {
     --background: 142 50% 10%;
     --foreground: 142 5% 100%;
     --card: 142 50% 10%;

@@ -19,8 +19,9 @@ dependency-injector = "^4.43.0"
 uvicorn-worker = "^0.2.0"
 gunicorn = "^23.0.0"
 sqlalchemy = "^2.0.37"
-psycopg2 = "^2.9.10"
 gemmi = "^0.7.0"
+alembic = "^1.15.1"
+psycopg2 = "^2.9.10"
 
 
 [build-system]
