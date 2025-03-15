@@ -20,8 +20,12 @@ uvicorn-worker = "^0.2.0"
 gunicorn = "^23.0.0"
 sqlalchemy = "^2.0.37"
 gemmi = "^0.7.0"
+httpx = "^0.28.1"
+python-jose = "^3.4.0"
+itsdangerous = "^2.2.0"
 alembic = "^1.15.1"
 psycopg2 = "^2.9.10"
+cachetools = "^5.5.2"
 
 
 [build-system]

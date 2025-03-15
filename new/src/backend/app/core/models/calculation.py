@@ -27,7 +27,7 @@ class CalculationsFilters:
 
 
 @dataclass
-class ChargeCalculationConfig:
+class ChargeCalculationConfigDto:
     """Configuration for charge calculation"""
 
     method: str | None
@@ -90,8 +90,8 @@ class CalculationSetPreviewDto(BaseModel):
 
 
 @dataclass
-class ChargeCalculationResult:
+class CalculationResultDto:
     """Result of charge calculation"""
 
-    config: ChargeCalculationConfig
+    config: ChargeCalculationConfigDto
     calculations: list[CalculationDto]

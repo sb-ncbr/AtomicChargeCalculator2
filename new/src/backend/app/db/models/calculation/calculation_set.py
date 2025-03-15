@@ -19,6 +19,8 @@ class CalculationSet(Base):
         nullable=False,
         default=sa.func.timezone("UTC", sa.func.current_timestamp()),
     )
+    user_id: Mapped[str] = mapped_column(sa.Uuid, sa.ForeignKey("users.id"), nullable=True)
+    user = relationship("User", back_populates="calculation_sets")
     calculations = relationship(
         "Calculation", back_populates="calculation_set", cascade="all, delete-orphan"
     )

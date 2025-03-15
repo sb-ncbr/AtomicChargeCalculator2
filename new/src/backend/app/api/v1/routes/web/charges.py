@@ -1,11 +1,10 @@
 """Charge calculation routes."""
 
 import asyncio
-import traceback
 import uuid
 
 from typing import Annotated, Literal
-from fastapi import Depends, File, Path, Query, UploadFile, status
+from fastapi import Depends, File, HTTPException, Path, Query, Request, UploadFile, status
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from dependency_injector.wiring import inject, Provide
@@ -14,7 +13,7 @@ from api.v1.constants import ALLOWED_FILE_TYPES, MAX_SETUP_FILES_SIZE
 from api.v1.schemas.response import Response
 
 from core.dependency_injection.container import Container
-from core.models.calculation import CalculationSetPreviewDto, ChargeCalculationConfig
+from core.models.calculation import CalculationSetPreviewDto, ChargeCalculationConfigDto
 from core.models.method import Method
 from core.models.molecule_info import MoleculeSetStats
 from core.models.paging import PagedList
@@ -25,6 +24,8 @@ from core.exceptions.http import BadRequestError, NotFoundError
 
 
 from db.repositories.calculation_set_repository import CalculationSetFilters
+from services.calculation_storage import CalculationStorageService
+from services.mmcif import MmCIFService
 from services.io import IOService
 from services.chargefw2 import ChargeFW2Service
 
@@ -123,11 +124,12 @@ async def info(
 @inject
 async def calculate_charges(
     computation_id: Annotated[str, Path(description="UUID of the computation.")],
-    configs: list[ChargeCalculationConfig],
+    configs: list[ChargeCalculationConfigDto],
     response_format: Annotated[
         Literal["charges", "none"], Query(description="Output format.")
     ] = "charges",
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ):
     """
     Calculates partial atomic charges for files in the provided directory.
@@ -140,7 +142,7 @@ async def calculate_charges(
             detail="No configurations provided.",
         )
 
-    if chargefw2.get_calculation_set(computation_id) is None:
+    if storage_service.get_calculation_set(computation_id) is None:
         raise NotFoundError(detail=f"Computation '{computation_id}' not found.")
 
     try:
@@ -151,7 +153,6 @@ async def calculate_charges(
 
         return Response(data=calculations)
     except Exception as e:
-        print(traceback.format_exc())
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error calculating charges."
         ) from e
@@ -165,9 +166,10 @@ async def calculate_charges(
 )
 @inject
 async def setup(
+    request: Request,
     files: list[UploadFile],
     io: IOService = Depends(Provide[Container.io_service]),
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ) -> Response[Setup]:
     """Stores the provided files on disk and returns the computation id."""
 
@@ -192,12 +194,14 @@ async def setup(
             detail=f"Invalid file type. Allowed file types are {', '.join(ALLOWED_FILE_TYPES)}",
         )
 
+    user_id = request.state.user.id if request.state.user is not None else None
+
     try:
         computation_id = str(uuid.uuid4())
         workdir = io.get_input_path(computation_id)
         io.create_dir(workdir)
         await asyncio.gather(*[io.store_upload_file(file, workdir) for file in files])
-        chargefw2.store_calculation_set(computation_id, [])
+        storage_service.store_calculation_set(computation_id, user_id, [])
 
         return Response(data={"computationId": computation_id})
     except Exception as e:
@@ -213,13 +217,13 @@ async def get_mmcif(
     computation_id: Annotated[str, Path(description="UUID of the computation.")],
     molecule: Annotated[str | None, Query(description="Molecule name.")] = None,
     io: IOService = Depends(Provide[Container.io_service]),
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    mmcif_service: MmCIFService = Depends(Provide[Container.mmcif_service]),
 ) -> FileResponse:
     """Returns a mmcif file for the provided molecule in the computation."""
 
     try:
         charges_path = io.get_charges_path(computation_id)
-        mmcif_path = chargefw2.get_molecule_mmcif(charges_path, molecule)
+        mmcif_path = mmcif_service.get_molecule_mmcif(charges_path, molecule)
         return FileResponse(path=mmcif_path)
     except FileNotFoundError as e:
         raise NotFoundError(detail=f"MMCIF file for molecule '{molecule}' not found.") from e
@@ -236,12 +240,12 @@ async def get_example_mmcif(
     example_id: Annotated[str, Path(description="ID of the example.", example="phenols")],
     molecule: Annotated[str | None, Query(description="Molecule name.")] = None,
     io: IOService = Depends(Provide[Container.io_service]),
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    mmcif_service: MmCIFService = Depends(Provide[Container.mmcif_service]),
 ) -> FileResponse:
     """Returns a mmcif file for the provided molecule in the example."""
     try:
         examples_path = io.get_example_path(example_id)
-        mmcif_path = chargefw2.get_molecule_mmcif(examples_path, molecule)
+        mmcif_path = mmcif_service.get_molecule_mmcif(examples_path, molecule)
         return FileResponse(path=mmcif_path)
     except FileNotFoundError as e:
         raise NotFoundError(
@@ -299,22 +303,29 @@ async def get_example_molecules(
 @charges_router.get("/calculations", tags=["calculations"])
 @inject
 async def get_calculations(
+    request: Request,
     page: Annotated[int, Query(description="Page number.")] = 1,
     page_size: Annotated[int, Query(description="Number of items per page.")] = 10,
     order_by: Annotated[Literal["created_at"], Query(description="Order by field.")] = "created_at",
     order: Annotated[Literal["asc", "desc"], Query(description="Order direction.")] = "desc",
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ) -> Response[PagedList[CalculationSetPreviewDto]]:
     """Returns all calculations stored in the database."""
+    user = request.state.user
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You need to be logged in to get calculations.",
+        )
 
     try:
         filters = CalculationSetFilters(
-            order=order, order_by=order_by, page=page, page_size=page_size
+            order=order, order_by=order_by, page=page, page_size=page_size, user_id=user.id
         )
-        calculations = chargefw2.get_calculations(filters)
+        calculations = storage_service.get_calculations(filters)
         return Response(data=calculations)
     except Exception as e:
-        print(traceback.format_exc())
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting calculations."
         ) from e
@@ -325,7 +336,7 @@ async def get_calculations(
 async def download_charges(
     computation_id: Annotated[str, Path(description="UUID of the computation.")],
     io: IOService = Depends(Provide[Container.io_service]),
-):
+) -> FileResponse:
     """Returns a zip file with all charges for the provided computation."""
 
     try:

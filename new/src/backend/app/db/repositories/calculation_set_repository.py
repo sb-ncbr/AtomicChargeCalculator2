@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, select, and_
 from sqlalchemy.orm import joinedload
 
 
@@ -19,6 +19,7 @@ class CalculationSetFilters(PagingFilters):
 
     order_by: str
     order: Literal["asc", "desc"]
+    user_id: str
 
 
 class CalculationSetRepository:
@@ -42,7 +43,9 @@ class CalculationSetRepository:
             .options(joinedload(CalculationSet.calculations))
             .options(joinedload(CalculationSet.configs))
             .order_by(getattr(getattr(CalculationSet, filters.order_by), filters.order)())
-            .where(CalculationSet.calculations.any())
+            .where(
+                and_(CalculationSet.calculations.any(), CalculationSet.user_id == filters.user_id)
+            )
         )
 
         calculations = self._paginate(statement, filters.page, filters.page_size)

@@ -7,32 +7,56 @@ import {
 } from "@acc2/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
 import { NavLink } from "react-router";
+import LoginImg from "../../../assets/images/button-login.svg";
+import { baseApiUrl } from "@acc2/api/base";
+import { useAuth } from "@acc2/hooks/queries/use-auth";
 
 export const Nav = () => {
+  const { isAuthenticated } = useAuth();
+
+  const onLoginClick = () => {
+    window.location.href = `${baseApiUrl}/auth/login`;
+  };
+
+  const onLogoutClick = async () => {
+    window.location.href = `${baseApiUrl}/auth/logout`;
+  };
+
   return (
-    <nav className="flex gap-4 items-center text-white">
-      <div className="hidden gap-4 items-center text-white sm:flex">
-        <NavLink
-          to={"/"}
-          className={({ isActive }) =>
-            `${isActive ? "underline" : "no-underline"} hover:underline"`
-          }
-        >
-          Home
-        </NavLink>
-        <NavLink
-          to={"/calculations"}
-          className={({ isActive }) =>
-            `${isActive ? "underline" : "no-underline"} hover:underline`
-          }
-        >
-          Calculations
-        </NavLink>
-        <NavLink to={"/login"} className={"hover:underline"}>
-          Log in
-        </NavLink>
+    <nav className="flex gap-4 items-center text-white w-full">
+      <div className="hidden gap-4 items-center justify-between text-white sm:flex w-full">
+        <div className="flex gap-4 grow">
+          <NavLink
+            to={"/"}
+            className={({ isActive }) =>
+              `${isActive ? "underline" : "no-underline"} hover:underline"`
+            }
+          >
+            Home
+          </NavLink>
+          {isAuthenticated && (
+            <NavLink
+              to={"/calculations"}
+              className={({ isActive }) =>
+                `${isActive ? "underline" : "no-underline"} hover:underline`
+              }
+            >
+              Calculations
+            </NavLink>
+          )}
+        </div>
+        {!isAuthenticated && (
+          <button className="ml-auto hover:scale-105" onClick={onLoginClick}>
+            <img src={LoginImg} alt="Login Button" width={150} />
+          </button>
+        )}
+        {isAuthenticated && (
+          <button className="hover:underline" onClick={onLogoutClick}>
+            Logout
+          </button>
+        )}
       </div>
-      <div className="block sm:hidden">
+      <div className="block sm:hidden ml-auto">
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Menu />
@@ -48,21 +72,33 @@ export const Nav = () => {
                 Home
               </NavLink>
             </DropdownMenuItem>
-            <DropdownMenuItem className="relative">
-              <NavLink
-                to={"/calculations"}
-                className={({ isActive }) =>
-                  `${isActive ? "underline" : "no-underline"}`
-                }
-              >
-                Calculations
-              </NavLink>
-            </DropdownMenuItem>
+            {isAuthenticated && (
+              <DropdownMenuItem className="relative">
+                <NavLink
+                  to={"/calculations"}
+                  className={({ isActive }) =>
+                    `${isActive ? "underline" : "no-underline"}`
+                  }
+                >
+                  Calculations
+                </NavLink>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <NavLink to={"/login"} className={"hover:underline"}>
-                Log in
-              </NavLink>
+              {!isAuthenticated && (
+                <button onClick={onLoginClick}>
+                  <img
+                    src={LoginImg}
+                    alt="Login Button"
+                    height={10}
+                    width={150}
+                  />
+                </button>
+              )}
+              {isAuthenticated && (
+                <button onClick={onLogoutClick}>Logout</button>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

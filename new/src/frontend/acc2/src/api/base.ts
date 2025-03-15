@@ -9,6 +9,7 @@ if (!baseApiUrl) {
 
 export const api = axios.create({
   baseURL: baseApiUrl,
+  withCredentials: true,
 });
 
 export const handleApiError = (error: unknown) => {
