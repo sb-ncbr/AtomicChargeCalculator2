@@ -84,6 +84,7 @@ class CalculationConfigRepository:
 
     def store(self, config: CalculationConfig) -> CalculationConfig:
         """Store a single calculation config in the database.
+           If a given config already exists, it is returned.
 
         Args:
             config (CalculationConfig): Calculation config.
@@ -99,6 +100,11 @@ class CalculationConfigRepository:
 
         if calculation_set is None:
             raise ValueError("Calculation set not found.")
+
+        exists = self.get(config.set_id, config)
+
+        if exists is not None:
+            return exists
 
         with self.session_manager.session() as session:
             session.add(config)

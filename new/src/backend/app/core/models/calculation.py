@@ -30,8 +30,8 @@ class CalculationsFilters:
 class ChargeCalculationConfigDto:
     """Configuration for charge calculation"""
 
-    method: str | None
-    parameters: str | None
+    method: str | None = None
+    parameters: str | None = None
     read_hetatm: bool = True
     ignore_water: bool = False
     permissive_types: bool = False

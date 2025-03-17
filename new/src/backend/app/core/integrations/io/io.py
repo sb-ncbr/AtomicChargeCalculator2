@@ -39,8 +39,9 @@ class IOLocal(IOBase):
 
         async with aiofiles.open(tmp_path, "wb") as out_file:
             while content := await file.read(chunk_size):
-                await out_file.write(content)
-                hasher.update(content)
+                unix_content = content.replace(b"\r", b"")
+                await out_file.write(unix_content)
+                hasher.update(unix_content)
 
         # add hash to file name
         file_hash = hasher.hexdigest()

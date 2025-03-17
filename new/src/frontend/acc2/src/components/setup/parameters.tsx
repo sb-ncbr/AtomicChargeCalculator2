@@ -1,4 +1,3 @@
-import { Info } from "lucide-react";
 import { Card } from "../ui/card";
 import {
   Select,
@@ -7,17 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 import { Separator } from "../ui/separator";
 import { HTMLAttributes, SetStateAction } from "react";
 import { cn } from "@acc2/lib/utils";
 import { Parameters as ParametersType } from "@acc2/api/parameters/types";
-import { usePublicationQuery } from "@acc2/hooks/queries/use-publication-query";
+import { Publication } from "./publication";
+import { InfoTooltip } from "./info-tooltip";
 
 type ParametersSelectorProps = {
   currentParameters: ParametersType | undefined;
@@ -63,18 +57,7 @@ type ParametersPublicationProps = {
 };
 
 const ParametersPublication = ({ parameters }: ParametersPublicationProps) => {
-  const { data: publication } = usePublicationQuery(parameters);
-
-  return (
-    <>
-      {parameters && (
-        <>
-          <h4 className="text-sm font-bold">Publication</h4>
-          <p className="text-sm">{publication}</p>
-        </>
-      )}
-    </>
-  );
+  return <>{parameters && <Publication publicationSource={parameters} />}</>;
 };
 
 export type ParametersProps = {
@@ -100,16 +83,7 @@ export const Parameters = ({
       {/* <Busy isBusy={parametersMutation.isPending} /> */}
       <h3 className="capitalize font-bold text-xl mb-2">
         Parameters
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Info className="inline size-5 text-primary cursor-pointer ml-2" />
-            </TooltipTrigger>
-            <TooltipContent>
-              The most suitable parameters are shown first.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <InfoTooltip info="The most suitable parameters are shown first." />
       </h3>
       <ParametersSelector
         currentParameters={currentParameters}

@@ -134,13 +134,12 @@ async def calculate_charges(
     """
     Calculates partial atomic charges for files in the provided directory.
     Returns a list of dictionaries with charges (decimal numbers).
+    If no config is provided, the most suitable method and its parameters will be used.
     """
 
     if configs is None or len(configs) == 0:
-        raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No configurations provided.",
-        )
+        # get most suitable when no config is provided
+        configs = [ChargeCalculationConfigDto()]
 
     if storage_service.get_calculation_set(computation_id) is None:
         raise NotFoundError(detail=f"Computation '{computation_id}' not found.")
