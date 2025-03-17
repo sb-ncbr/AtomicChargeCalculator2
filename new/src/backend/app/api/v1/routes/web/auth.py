@@ -26,7 +26,7 @@ class TokenResponse(BaseModel):
     id_token: str
 
 
-auth_router = APIRouter(prefix="/auth", tags=["auth"])
+auth_router = APIRouter(prefix="/auth", tags=["auth"], include_in_schema=False)
 
 
 @auth_router.get("/login", tags=["login"])
