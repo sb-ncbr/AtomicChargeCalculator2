@@ -1,9 +1,10 @@
 import { compute } from "@acc2/api/compute/compute";
+import { ComputationConfig } from "@acc2/api/compute/types";
 import { useMutation } from "@tanstack/react-query";
 
 type ComputationMutationData = {
   computationId: string;
-  computations: { method?: string; parameters?: string }[];
+  computations: ComputationConfig[];
 };
 
 export const useComputationMutation = () => {

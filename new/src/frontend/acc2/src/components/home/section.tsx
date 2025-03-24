@@ -24,7 +24,7 @@ export const Section = ({
       <section
         {...props}
         className={cn(
-          "w-4/5 mx-auto px-4 max-w-content -mt-[100px] pt-[100px]",
+          "w-11/12 md:w-4/5 mx-auto px-4 max-w-content -mt-[100px] pt-[100px]",
           className
         )}
         id={title?.toLowerCase()}

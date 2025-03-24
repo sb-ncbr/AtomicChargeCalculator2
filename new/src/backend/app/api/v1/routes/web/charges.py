@@ -204,6 +204,7 @@ async def setup(
 
         return Response(data={"computationId": computation_id})
     except Exception as e:
+        io.remove_workdir(computation_id)
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error uploading files.",

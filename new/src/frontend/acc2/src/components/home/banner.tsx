@@ -2,7 +2,7 @@ import BannerImage from "@acc2/assets/images/1RLB.png";
 
 export const Banner = () => {
   return (
-    <div className="w-4/5 max-w-content mx-auto">
+    <div className="w-11/12 md:w-4/5 max-w-content mx-auto">
       <div className="flex relative max-w-[750px] mx-auto">
         <div className="my-16 p-2 bg-black bg-opacity-10 w-fit z-30">
           <h1 className="font-muni font-bold text-primary text-4xl md:text-6xl">

@@ -2,8 +2,8 @@ import { handleApiError } from "@acc2/api/base";
 import type { Method as MethodType } from "@acc2/api/methods/types";
 import type { Parameters as ParametersType } from "@acc2/api/parameters/types";
 import { Calculations } from "@acc2/components/setup/calculations";
-import { Method } from "@acc2/components/setup/method";
-import { Parameters } from "@acc2/components/setup/parameters";
+import { Method } from "@acc2/components/setup/method/method";
+import { Parameters } from "@acc2/components/setup/parameters/parameters";
 import { Busy } from "@acc2/components/ui/busy";
 import { Button } from "@acc2/components/ui/button";
 import { Card } from "@acc2/components/ui/card";
@@ -18,12 +18,16 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { SetupSettings } from "./settings";
 
 const setupSchema = z.object({
   computations: z.array(
     z.object({
       method: z.custom<MethodType>(),
       parameters: z.custom<ParametersType>().optional(),
+      readHetatm: z.boolean(),
+      ignoreWater: z.boolean(),
+      permissiveTypes: z.boolean(),
     })
   ),
 });
@@ -49,6 +53,12 @@ export const Setup = ({ computationId }: SetupProps) => {
   );
   const [currentParameters, setCurrentParameters] = useState<ParametersType>();
 
+  const [settings, setSettings] = useState({
+    readHetatm: true,
+    ignoreWater: false,
+    permissiveTypes: true,
+  });
+
   const form = useForm<SetupFormType>({
     resolver: zodResolver(setupSchema),
     defaultValues: {
@@ -60,10 +70,13 @@ export const Setup = ({ computationId }: SetupProps) => {
     await computationMutation.mutateAsync(
       {
         computationId,
-        computations: data.computations.map((c) => ({
-          method: c.method.internalName,
-          parameters: c.parameters?.internalName,
-        })),
+        computations: data.computations.map(
+          ({ method, parameters, ...settings }) => ({
+            method: method.internalName,
+            parameters: parameters?.internalName,
+            ...settings,
+          })
+        ),
       },
       {
         onError: (error) => toast.error(handleApiError(error)),
@@ -101,6 +114,9 @@ export const Setup = ({ computationId }: SetupProps) => {
       {
         method: currentMethod,
         parameters: currentParameters,
+        readHetatm: settings.readHetatm,
+        ignoreWater: settings.ignoreWater,
+        permissiveTypes: settings.permissiveTypes,
       },
     ]);
   };
@@ -166,6 +182,7 @@ export const Setup = ({ computationId }: SetupProps) => {
                   </>
                 )}
               </div>
+              <SetupSettings settings={settings} setSettings={setSettings} />
               <Button
                 type="button"
                 className="mt-4 self-start"

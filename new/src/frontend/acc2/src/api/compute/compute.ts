@@ -1,6 +1,6 @@
 import { api } from "../base";
 import { ApiResponse } from "../types";
-import { ComputeResponse, SetupResponse } from "./types";
+import { ComputationConfig, ComputeResponse, SetupResponse } from "./types";
 
 export const setup = async (files: FileList): Promise<SetupResponse> => {
   const formData = new FormData();
@@ -27,25 +27,15 @@ export const setup = async (files: FileList): Promise<SetupResponse> => {
 
 export const compute = async (
   computationId: string,
-  computations: { method?: string; parameters?: string }[]
+  computations: ComputationConfig[]
 ): Promise<ComputeResponse> => {
   const data = computations.map((comp) => ({
     method: comp.method ?? null,
     parameters: comp.parameters ?? null,
-    read_hetatm: true,
-    ignore_water: false,
-    permissive_types: false,
+    read_hetatm: comp.readHetatm,
+    ignore_water: comp.ignoreWater,
+    permissive_types: comp.permissiveTypes,
   }));
-
-  if (computations.length === 0) {
-    data.push({
-      method: null,
-      parameters: null,
-      read_hetatm: true,
-      ignore_water: false,
-      permissive_types: false,
-    });
-  }
 
   const response = await api.post<ApiResponse<ComputeResponse>>(
     `/charges/${computationId}/calculate`,

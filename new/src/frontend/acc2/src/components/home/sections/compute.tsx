@@ -71,7 +71,7 @@ export const Compute = () => {
   };
 
   return (
-    <Card className="w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mb-12 mt-0 xs:mt-8 md:mt-0 relative">
+    <Card className="w-11/12 md:w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mb-12 mt-0 xs:mt-8 md:mt-0 relative">
       {/* {setupMutation.isPending && (
         <div className="absolute inset-0">
           <Progress value={25} className="rounded-none" />
@@ -87,7 +87,7 @@ export const Compute = () => {
               {...form.register("files")}
               id="files"
               type="file"
-              // accept=".sdf,.mol2,.pdb,.mmcif,.cif"
+              accept=".sdf,.mol2,.pdb,.mmcif,.cif"
               className="border-2 border-primary cursor-pointer xs:w-fit"
               multiple
             />
