@@ -42,7 +42,6 @@ class CalculationDto(BaseModel):
 
     file: str
     file_hash: str
-    info: MoleculeSetStats
     charges: Charges
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
@@ -51,13 +50,14 @@ class CalculationDto(BaseModel):
 class CalculationConfigDto(BaseModel):
     """Calculation configuration data transfer object"""
 
-    method: str
-    parameters: str | None
-    read_hetatm: bool
-    ignore_water: bool
-    permissive_types: bool
+    method: str | None = None
+    parameters: str | None = None
+    read_hetatm: bool = True
+    ignore_water: bool = False
+    permissive_types: bool = False
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+    __hash__ = object.__hash__
 
 
 class CalculationPreviewDto(BaseModel):
@@ -89,9 +89,10 @@ class CalculationSetPreviewDto(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
 
-@dataclass
-class CalculationResultDto:
+class CalculationResultDto(BaseModel):
     """Result of charge calculation"""
 
-    config: ChargeCalculationConfigDto
+    config: CalculationConfigDto
     calculations: list[CalculationDto]
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)

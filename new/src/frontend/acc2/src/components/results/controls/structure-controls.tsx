@@ -1,4 +1,3 @@
-import { ComputeResponse } from "@acc2/api/compute/types";
 import {
   Select,
   SelectContent,
@@ -12,7 +11,7 @@ import { HTMLAttributes } from "react";
 
 export type MolstarStructureControls = {
   molstar: MolstarPartialCharges;
-  molecules: ComputeResponse["molecules"];
+  molecules: string[];
   onStructureSelect: (molecule: string) => void | Promise<void>;
 } & HTMLAttributes<HTMLElement>;
 

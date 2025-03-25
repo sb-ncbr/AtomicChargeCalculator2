@@ -10,7 +10,7 @@ class AtomTypeCount:
     count: int
 
     def __init__(self, type_counts: dict[str, Any]) -> None:
-        self.symbol = type_counts.get("symbol", "") or ""
+        self.symbol = type_counts.get("symbol", "")
         self.count = type_counts.get("count", 0)
 
 
@@ -25,4 +25,4 @@ class MoleculeSetStats:
     def __init__(self, info: dict[str, Any]) -> None:
         self.total_molecules = info.get("total_molecules", 0)
         self.total_atoms = info.get("total_atoms", 0)
-        self.atom_type_counts = [AtomTypeCount(x) for x in info.get("atom_type_counts", [])]
+        self.atom_type_counts = [AtomTypeCount(c) for c in info.get("atom_type_counts", [])]

@@ -35,3 +35,13 @@ class CalculationConfig(Base):
         read_hetatm={self.read_hetatm}
         ignore_water={self.ignore_water}
         permissive_types={self.permissive_types}>"""
+
+    def __eq__(self, other):
+        return (
+            self.method == other.method
+            and self.parameters == other.parameters
+            and self.read_hetatm == other.read_hetatm
+            and self.ignore_water == other.ignore_water
+            and self.permissive_types == other.permissive_types
+            and self.set_id == other.set_id
+        )

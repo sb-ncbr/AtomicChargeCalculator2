@@ -1,4 +1,4 @@
-import { downloadCalculation } from "@acc2/api/calculations/calculations";
+import { downloadCalculation } from "@acc2/api/files/files";
 import { useMutation } from "@tanstack/react-query";
 
 export const useCalculationDownloadMutation = () => {

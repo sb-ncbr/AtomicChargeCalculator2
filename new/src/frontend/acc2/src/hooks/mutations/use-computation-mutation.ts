@@ -3,15 +3,18 @@ import { ComputationConfig } from "@acc2/api/compute/types";
 import { useMutation } from "@tanstack/react-query";
 
 type ComputationMutationData = {
-  computationId: string;
-  computations: ComputationConfig[];
+  computationId?: string;
+  fileHashes: string[];
+  configs: ComputationConfig[];
 };
 
 export const useComputationMutation = () => {
   return useMutation({
     mutationFn: async ({
       computationId,
-      computations,
-    }: ComputationMutationData) => await compute(computationId, computations),
+      fileHashes,
+      configs,
+    }: ComputationMutationData) =>
+      await compute(fileHashes, configs, computationId),
   });
 };

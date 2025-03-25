@@ -14,6 +14,7 @@ from db.repositories.calculation_config_repository import CalculationConfigRepos
 from db.repositories.calculation_repository import CalculationRepository
 from db.repositories.calculation_set_repository import CalculationSetRepository
 from db.repositories.user_repository import UserRepository
+from db.repositories.moleculeset_stats_repository import MoleculeSetStatsRepository
 
 from services.calculation_storage import CalculationStorageService
 from services.chargefw2 import ChargeFW2Service
@@ -51,6 +52,9 @@ class Container(containers.DeclarativeContainer):
         set_repository=set_repository,
     )
     user_repository = providers.Factory(UserRepository, session_manager=session_manager)
+    stats_repository = providers.Factory(
+        MoleculeSetStatsRepository, session_manager=session_manager
+    )
 
     # services
     logger_service = providers.Singleton(FileLogger)
@@ -62,6 +66,7 @@ class Container(containers.DeclarativeContainer):
         set_repository=set_repository,
         calculation_repository=calculation_repository,
         config_repository=config_repository,
+        stats_repository=stats_repository,
     )
     chargefw2_service = providers.Singleton(
         ChargeFW2Service,

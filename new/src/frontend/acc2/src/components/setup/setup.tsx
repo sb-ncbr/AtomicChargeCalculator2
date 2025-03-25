@@ -70,7 +70,8 @@ export const Setup = ({ computationId }: SetupProps) => {
     await computationMutation.mutateAsync(
       {
         computationId,
-        computations: data.computations.map(
+        fileHashes: [],
+        configs: data.computations.map(
           ({ method, parameters, ...settings }) => ({
             method: method.internalName,
             parameters: parameters?.internalName,

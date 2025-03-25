@@ -23,17 +23,3 @@ export const getCalculations = async (
 
   return response.data.data;
 };
-
-export const downloadCalculation = async (
-  calculationId: string
-): Promise<Blob> => {
-  const response = await api.get<Blob>(`/charges/${calculationId}/download`, {
-    responseType: "blob",
-  });
-
-  if (!response.data) {
-    throw Error("Unable to download calculation data.");
-  }
-
-  return response.data;
-};

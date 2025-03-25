@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 from gemmi import cif
@@ -16,7 +17,9 @@ class MmCIFService:
         self.logger = logger
         self.io = io
 
-    def write_to_mmcif(self, computation_id: str, calculations: list[CalculationResultDto]) -> dict:
+    def write_to_mmcif(
+        self, user_id: str | None, computation_id: str, calculations: list[CalculationResultDto]
+    ) -> dict:
         """Write charges to mmcif files with names corresponding to the input molecules.
 
         Args:
@@ -32,7 +35,7 @@ class MmCIFService:
         configs = data["configs"]
         molecules = list(data["molecules"])
         for molecule in molecules:
-            self._write_molecule_to_mmcif(computation_id, molecule, data)
+            self._write_molecule_to_mmcif(user_id, computation_id, molecule, data)
 
         return {"molecules": molecules, "configs": configs}
 
@@ -92,13 +95,14 @@ class MmCIFService:
 
         return transformed
 
-    def _write_molecule_to_mmcif(self, computation_id: str, molecule: str, data: dict) -> str:
+    def _write_molecule_to_mmcif(
+        self, user_id: str | None, computation_id: str, molecule: str, data: dict
+    ) -> str:
         configs = data["configs"]
         charges = data["molecules"][molecule]["charges"]
 
-        output_file_path = str(
-            pathlib.Path(self.io.get_charges_path(computation_id)) / f"{molecule.lower()}.fw2.cif"
-        )
+        charges_path = self.io.get_charges_path(computation_id, user_id)
+        output_file_path = os.path.join(charges_path, f"{molecule.lower()}.fw2.cif")
 
         document = cif.read_file(output_file_path)
         block = document.sole_block()

@@ -16,9 +16,7 @@ export const getSuitableMethods = async (
   computationId: string
 ): Promise<SuitableMethods> => {
   const response = await api.post<ApiResponse<SuitableMethods>>(
-    "/charges/methods",
-    {},
-    { params: { computation_id: computationId } }
+    `/charges/${computationId}/methods`
   );
 
   if (!response.data.success) {

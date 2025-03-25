@@ -11,6 +11,7 @@ from core.models.paging import PagedList, PagingFilters
 
 from db.database import SessionManager
 from db.models.calculation.calculation_set import CalculationSet
+from db.models.calculation.calculation import Calculation
 
 
 @dataclass
@@ -64,15 +65,18 @@ class CalculationSetRepository:
 
         statement = (
             select(CalculationSet)
-            .options(joinedload(CalculationSet.calculations))
-            .options(joinedload(CalculationSet.configs))
+            .options(
+                joinedload(CalculationSet.calculations).joinedload(Calculation.config),
+                joinedload(CalculationSet.configs),
+            )
+            .execution_options(populate_existing=True)
             .where(CalculationSet.id == calculation_id)
         )
 
         with self.session_manager.session() as session:
             calculation_set = (session.execute(statement)).unique().scalars(CalculationSet).first()
 
-            return calculation_set
+        return calculation_set
 
     def delete(self, calculation_id: str) -> None:
         """Delete a single previous calculation by id.
@@ -92,7 +96,7 @@ class CalculationSetRepository:
             session.delete(calculation_set)
             session.commit()
 
-    def store(self, calculation_set: CalculationSet) -> CalculationSet:
+    def store(self, calculation_set: CalculationSet) -> None:
         """Store a single calculation set in the database.
 
         Args:
@@ -103,11 +107,8 @@ class CalculationSetRepository:
         """
 
         with self.session_manager.session() as session:
-            session.add(calculation_set)
+            session.merge(calculation_set)
             session.commit()
-            session.refresh(calculation_set)
-
-            return calculation_set
 
     def _paginate(self, statement: Select, page: int, page_size: int) -> PagedList[CalculationSet]:
         total_statement = select(func.count()).select_from(statement)

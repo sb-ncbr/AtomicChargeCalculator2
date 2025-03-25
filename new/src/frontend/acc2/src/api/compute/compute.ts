@@ -1,21 +1,11 @@
 import { api } from "../base";
 import { ApiResponse } from "../types";
-import { ComputationConfig, ComputeResponse, SetupResponse } from "./types";
+import { ComputationConfig } from "./types";
 
-export const setup = async (files: FileList): Promise<SetupResponse> => {
-  const formData = new FormData();
-  for (const file of files) {
-    formData.append("files", file);
-  }
-
-  const response = await api.postForm<ApiResponse<SetupResponse>>(
+export const setup = async (fileHashes: string[]): Promise<string> => {
+  const response = await api.post<ApiResponse<string>>(
     "/charges/setup",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    fileHashes
   );
 
   if (!response.data.success) {
@@ -26,10 +16,11 @@ export const setup = async (files: FileList): Promise<SetupResponse> => {
 };
 
 export const compute = async (
-  computationId: string,
-  computations: ComputationConfig[]
-): Promise<ComputeResponse> => {
-  const data = computations.map((comp) => ({
+  fileHashes: string[],
+  configs: ComputationConfig[],
+  computationId?: string
+): Promise<string> => {
+  const data = configs.map((comp) => ({
     method: comp.method ?? null,
     parameters: comp.parameters ?? null,
     read_hetatm: comp.readHetatm,
@@ -37,12 +28,22 @@ export const compute = async (
     permissive_types: comp.permissiveTypes,
   }));
 
-  const response = await api.post<ApiResponse<ComputeResponse>>(
-    `/charges/${computationId}/calculate`,
-    data,
+  const body = {
+    file_hashes: fileHashes,
+    configs: data,
+  };
+
+  const response = await api.post<ApiResponse<string>>(
+    `/charges/calculate`,
+    body,
     {
       params: {
         response_format: "none",
+        ...(computationId ? { computation_id: computationId } : {}),
+      },
+      data: {
+        file_hashes: fileHashes,
+        configs: data,
       },
     }
   );

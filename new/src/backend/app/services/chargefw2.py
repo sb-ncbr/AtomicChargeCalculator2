@@ -6,10 +6,8 @@ import traceback
 
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
+from typing import Tuple
 
-
-from fastapi import UploadFile
 
 # Temporary solution to get Molecules class
 from chargefw2 import Molecules
@@ -17,8 +15,8 @@ from chargefw2 import Molecules
 from core.integrations.chargefw2.base import ChargeFW2Base
 from core.logging.base import LoggerBase
 from core.models.calculation import (
+    CalculationConfigDto,
     CalculationDto,
-    CalculationsFilters,
     ChargeCalculationConfigDto,
     CalculationResultDto,
 )
@@ -30,7 +28,6 @@ from core.models.suitable_methods import SuitableMethods
 
 from api.v1.constants import CHARGES_OUTPUT_EXTENSION
 
-from db.models.calculation.calculation import Calculation
 from db.models.calculation.calculation_config import CalculationConfig
 
 
@@ -77,25 +74,53 @@ class ChargeFW2Service:
             self.logger.error(f"Error getting available methods: {e}")
             raise e
 
-    async def get_suitable_methods(self, computation_id: str) -> SuitableMethods:
-        """Get suitable methods for charge calculation based on files in the provided directory."""
+    async def get_suitable_methods(self, file_hashes: str, user_id: str | None) -> SuitableMethods:
+        """Get suitable methods for charge calculation based on file hashes."""
 
         try:
-            self.logger.info(f"Getting suitable methods for computation id  '{computation_id}'")
-            return await self._find_suitable_methods(computation_id)
+            self.logger.info(f"Getting suitable methods for file hashes '{file_hashes}'")
+
+            return await self._find_suitable_methods(file_hashes, user_id)
         except Exception as e:
             self.logger.error(
-                f"Error getting suitable methods for computation id '{computation_id}': {e}"
+                f"Error getting suitable methods for file hashes '{file_hashes}': {e}"
             )
             raise e
 
-    async def _find_suitable_methods(self, computation_id: str) -> SuitableMethods:
+    async def get_computation_suitable_methods(
+        self, computation_id: str, user_id: str | None
+    ) -> SuitableMethods:
+        """Get suitable methods for charge calculation based on files in the provided directory."""
+
+        try:
+            self.logger.info(f"Getting suitable methods for computation '{computation_id}'")
+
+            workdir = self.io.get_inputs_path(computation_id, user_id)
+            file_hashes = [self.io.parse_filename(file)[0] for file in self.io.listdir(workdir)]
+
+            return await self._find_suitable_methods(file_hashes, user_id)
+        except Exception as e:
+            self.logger.error(
+                f"Error getting suitable methods for computation '{computation_id}': {e}"
+            )
+            raise e
+
+    async def _find_suitable_methods(
+        self, file_hashes: list[str], user_id: str | None
+    ) -> SuitableMethods:
         """Helper method to find suitable methods for calculation."""
         suitable_methods = Counter()
-        workdir = self.io.get_input_path(computation_id)
+        workdir = self.io.get_file_storage_path(user_id)
 
         dir_contents = self.io.listdir(workdir)
-        for file in dir_contents:
+        for file_hash in file_hashes:
+            file = next(
+                (f for f in dir_contents if self.io.parse_filename(f)[0] == file_hash), None
+            )
+            if file is None:
+                self.logger.warn(f"File with hash {file_hash} not found in {workdir}, skipping.")
+                continue
+
             input_file = os.path.join(workdir, file)
             molecules = await self.read_molecules(input_file)
             methods: list[tuple[str, list[str]]] = await self._run_in_executor(
@@ -109,7 +134,7 @@ class ChargeFW2Service:
                         suitable_methods[(method, p)] += 1
 
         all_valid = [
-            pair for pair in suitable_methods if suitable_methods[pair] == len(dir_contents)
+            pair for pair in suitable_methods if suitable_methods[pair] == len(file_hashes)
         ]
 
         # Remove duplicates from methods
@@ -180,42 +205,44 @@ class ChargeFW2Service:
             self.logger.error(f"Error loading molecules from file {file_path}: {e}")
             raise e
 
-    async def calculate_charges(
-        self, computation_id: str, config: CalculationConfig
+    async def _calculate_charges(
+        self,
+        user_id: str,
+        computation_id: str | None,
+        file_hashes: list[str],
+        config: CalculationConfig,
     ) -> CalculationResultDto:
         """Calculate charges for provided files."""
 
-        workdir = self.io.get_input_path(computation_id)
-        charges_dir = self.io.get_charges_path(computation_id)
-        self.io.create_dir(charges_dir)
+        workdir = self.io.get_file_storage_path(user_id)
 
         semaphore = asyncio.Semaphore(4)  # limit to 4 concurrent calculations
 
-        async def process_file(file: str, config: CalculationConfig) -> CalculationDto:
-            full_path = os.path.join(workdir, file)
-            file_hash = file.split("_", 1)[0]
-            file_name = file.split("_", 1)[-1]
+        async def process_file(file_hash: str, config: CalculationConfig) -> CalculationDto | None:
+            file_name = next(
+                (
+                    file
+                    for file in self.io.listdir(workdir)
+                    if self.io.parse_filename(file)[0] == file_hash
+                ),
+                None,
+            )
+
+            if file_name is None:
+                self.logger.warn(f"File with hash {file_hash} not found in {workdir}, skipping.")
+                return
 
             async with semaphore:
-                exists = self.calculation_storage.get_calculation(
-                    computation_id,
-                    CalculationsFilters(
-                        hash=file_hash,
-                        ignore_water=config.ignore_water,
-                        method=config.method,
-                        permissive_types=config.permissive_types,
-                        parameters=config.parameters,
-                        read_hetatm=config.read_hetatm,
-                    ),
-                )
+                charges_dir = self.io.get_charges_path(computation_id, user_id)
+                self.io.create_dir(charges_dir)
 
-                if exists is not None:
-                    self.logger.info(f"Charges for {file_name} already exist, skipping.")
-                    return exists
+                full_path = os.path.join(workdir, file_name)
+                file_name = self.io.parse_filename(file_name)[1]
 
                 molecules = await self.read_molecules(
                     full_path, config.read_hetatm, config.ignore_water, config.permissive_types
                 )
+
                 charges = await self._run_in_executor(
                     self.chargefw2.calculate_charges,
                     molecules,
@@ -229,26 +256,17 @@ class ChargeFW2Service:
                     file=file_name, file_hash=file_hash, info=info, charges=charges
                 )
 
-                self.calculation_storage.store_calculation(
-                    Calculation(
-                        file=file_name,
-                        file_hash=file_hash,
-                        info=asdict(info),
-                        charges=charges,
-                        set_id=computation_id,
-                        config_id=config.id,
-                    )
-                )
-
                 return result
 
         try:
-            # Process all files concurrently
-            inputs = self.io.listdir(workdir)
-            calculations = await asyncio.gather(
-                *[process_file(file, config) for file in inputs],
-                return_exceptions=False,  # TODO: what should happen if only one computation fails?
-            )
+            calculations = [
+                calculation
+                for calculation in await asyncio.gather(
+                    *[process_file(file_hash, config) for file_hash in file_hashes],
+                    return_exceptions=False,  # TODO: what should happen if only one computation fails?
+                )
+                if calculation is not None
+            ]
             config_dto = ChargeCalculationConfigDto(
                 method=config.method,
                 parameters=config.parameters,
@@ -266,32 +284,46 @@ class ChargeFW2Service:
             raise e
 
     async def calculate_charges_multi(
-        self, computation_id: str, configs: list[ChargeCalculationConfigDto]
+        self,
+        computation_id: str,
+        data: Tuple[CalculationConfigDto, list[str]],
+        user_id: str | None,
     ) -> list[CalculationResultDto]:
         """Calculate charges for provided files.
 
         Args:
-            computation_id (str): Computation id
-            configs (list[ChargeCalculationConfig]): List of configurations.
+            computation_id (str): Computation id.
+            data (Tuple[ChargeCalculationConfigDto, list[str]]): Dictionary of configs and file_hashes.
+            user_id (str): User id making the calculation.
 
         Returns:
-            ChargeCalculationResult: List of successful calculations. Failed calculations are skipped.
+            ChargeCalculationResult: List of successful calculations.
+                Failed calculations are skipped.
         """
 
         calculations = await asyncio.gather(
-            *[self._process_config(computation_id, config) for config in configs],
+            *[
+                self._process_config(user_id, computation_id, file_hashes, config)
+                for config, file_hashes in data.items()
+            ],
             return_exceptions=False,
         )
-        _ = self.mmcif_service.write_to_mmcif(computation_id, calculations)
+        configs = [calculation.config for calculation in calculations]
+
+        await self.io.store_configs(computation_id, configs, user_id)
 
         return calculations
 
     async def _process_config(
-        self, computation_id: str, config: CalculationConfig
+        self,
+        user_id: str | None,
+        computation_id: str,
+        file_hashes: list[str],
+        config: CalculationConfigDto,
     ) -> CalculationResultDto:
         if not config.method:
             # No method provided -> use most suitable method and parameters
-            suitable = await self.get_suitable_methods(computation_id)
+            suitable = await self.get_computation_suitable_methods(computation_id, user_id)
 
             if len(suitable.methods) == 0:
                 self.logger.error(
@@ -307,33 +339,21 @@ class ChargeFW2Service:
                         Using method '{config.method}' with parameters '{config.parameters}'."""
             )
 
-        # store config in db
-        # TODO: do not store invalid config
-        db_config = self.calculation_storage.store_config(
-            CalculationConfig(set_id=computation_id, **asdict(config))
-        )
-        return await self.calculate_charges(computation_id, db_config)
+        return await self._calculate_charges(user_id, computation_id, file_hashes, config)
 
-    async def info(self, file: UploadFile) -> MoleculeSetStats:
+    async def info(self, path: str) -> MoleculeSetStats:
         """Get information about the provided file."""
 
         try:
-            workdir = self.io.create_workdir("info")
-            new_file_path, _ = await self.io.store_upload_file(file, workdir)
+            self.logger.info(f"Getting info for file {path}.")
 
-            self.logger.info(f"Getting info for file {file.filename}.")
-            molecules = await self.read_molecules(new_file_path)
-
+            molecules = await self.read_molecules(path)
             info = molecules.info()
 
             return MoleculeSetStats(info.to_dict())
         except Exception as e:
-            self.logger.error(
-                f"Error getting info for file {file.filename}: {traceback.format_exc()}"
-            )
+            self.logger.error(f"Error getting info for file {path}: {traceback.format_exc()}")
             raise e
-        finally:
-            self.io.remove_workdir("info")
 
     def get_calculation_molecules(self, path: str) -> list[str]:
         """Returns molecules stored in the provided path.

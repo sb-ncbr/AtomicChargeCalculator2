@@ -3,7 +3,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from core.integrations.chargefw2.base import Charges
-from core.models.molecule_info import MoleculeSetStats
 
 from db.models import Base
 
@@ -15,8 +14,9 @@ class Calculation(Base):
 
     id: Mapped[str] = mapped_column(sa.Uuid, primary_key=True, default=uuid.uuid4)
     file: Mapped[str] = mapped_column(sa.VARCHAR(100), nullable=False)
-    file_hash: Mapped[str] = mapped_column(sa.VARCHAR(100), nullable=False)
-    info: Mapped[MoleculeSetStats] = mapped_column(sa.JSON, nullable=False)
+    file_hash: Mapped[str] = mapped_column(
+        sa.VARCHAR(100), sa.ForeignKey("molecule_set_stats.file_hash"), nullable=False
+    )
     charges: Mapped[Charges] = mapped_column(sa.JSON, nullable=False)
 
     set_id: Mapped[str] = mapped_column(
@@ -28,6 +28,7 @@ class Calculation(Base):
 
     calculation_set = relationship("CalculationSet", back_populates="calculations")
     config = relationship("CalculationConfig", back_populates="calculations")
+    info = relationship("MoleculeSetStats", foreign_keys=[file_hash], uselist=False)
 
     def __repr__(self):
         return f"""<Calculation

@@ -45,6 +45,16 @@ class IOBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    def symlink(self, path_src: str, path_dst: str) -> None:
+        """Creates a symlink from path_src to path_dst.
+
+        Args:
+            path_src (str): Location of a file to symlink.
+            path_dst (str): Where to symlink the file.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     def zip(self, path: str, destination: str) -> str:
         """Zips the provided directory.
 
@@ -79,6 +89,16 @@ class IOBase(ABC):
 
         Returns:
             tuple[str, str]: Tuple containing path to the file and hash of the file contents.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def write_file(self, path: str, content: str) -> None:
+        """Writes content to a file.
+
+        Args:
+            path (str): Path to the file.
+            content (str): Content to write to the file.
         """
         raise NotImplementedError()
 
