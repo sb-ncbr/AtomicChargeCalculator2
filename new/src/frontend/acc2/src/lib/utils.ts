@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { formatBytes as format } from "molstar/lib/mol-util";
 import { twMerge } from "tailwind-merge";
 
 export const cn = (...inputs: ClassValue[]): string => {
@@ -16,4 +17,12 @@ export const downloadBlob = (data: Blob, filename: string): void => {
 
   document.body.removeChild(link);
   URL.revokeObjectURL(href);
+};
+
+export const formatBytes = (bytes: number): string => {
+  if (bytes === 0) {
+    return "0";
+  }
+
+  return format(bytes);
 };

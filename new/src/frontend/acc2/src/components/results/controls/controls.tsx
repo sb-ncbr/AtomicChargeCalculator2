@@ -11,6 +11,9 @@ import { useBusyContext } from "@acc2/hooks/contexts/use-busy-context";
 import { useControlsContext } from "@acc2/hooks/contexts/use-controls-context";
 import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
+import { Button } from "@acc2/components/ui/button";
+import { useCalculationDownloadMutation } from "@acc2/hooks/mutations/use-calculation-download-mutation";
+import { downloadBlob } from "@acc2/lib/utils";
 
 export type ControlsProps = {
   computationId: string;
@@ -26,6 +29,8 @@ export const Controls = ({
   const context = useControlsContext(molstar);
 
   const mmcifMutation = useLoadMmcifMutation(molstar, computationId);
+  const downloadMutation = useCalculationDownloadMutation();
+
   const [mmcifLoaded, setMmcifLoaded] = useState<boolean>(false);
   const { addBusy, removeBusy } = useBusyContext();
 
@@ -46,6 +51,13 @@ export const Controls = ({
     removeBusy();
   };
 
+  const downloadCharges = async () => {
+    await downloadMutation.mutateAsync(computationId, {
+      onError: (error) => toast.error(handleApiError(error)),
+      onSuccess: (data) => downloadBlob(data, "charges.zip"),
+    });
+  };
+
   useEffect(() => {
     loadMolecule(molecules?.[0]);
   }, [molstar]);
@@ -59,13 +71,24 @@ export const Controls = ({
   // TODO get correct name for method and params
   return (
     <Card className="w-4/5 rounded-none mx-auto p-4 max-w-content mt-4 flex flex-col relative">
-      <div className="flex gap-2">
-        <h3 className="font-bold">Method:</h3>
-        <span>{names.method}</span>
-      </div>
-      <div className="flex gap-2">
-        <h3 className="font-bold">Parameters:</h3>
-        <span>{names.params}</span>
+      <div className="flex flex-col justify-between items-stretch sm:flex-row sm:items-center">
+        <div>
+          <div className="flex gap-2">
+            <h3 className="font-bold">Method:</h3>
+            <span>{names.method}</span>
+          </div>
+          <div className="flex gap-2">
+            <h3 className="font-bold">Parameters:</h3>
+            <span>{names.params}</span>
+          </div>
+        </div>
+        <Button
+          variant={"secondary"}
+          onClick={downloadCharges}
+          className="mt-2 sm:mt-0"
+        >
+          Download
+        </Button>
       </div>
       <Separator className="my-4" />
       {mmcifLoaded && (

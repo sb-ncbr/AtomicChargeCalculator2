@@ -6,8 +6,9 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./pagination";
+} from "../ui/pagination";
 import { PagingFilters } from "@acc2/api/types";
+import { useSearchParams } from "react-router";
 
 export type PaginatorProps = {
   page: number;
@@ -23,6 +24,19 @@ export const Paginator = ({
   onPageChange,
   className,
 }: PaginatorProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const onChange = (filters: PagingFilters) => {
+    const params = new URLSearchParams(searchParams);
+
+    Object.keys(filters).forEach((key, value) => {
+      params.set(key, `${value}`);
+    });
+
+    setSearchParams(params);
+    onPageChange(filters);
+  };
+
   return (
     <Pagination className={cn(className)}>
       <PaginationContent>
@@ -37,7 +51,7 @@ export const Paginator = ({
           {page > 1 && (
             <PaginationPrevious
               onClick={() =>
-                onPageChange({
+                onChange({
                   page: page - 1,
                   pageSize: pageSize,
                 })
@@ -57,7 +71,7 @@ export const Paginator = ({
               <PaginationLink
                 isActive={pageOffset === page}
                 onClick={() =>
-                  onPageChange({
+                  onChange({
                     page: pageOffset,
                     pageSize: pageSize,
                   })
@@ -72,7 +86,7 @@ export const Paginator = ({
           {totalPages > page && (
             <PaginationNext
               onClick={() =>
-                onPageChange({
+                onChange({
                   page: page + 1,
                   pageSize: pageSize,
                 })

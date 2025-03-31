@@ -1,21 +1,26 @@
-from dataclasses import dataclass
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
-@dataclass
-class AtomTypeCount:
+
+class AtomTypeCount(BaseModel):
     """Counts of atom types."""
 
     symbol: str
     count: int
 
     def __init__(self, type_counts: dict[str, Any]) -> None:
-        self.symbol = type_counts.get("symbol", "")
-        self.count = type_counts.get("count", 0)
+        super().__init__(symbol=type_counts.get("symbol", ""), count=type_counts.get("count", 0))
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
 
 
-@dataclass
-class MoleculeSetStats:
+class MoleculeSetStats(BaseModel):
     """Information about the molecules in the provided file."""
 
     total_molecules: int
@@ -23,6 +28,14 @@ class MoleculeSetStats:
     atom_type_counts: list[AtomTypeCount]
 
     def __init__(self, info: dict[str, Any]) -> None:
-        self.total_molecules = info.get("total_molecules", 0)
-        self.total_atoms = info.get("total_atoms", 0)
-        self.atom_type_counts = [AtomTypeCount(c) for c in info.get("atom_type_counts", [])]
+        super().__init__(
+            total_molecules=info.get("total_molecules", 0),
+            total_atoms=info.get("total_atoms", 0),
+            atom_type_counts=[AtomTypeCount(c) for c in info.get("atom_type_counts", [])],
+        )
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )

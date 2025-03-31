@@ -4,7 +4,7 @@ import type { Parameters as ParametersType } from "@acc2/api/parameters/types";
 import { Calculations } from "@acc2/components/setup/calculations";
 import { Method } from "@acc2/components/setup/method/method";
 import { Parameters } from "@acc2/components/setup/parameters/parameters";
-import { Busy } from "@acc2/components/ui/busy";
+import { Busy } from "@acc2/components/shared/busy";
 import { Button } from "@acc2/components/ui/button";
 import { Card } from "@acc2/components/ui/card";
 import { Form } from "@acc2/components/ui/form";

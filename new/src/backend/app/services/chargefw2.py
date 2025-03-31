@@ -376,3 +376,20 @@ class ChargeFW2Service:
         molecules = [file.replace(CHARGES_OUTPUT_EXTENSION, "") for file in molecule_files]
 
         return molecules
+
+    def delete_calculation(self, computation_id: str, user_id: str) -> None:
+        """Delete the provided computation (from database and filesystem).
+
+        Args:
+            computation_id (str): Computation id.
+            user_id (str): User id.
+
+        Raises:
+            e: Error deleting computation.
+        """
+        try:
+            self.calculation_storage.delete_calculation_set(computation_id)
+            self.io.delete_computation(computation_id, user_id)
+        except Exception as e:
+            self.logger(f"Error deleting computation {computation_id}: {traceback.format_exc()}")
+            raise e

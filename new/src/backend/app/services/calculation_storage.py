@@ -11,11 +11,11 @@ from core.models.calculation import (
     ChargeCalculationConfigDto,
 )
 from core.models.paging import PagedList
-from core.models.molecule_info import MoleculeSetStats as MoleculeInfo
+from core.models.molecule_info import MoleculeSetStats
 from db.models.calculation.calculation import Calculation
 from db.models.calculation.calculation_config import CalculationConfig
 from db.models.calculation.calculation_set import CalculationSet
-from db.models.moleculeset_stats import MoleculeSetStats
+from db.models.moleculeset_stats import AtomTypeCount, MoleculeSetStats as MoleculeSetStatsModel
 from db.repositories.calculation_config_repository import CalculationConfigRepository
 from db.repositories.calculation_repository import CalculationRepository
 from db.repositories.calculation_set_repository import (
@@ -43,26 +43,26 @@ class CalculationStorageService:
         self.stats_repository = stats_repository
         self.logger = logger
 
+    def get_info(self, file_hash: str) -> MoleculeSetStats | None:
+        # Getting info manually due to lazy loading issue
+
+        info = self.stats_repository.get(file_hash)
+
+        if info is None:
+            return None
+
+        info_dict = {
+            "total_molecules": info.total_molecules,
+            "total_atoms": info.total_atoms,
+            "atom_type_counts": [vars(count) for count in info.atom_type_counts],
+        }
+
+        return MoleculeSetStats(info_dict)
+
     def get_calculations(
         self, filters: CalculationSetFilters
     ) -> PagedList[CalculationSetPreviewDto]:
         """Get calculations from database based on filters."""
-
-        def get_info(file_hash: str) -> MoleculeInfo | None:
-            # Getting info manually due to lazy loading issue
-
-            info = self.stats_repository.get(file_hash)
-
-            if info is None:
-                return None
-
-            info_dict = {
-                "total_molecules": info.total_molecules,
-                "total_atoms": info.total_atoms,
-                "atom_type_counts": [vars(count) for count in info.atom_type_counts],
-            }
-
-            return MoleculeInfo(info_dict)
 
         try:
             self.logger.info("Getting calculations from database.")
@@ -72,7 +72,7 @@ class CalculationStorageService:
                     {
                         "id": calculation_set.id,
                         "files": {
-                            calculation.file: get_info(calculation.file_hash)
+                            calculation.file: self.get_info(calculation.file_hash)
                             for calculation in set(calculation_set.calculations)
                         },
                         "configs": calculation_set.configs,
@@ -99,15 +99,25 @@ class CalculationStorageService:
             )
             raise e
 
-    def store_file_info(self, info: MoleculeSetStats) -> MoleculeSetStats:
+    def store_file_info(self, file_hash: str, info: MoleculeSetStats) -> MoleculeSetStats:
         """Store file info to database."""
 
         try:
-            self.logger.info(f"Storing stats of file with hash '{info.file_hash}'.")
-            return self.stats_repository.store(info)
+            self.logger.info(f"Storing stats of file with hash '{file_hash}'.")
+            info_model = MoleculeSetStatsModel(
+                file_hash=file_hash,
+                total_molecules=info.total_molecules,
+                total_atoms=info.total_atoms,
+                atom_type_counts=[
+                    AtomTypeCount(symbol=count.symbol, count=count.count)
+                    for count in info.atom_type_counts
+                ],
+            )
+            return self.stats_repository.store(info_model)
         except Exception as e:
             self.logger.error(
-                f"Error storing stats of file with hash '{info.file_hash}': {traceback.format_exc()}"
+                f"Error storing stats of file with hash '{file_hash}': "
+                + f"{traceback.format_exc()}"
             )
             raise e
 
@@ -233,5 +243,17 @@ class CalculationStorageService:
         except Exception as e:
             self.logger.error(
                 f"Error getting calculation results for computation {computation_id}: {traceback.format_exc()}"
+            )
+            raise e
+
+    def delete_calculation_set(self, computation_id: str) -> None:
+        """Delete calculation set from database."""
+
+        try:
+            self.logger.info(f"Deleting calculation set {computation_id}.")
+            self.set_repository.delete(computation_id)
+        except Exception as e:
+            self.logger.error(
+                f"Error deleting calculation set {computation_id}: {traceback.format_exc()}"
             )
             raise e

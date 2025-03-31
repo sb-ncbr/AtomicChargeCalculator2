@@ -7,10 +7,10 @@ import { useForm } from "react-hook-form";
 import { Form } from "@acc2/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { useFileUploadMutation } from "@acc2/hooks/mutations/use-file-upload-mutation";
+import { useFileUploadMutation } from "@acc2/hooks/mutations/files";
 import { toast } from "sonner";
 import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
-import { Busy } from "@acc2/components/ui/busy";
+import { Busy } from "@acc2/components/shared/busy";
 import { handleApiError } from "@acc2/api/base";
 import { useSetupMutation } from "@acc2/hooks/mutations/use-setup-mutation";
 
@@ -62,7 +62,7 @@ export const Compute = () => {
 
   const onSetup = async (data: ComputeType) => {
     await uploadMutation.mutateAsync(data.files, {
-      onError: () => toast.error("Unable to upload file(s). Try again later."),
+      onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (uploadResponse) => {
         await setupMutation.mutateAsync(
           uploadResponse.map((file) => file.file_hash),

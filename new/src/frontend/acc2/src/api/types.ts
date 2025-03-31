@@ -51,3 +51,17 @@ export const isValidCalculationOrderField = (
 ): value is CalculationsOrderFields => {
   return calculationsOrderFields.includes(value as CalculationsOrderFields);
 };
+
+const filesOrderFields = ["name", "size", "uploaded_at"] as const;
+type FilesOrderFields = (typeof filesOrderFields)[number];
+
+export type FilesFilters = {
+  search?: string;
+} & PagingFilters &
+  OrderFilters<FilesOrderFields>;
+
+export const isValidFilesOrderField = (
+  value: string
+): value is FilesOrderFields => {
+  return filesOrderFields.includes(value as FilesOrderFields);
+};

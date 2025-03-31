@@ -3,7 +3,7 @@ import { MolstarColoringType } from "@acc2/components/results/controls/coloring-
 import { Controls } from "@acc2/components/results/controls/controls";
 import { MolstarViewType } from "@acc2/components/results/controls/view-controls";
 import { MolStarWrapper } from "@acc2/components/results/molstar";
-import { Busy } from "@acc2/components/ui/busy";
+import { Busy } from "@acc2/components/shared/busy";
 import { ScrollArea } from "@acc2/components/ui/scroll-area";
 import { BusyContextProvider } from "@acc2/contexts/busy-context";
 import { ControlsContextProvider } from "@acc2/contexts/controls-context";

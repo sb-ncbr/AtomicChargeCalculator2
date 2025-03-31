@@ -1,6 +1,7 @@
 """Base class for the file system interaction service."""
 
 from abc import ABC, abstractmethod
+import datetime
 import os
 import uuid
 
@@ -28,6 +29,51 @@ class IOBase(ABC):
 
         Args:
             path (str): Path to the directory which will be removed.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def rm(self, path: str) -> None:
+        """Removes file.
+
+        Args:
+            path (str): Path to the file which will be removed.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def last_modified(self, path: str) -> datetime.datetime:
+        """Returns the last modified time of a file.
+
+        Args:
+            path (str): Path to the file.
+
+        Returns:
+            datetime.datetime: Last modified utc timestamp.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def dir_size(self, path: str) -> int:
+        """Returns the size of a directory.
+
+        Args:
+            path (str): Path to the directory.
+
+        Returns:
+            int: Size of the directory in bytes.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def file_size(self, path: str) -> int:
+        """Returns the size of a file.
+
+        Args:
+            path (str): Path to the file.
+
+        Returns:
+            int: Size of the file in bytes.
         """
         raise NotImplementedError()
 

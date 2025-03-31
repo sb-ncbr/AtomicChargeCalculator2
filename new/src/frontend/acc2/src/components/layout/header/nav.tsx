@@ -35,14 +35,24 @@ export const Nav = () => {
             Home
           </NavLink>
           {isAuthenticated && (
-            <NavLink
-              to={"/calculations"}
-              className={({ isActive }) =>
-                `${isActive ? "underline" : "no-underline"} hover:underline`
-              }
-            >
-              Calculations
-            </NavLink>
+            <>
+              <NavLink
+                to={"/calculations"}
+                className={({ isActive }) =>
+                  `${isActive ? "underline" : "no-underline"} hover:underline`
+                }
+              >
+                Calculations
+              </NavLink>
+              <NavLink
+                to={"/files"}
+                className={({ isActive }) =>
+                  `${isActive ? "underline" : "no-underline"} hover:underline`
+                }
+              >
+                Files
+              </NavLink>
+            </>
           )}
         </div>
         {!isAuthenticated && (
@@ -73,16 +83,28 @@ export const Nav = () => {
               </NavLink>
             </DropdownMenuItem>
             {isAuthenticated && (
-              <DropdownMenuItem className="relative">
-                <NavLink
-                  to={"/calculations"}
-                  className={({ isActive }) =>
-                    `${isActive ? "underline" : "no-underline"}`
-                  }
-                >
-                  Calculations
-                </NavLink>
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem className="relative">
+                  <NavLink
+                    to={"/calculations"}
+                    className={({ isActive }) =>
+                      `${isActive ? "underline" : "no-underline"}`
+                    }
+                  >
+                    Calculations
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="relative">
+                  <NavLink
+                    to={"/files"}
+                    className={({ isActive }) =>
+                      `${isActive ? "underline" : "no-underline"}`
+                    }
+                  >
+                    Files
+                  </NavLink>
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem>

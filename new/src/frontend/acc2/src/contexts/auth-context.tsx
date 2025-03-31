@@ -18,12 +18,17 @@ type AuthProviderProps = PropsWithChildren;
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const verifyAuthMutation = useVerifyAuthMutation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const checkAuthStatus = async () => {
-    await verifyAuthMutation.mutateAsync(undefined, {
-      onError: () => setIsAuthenticated(false),
-      onSuccess: (data) => setIsAuthenticated(data.isAuthenticated),
-    });
+    try {
+      const { isAuthenticated } = await verifyAuthMutation.mutateAsync();
+      setIsAuthenticated(isAuthenticated);
+    } catch (error) {
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -34,7 +39,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{
         isAuthenticated,
-        loading: verifyAuthMutation.isPending,
+        loading,
         checkAuthStatus,
       }}
     >

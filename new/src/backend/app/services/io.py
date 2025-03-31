@@ -1,8 +1,10 @@
 """Service for handling file operations."""
 
+import datetime
 import json
 import os
 from pathlib import Path
+import traceback
 from typing import Tuple
 
 from dotenv import load_dotenv
@@ -22,6 +24,12 @@ class IOService:
     workdir = Path(os.environ.get("ACC2_DATA_DIR"))
     examples_dir = Path(os.environ.get("ACC2_EXAMPLES_DIR"))
 
+    user_quota = int(os.environ.get("ACC2_USER_STORAGE_QUOTA_BYTES"))
+    guest_file_quota = int(os.environ.get("ACC2_GUEST_FILE_STORAGE_QUOTA_BYTES"))
+    guest_compute_quota = int(os.environ.get("ACC2_GUEST_COMPUTE_STORAGE_QUOTA_BYTES"))
+
+    max_file_size = int(os.environ.get("ACC2_MAX_FILE_SIZE_BYTES"))
+
     def __init__(self, io: IOBase, logger: LoggerBase):
         self.io = io
         self.logger = logger
@@ -34,7 +42,7 @@ class IOService:
         try:
             self.io.mkdir(path)
         except Exception as e:
-            self.logger.error(f"Unable to create directory '{path}': {e}")
+            self.logger.error(f"Unable to create directory '{path}': {traceback.format_exc()}")
             raise e
 
     def cp(self, path_from: str, path_to: str) -> str:
@@ -46,7 +54,9 @@ class IOService:
             path = self.io.cp(path_from, path_to)
             return path
         except Exception as e:
-            self.logger.error(f"Unable to copy '{path_from}' to '{path_to}': {e}")
+            self.logger.error(
+                f"Unable to copy '{path_from}' to '{path_to}': {traceback.format_exc()}"
+            )
             raise e
 
     async def store_upload_file(self, file: UploadFile, directory: str) -> tuple[str, str]:
@@ -56,7 +66,27 @@ class IOService:
         try:
             return await self.io.store_upload_file(file, directory)
         except Exception as e:
-            self.logger.error(f"Error storing file {file.filename}: {e}")
+            self.logger.error(f"Error storing file {file.filename}: {traceback.format_exc()}")
+            raise e
+
+    def remove_file(self, file_hash: str, user_id: str) -> None:
+        """Remove file with provided hash.
+
+        Args:
+            file_hash (str): File hash.
+            user_id (str): User id.
+
+        Raises:
+            e: Error removing file.
+        """
+
+        self.logger.info(f"Removing file {file_hash}.")
+
+        try:
+            path = self.get_filepath(file_hash, user_id)
+            self.io.rm(path)
+        except Exception as e:
+            self.logger.error(f"Error removing file {file_hash}: {traceback.format_exc()}")
             raise e
 
     def zip_charges(self, directory: str) -> str:
@@ -83,7 +113,7 @@ class IOService:
 
             return self.io.zip(archive_dir, archive_dir)
         except Exception as e:
-            self.logger.error(f"Error creating archive from {directory}: {e}")
+            self.logger.error(f"Error creating archive from {directory}: {traceback.format_exc()}")
             raise e
 
     def listdir(self, directory: str) -> list[str]:
@@ -94,6 +124,16 @@ class IOService:
         """Check if path exists."""
 
         return self.io.path_exists(path)
+
+    def get_storage_path(self, user_id: str | None) -> str:
+        """Get path to user storage."""
+
+        if user_id is not None:
+            path = self.workdir / "user" / user_id
+        else:
+            path = self.workdir / "guest"
+
+        return str(path)
 
     def get_file_storage_path(self, user_id: str | None = None) -> str:
         """Get path to file storage.
@@ -109,6 +149,23 @@ class IOService:
             path = self.workdir / "user" / user_id / "files"
         else:
             path = self.workdir / "guest" / "files"
+
+        return str(path)
+
+    def get_computations_path(self, user_id: str | None = None) -> str:
+        """Get path to computations directory.
+
+        Args:
+            user_id (str | None, optional): Id of user. Defaults to None.
+
+        Returns:
+            str: Returns path to computations directory of a given (users/guest) user.
+        """
+
+        if user_id is not None:
+            path = self.workdir / "user" / user_id / "computations"
+        else:
+            path = self.workdir / "guest" / "computations"
 
         return str(path)
 
@@ -224,7 +281,7 @@ class IOService:
                 config_path, json.dumps([config.model_dump() for config in configs], indent=4)
             )
         except Exception as e:
-            self.logger.error(f"Unable to store configs: {e}")
+            self.logger.error(f"Unable to store configs: {traceback.format_exc()}")
             raise e
 
     def get_filepath(self, file_hash: str, user_id: str | None) -> str | None:
@@ -247,7 +304,131 @@ class IOService:
 
             return None
         except Exception as e:
-            self.logger.error(f"Unable to get file path: {e}")
+            self.logger.error(f"Unable to get file path: {traceback.format_exc()}")
+            raise e
+
+    def get_last_modification(
+        self, file_hash: str, user_id: str | None
+    ) -> datetime.datetime | None:
+        """Get last modification time of file with provided hash.
+
+        Args:
+            file_hash (str): File hash.
+            user_id (str | None): User id.
+
+        Returns:
+            datetime.datetime | None: Last modification time.
+        """
+
+        try:
+            path = self.get_filepath(file_hash, user_id)
+            return self.io.last_modified(path)
+        except Exception as e:
+            self.logger.error(f"Unable to get last modification time: {traceback.format_exc()}")
+            raise e
+
+    def get_file_size(self, file_hash: str, user_id: str | None) -> int | None:
+        """Get size of file with provided hash.
+
+        Args:
+            file_hash (str): File hash.
+            user_id (str | None): User id.
+
+        Returns:
+            int | None: File size.
+        """
+
+        try:
+            path = self.get_filepath(file_hash, user_id)
+            return self.io.file_size(path)
+        except Exception as e:
+            self.logger.error(f"Unable to get file size: {traceback.format_exc()}")
+            raise e
+
+    def free_guest_file_space(self, amount_to_free: int) -> None:
+        """Free guest file space.
+
+        Args:
+            amount_to_free (int): Amount to free in bytes.
+        """
+
+        path = self.get_file_storage_path()
+
+        self.logger.info(f"Freeing {amount_to_free} bytes of guest file space.")
+
+        available_to_free = self.io.dir_size(path)
+        has_to_free = self.guest_file_quota - available_to_free < amount_to_free
+
+        if not has_to_free:
+            self.logger.info("Guest file space is sufficient. No need to free space.")
+            return
+
+        if available_to_free < amount_to_free:
+            # This case should not happen as max allowed file size is checked beforehand
+            self.logger.error(
+                f"Unable to free {amount_to_free} bytes of guest file space. "
+                + f"Only {available_to_free} bytes available."
+            )
+            raise ValueError("Not enough space to free.")
+
+        files = sorted(self.listdir(path), key=lambda x: self.io.last_modified(str(Path(path) / x)))
+
+        while amount_to_free > 0 and len(files) > 0:
+            file = files.pop(0)
+            file_path = str(Path(path) / file)
+
+            try:
+                amount_to_free -= self.io.file_size(file_path)
+                self.io.rm(file_path)
+            except Exception as e:
+                self.logger.error(f"Unable to delete file {file_path}: {traceback.format_exc()}")
+                raise e
+
+    def free_guest_compute_space(self) -> None:
+        """Removes old computations to free guest compute space, if it exceeds the quota."""
+
+        path = self.get_computations_path()
+
+        available_to_free = self.io.dir_size(path)
+        amount_to_free = available_to_free - self.guest_compute_quota
+
+        if amount_to_free <= 0:
+            self.logger.info("Guest compute space is sufficient. No need to free space.")
+            return
+
+        self.logger.info(f"Freeing {amount_to_free} bytes of guest compute space.")
+
+        computations = sorted(
+            self.listdir(path), key=lambda x: self.io.last_modified(str(Path(path) / x))
+        )
+
+        while amount_to_free > 0 and len(computations) > 0:
+            computation = computations.pop(0)
+            computation_path = str(Path(path) / computation)
+
+            try:
+                amount_to_free -= self.io.dir_size(computation_path)
+                self.io.rmdir(computation_path)
+            except Exception as e:
+                self.logger.error(
+                    f"Unable to delete computation {computation_path}: {traceback.format_exc()}"
+                )
+                raise e
+
+    def delete_computation(self, computation_id: str, user_id: str) -> None:
+        """Delete the provided computation from the filesystem.
+
+        Args:
+            computation_id (str): Computation id.
+            user_id (str): User id.
+
+        Raises:
+            e: Error deleting computation.
+        """
+        try:
+            self.io.rmdir(self.get_computation_path(computation_id, user_id))
+        except Exception as e:
+            self.logger(f"Error deleting computation {computation_id}: {traceback.format_exc()}")
             raise e
 
     def parse_filename(self, filename: str) -> Tuple[str, str]:
@@ -267,9 +448,27 @@ class IOService:
         parts = filename.split("_", 1)
 
         if (len(parts) != 2) or (len(parts[0]) != sha256_hash_length):
-            self.logger.error(f"Invalid filename format: {filename}")
+            self.logger.error(f"Invalid filename format (<file_hash>_<file_name>): {filename}")
             raise ValueError("Invalid filename format.")
 
         file_hash, file_name = parts
 
         return file_hash, file_name
+
+    def get_quota(self, user_id: str | None = None) -> Tuple[int, int, int]:
+        """Get user storage quota.
+
+        Args:
+            user_id (str): User id.
+
+        Returns:
+            Tuple[int, int, int]: Tuple with used space, available space and quota.
+        """
+
+        storage_dir = Path(self.get_storage_path(user_id))
+        quota = self.user_quota if user_id else self.guest_file_quota + self.guest_compute_quota
+
+        used_space = self.io.dir_size(storage_dir)
+        available_space = quota - used_space
+
+        return used_space, available_space, quota

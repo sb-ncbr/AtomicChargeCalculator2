@@ -1,6 +1,7 @@
 import { cn } from "@acc2/lib/utils";
 import { LoaderCircle } from "lucide-react";
-import { HTMLAttributes, PropsWithChildren } from "react";
+import { HTMLAttributes, PropsWithChildren, useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 export type BusyProps = {
   isBusy: boolean;
@@ -13,6 +14,9 @@ export enum BusySize {
   Small = 25,
 }
 
+// We don't want to show busy if loading takes short amount of time to avoid flickering.
+const BusyDelayMs = 200;
+
 export const Busy = ({
   isBusy,
   size = BusySize.Small,
@@ -20,12 +24,27 @@ export const Busy = ({
   className,
   ...rest
 }: BusyProps) => {
+  const [showBusy, setShowBusy] = useState<boolean>(false);
+
+  const triggerBusy = useDebouncedCallback(() => {
+    setShowBusy(true);
+  }, BusyDelayMs);
+
+  useEffect(() => {
+    if (isBusy) {
+      triggerBusy();
+    } else {
+      triggerBusy.cancel();
+      setShowBusy(false);
+    }
+  }, [isBusy]);
+
   return (
     <div
       {...rest}
       className={cn(
         "absolute inset-0 bg-secondary/35 place-content-center z-40",
-        isBusy ? "grid" : "hidden",
+        showBusy ? "grid" : "hidden",
         className
       )}
     >

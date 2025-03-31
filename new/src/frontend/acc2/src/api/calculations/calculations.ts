@@ -23,3 +23,13 @@ export const getCalculations = async (
 
   return response.data.data;
 };
+
+export const deleteCalculation = async (computationId: string) => {
+  const response = await api.delete(`/charges/${computationId}`);
+
+  if (!response.data.success) {
+    throw Error(response.data.message);
+  }
+
+  return response.data.data;
+};

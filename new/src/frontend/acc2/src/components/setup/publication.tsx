@@ -1,7 +1,7 @@
 import { Method } from "@acc2/api/methods/types";
 import { Parameters } from "@acc2/api/parameters/types";
 import { usePublicationQuery } from "@acc2/hooks/queries/use-publication-query";
-import { Busy } from "../ui/busy";
+import { Busy } from "../shared/busy";
 
 export type PublicationProps = {
   publicationSource: Parameters | Method;

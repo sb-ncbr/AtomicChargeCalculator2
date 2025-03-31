@@ -179,6 +179,16 @@ async def calculate_charges(
 
     user_id = str(request.state.user.id) if request.state.user is not None else None
 
+    if user_id is not None:
+        _, available_b, quota_b = io_service.get_quota(user_id)
+        if available_b <= 0:
+            quota_mb = quota_b / 1024 / 1024
+            raise BadRequestError(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Unable to calculate charges. Quota exceeded. "
+                + f"Maximum storage space is {quota_mb} MB.",
+            )
+
     if configs is None or len(configs) == 0:
         # get most suitable when no config is provided
         # TODO: calling this endpoint multiple times without config inserts the most suitable one into database
@@ -223,6 +233,9 @@ async def calculate_charges(
             calculations = storage_service.get_calculation_results(computation_id)
 
         _ = mmcif_service.write_to_mmcif(user_id, computation_id, calculations)
+
+        if user_id is None:
+            io_service.free_guest_compute_space()
 
         if response_format == "none":
             return Response(data=computation_id)
@@ -387,4 +400,36 @@ async def get_calculations(
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting calculations."
+        ) from e
+
+
+@charges_router.delete("/{computation_id}")
+@inject
+async def delete_calculation(
+    request: Request,
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
+) -> Response[None]:
+    """Deletes the computation."""
+    user_id = str(request.state.user.id) if request.state.user is not None else None
+
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You need to be logged in to delete calculations.",
+        )
+
+    exists = storage_service.get_calculation_set(computation_id)
+
+    if not exists or str(exists.user_id) != user_id:
+        raise NotFoundError(detail="Computation not found.")
+
+    try:
+        chargefw2.delete_calculation(computation_id, user_id)
+        return Response(data=None)
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong while deleting computation.",
         ) from e
