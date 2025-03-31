@@ -19,6 +19,7 @@ import { useCalculationDeleteMutation } from "@acc2/hooks/mutations/calculations
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoTooltip } from "../setup/info-tooltip";
 import { ConfirmAction } from "../shared/confirm-action";
+import { HoverDetailsList } from "../shared/hover-details";
 
 dayjs.extend(localizedFormat);
 
@@ -65,7 +66,7 @@ export const Calculation = ({
       <div className="mb-4">
         <span className="block font-bold text-md mb-2">
           Files
-          <InfoTooltip info="Hovering over the individual files will show their statistics." />
+          <InfoTooltip info="Hovering over individual files will show their statistics." />
         </span>
         <div className="flex gap-2 flex-wrap">
           {Object.entries(files)
@@ -107,17 +108,30 @@ export const Calculation = ({
         </div>
       </div>
       <div>
-        <span className="block font-bold mb-2">Calculations</span>
+        <span className="block font-bold text-md mb-2">
+          Calculations
+          <InfoTooltip info="Hovering over individual calculations will display its details." />
+        </span>
         <div className="flex gap-2 flex-wrap">
-          {configs.map(({ method, parameters }, index) => (
-            <Badge
+          {configs.map(({ method, parameters, ...settings }, index) => (
+            <HoverDetailsList
               key={`molecule-${index}`}
-              className="cursor-default rounded"
-              variant="secondary"
-            >
-              <span>{method}</span>
-              {parameters && <span>&nbsp;({parameters})</span>}
-            </Badge>
+              trigger={
+                <Badge className="cursor-pointer rounded" variant="secondary">
+                  <span>{method}</span>
+                  {parameters && <span>&nbsp;({parameters})</span>}
+                </Badge>
+              }
+              data={{
+                Method: method,
+                Parameters: parameters ?? "None",
+                "Read HETATM": settings.readHetatm ? "Enabled" : "Disabled",
+                "Ignore water": settings.ignoreWater ? "Enabled" : "Disabled",
+                "Permissive types": settings.permissiveTypes
+                  ? "Enabled"
+                  : "Disabled",
+              }}
+            />
           ))}
         </div>
       </div>

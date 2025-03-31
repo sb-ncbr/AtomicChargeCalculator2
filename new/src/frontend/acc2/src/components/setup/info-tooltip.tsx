@@ -15,9 +15,7 @@ export const InfoTooltip = ({ info }: InfoTooltipProps) => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span>
-            <Info className="inline size-5 text-primary cursor-pointer ml-2" />
-          </span>
+          <Info className="inline size-5 text-primary cursor-pointer ml-2" />
         </TooltipTrigger>
         <TooltipContent>{info}</TooltipContent>
       </Tooltip>

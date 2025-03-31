@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
-import { SetupSettings } from "./settings";
+import { AdvancedSetupSettings } from "./advanced-settings";
 
 const setupSchema = z.object({
   computations: z.array(
@@ -183,7 +183,10 @@ export const Setup = ({ computationId }: SetupProps) => {
                   </>
                 )}
               </div>
-              <SetupSettings settings={settings} setSettings={setSettings} />
+              <AdvancedSetupSettings
+                settings={settings}
+                setSettings={setSettings}
+              />
               <Button
                 type="button"
                 className="mt-4 self-start"
