@@ -54,7 +54,7 @@ async def logout(
     """Log out the user."""
     config = await oidc_service.get_oidc_config()
     token = request.cookies.get("access_token")
-    redirect_uri = "https://acc2-dev.biodata.ceitec.cz/"
+    redirect_uri = "https://acc2-dev.biodata.ceitec.cz/"  # TODO get from config
 
     response = RedirectResponse(redirect_uri)
 
@@ -94,7 +94,6 @@ async def auth_callback(
             data={
                 "grant_type": "authorization_code",
                 "code": code,
-                "redirect_uri": oidc_service.redirect_uri,
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             auth=httpx.BasicAuth(
@@ -128,7 +127,7 @@ async def auth_callback(
 
         # set session cookie
         response = RedirectResponse(url="https://acc2-dev.biodata.ceitec.cz/")
-        response.set_cookie("access_token", tokens.access_token)
+        response.set_cookie("access_token", tokens.access_token, secure=True, httponly=True)
 
         return response
 

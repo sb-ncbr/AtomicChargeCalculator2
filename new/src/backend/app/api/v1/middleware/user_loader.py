@@ -16,7 +16,10 @@ RequestResponseEndpoint = Callable[[Request], Awaitable[Response]]
 
 
 class UserLoaderMiddleware(BaseHTTPMiddleware):
-    """Middleware used for verifying token, loading user from the database and setting it to the request state."""
+    """Middleware used for
+    1. verifying token
+    2. loading user from the database
+    3. setting it to the request state."""
 
     def __init__(self, app):
         super().__init__(app)
