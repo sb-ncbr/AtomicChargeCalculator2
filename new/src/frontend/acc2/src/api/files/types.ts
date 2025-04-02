@@ -2,7 +2,7 @@ import { MoleculeSetStats } from "../calculations/types";
 
 export type UploadResponse = {
   file: string;
-  file_hash: string;
+  fileHash: string;
 }[];
 
 export type QuotaResponse = {

@@ -3,7 +3,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "tailwindcss";
 
-const ReactCompilerConfig = {};
+const ReactCompilerConfig = {
+  target: "18",
+};
 
 export default defineConfig({
   plugins: [

@@ -41,7 +41,7 @@ export const Compute = () => {
       onSuccess: async (uploadResponse) => {
         await computationMutation.mutateAsync(
           {
-            fileHashes: uploadResponse.map((file) => file.file_hash),
+            fileHashes: uploadResponse.map((file) => file.fileHash),
             configs: [],
           },
           {
@@ -65,7 +65,7 @@ export const Compute = () => {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (uploadResponse) => {
         await setupMutation.mutateAsync(
-          uploadResponse.map((file) => file.file_hash),
+          uploadResponse.map((file) => file.fileHash),
           {
             onError: () =>
               toast.error("Unable to setup computation. Try again later."),
