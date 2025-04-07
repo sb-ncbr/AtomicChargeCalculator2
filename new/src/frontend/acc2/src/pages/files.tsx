@@ -1,6 +1,6 @@
 import { Files } from "@acc2/components/files/files";
-import { useAuth } from "@acc2/hooks/queries/use-auth";
-import { useTitle } from "@acc2/hooks/use-title";
+import { useAuth } from "@acc2/lib/hooks/queries/use-auth";
+import { useTitle } from "@acc2/lib/hooks/use-title";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";

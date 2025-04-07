@@ -12,10 +12,10 @@ import {
 import { Button } from "../ui/button";
 import { ArrowDownZA, ArrowUpZA } from "lucide-react";
 import { Busy } from "../shared/busy";
-import { useQuotaQuery } from "@acc2/hooks/queries/files";
+import { useQuotaQuery } from "@acc2/lib/hooks/queries/use-files";
 import { QuotaProgress } from "../shared/quota-progress";
-import { useCalculationsQuery } from "@acc2/hooks/queries/calculations";
-import { useCalculationFilters } from "@acc2/hooks/filters/use-calculation-filters";
+import { useCalculationsQuery } from "@acc2/lib/hooks/queries/use-calculations";
+import { useCalculationFilters } from "@acc2/lib/hooks/filters/use-calculation-filters";
 
 export const Calculations = () => {
   const { filters, setFilters } = useCalculationFilters();

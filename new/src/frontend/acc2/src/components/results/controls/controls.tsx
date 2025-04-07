@@ -2,18 +2,17 @@ import { HTMLAttributes, useEffect, useState } from "react";
 import { Card } from "../../ui/card";
 import { Separator } from "../../ui/separator";
 import MolstarPartialCharges from "molstar-partial-charges";
-import { useLoadMmcifMutation } from "@acc2/hooks/mutations/use-load-mmcif-mutation";
 import { MolstarViewControls } from "./view-controls";
 import { MolstarColoringControls } from "./coloring-controls";
 import { MolstarChargesetControls } from "./chargeset-controls";
 import { MolstarStructureControls } from "./structure-controls";
-import { useBusyContext } from "@acc2/hooks/contexts/use-busy-context";
-import { useControlsContext } from "@acc2/hooks/contexts/use-controls-context";
+import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
+import { useControlsContext } from "@acc2/lib/hooks/contexts/use-controls-context";
 import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
 import { Button } from "@acc2/components/ui/button";
-import { useCalculationDownloadMutation } from "@acc2/hooks/mutations/use-calculation-download-mutation";
 import { downloadBlob } from "@acc2/lib/utils";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 export type ControlsProps = {
   computationId: string;
@@ -28,8 +27,7 @@ export const Controls = ({
 }: ControlsProps) => {
   const context = useControlsContext(molstar);
 
-  const mmcifMutation = useLoadMmcifMutation(molstar, computationId);
-  const downloadMutation = useCalculationDownloadMutation();
+  const { loadMmcifMutation, downloadMutation } = useComputationMutations();
 
   const [mmcifLoaded, setMmcifLoaded] = useState<boolean>(false);
   const { addBusy, removeBusy } = useBusyContext();
@@ -38,8 +36,8 @@ export const Controls = ({
 
   const loadMolecule = async (molecule: string) => {
     addBusy();
-    await mmcifMutation.mutateAsync(
-      { molecule },
+    await loadMmcifMutation.mutateAsync(
+      { molstar, computationId, molecule },
       {
         onError: (error) => toast.error(handleApiError(error)),
         onSuccess: () => setMmcifLoaded(true),

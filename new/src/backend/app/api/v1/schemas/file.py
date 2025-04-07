@@ -1,5 +1,5 @@
 import datetime
-from core.models.molecule_info import MoleculeSetStats
+from models.molecule_info import MoleculeSetStats
 from .base_response import BaseResponseSchema
 
 

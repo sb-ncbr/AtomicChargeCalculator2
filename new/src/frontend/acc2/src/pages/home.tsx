@@ -1,4 +1,4 @@
-import { useTitle } from "@acc2/hooks/use-title";
+import { useTitle } from "@acc2/lib/hooks/use-title";
 import { Home } from "@acc2/components/home/home";
 
 export const HomePage = () => {

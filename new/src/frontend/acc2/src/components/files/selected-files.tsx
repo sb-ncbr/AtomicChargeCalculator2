@@ -12,7 +12,7 @@ export const SelectedFiles = ({
   setSelectedFiles,
 }: SelectedFilesProps) => {
   return (
-    <div className="my-2">
+    <div className="my-2 min-h-7">
       <span className="text-sm mr-2">Selected Files:</span>
       {selectedFiles.map((file) => (
         <Badge

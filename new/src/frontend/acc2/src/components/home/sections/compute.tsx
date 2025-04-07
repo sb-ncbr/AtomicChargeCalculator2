@@ -7,12 +7,11 @@ import { useForm } from "react-hook-form";
 import { Form } from "@acc2/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { useFileUploadMutation } from "@acc2/hooks/mutations/files";
+import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
 import { toast } from "sonner";
-import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
 import { Busy } from "@acc2/components/shared/busy";
 import { handleApiError } from "@acc2/api/base";
-import { useSetupMutation } from "@acc2/hooks/mutations/use-setup-mutation";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 const computeSchema = z.object({
   files: z
@@ -24,9 +23,8 @@ type ComputeType = z.infer<typeof computeSchema>;
 
 export const Compute = () => {
   const navigate = useNavigate();
-  const uploadMutation = useFileUploadMutation();
-  const computationMutation = useComputationMutation();
-  const setupMutation = useSetupMutation();
+  const { fileUploadMutation } = useFileMutations();
+  const { computeMutation, setupMutation } = useComputationMutations();
 
   const form = useForm<ComputeType>({
     resolver: zodResolver(computeSchema),
@@ -36,10 +34,10 @@ export const Compute = () => {
   });
 
   const onSubmit = async (data: ComputeType) => {
-    await uploadMutation.mutateAsync(data.files, {
+    await fileUploadMutation.mutateAsync(data.files, {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (uploadResponse) => {
-        await computationMutation.mutateAsync(
+        await computeMutation.mutateAsync(
           {
             fileHashes: uploadResponse.map((file) => file.fileHash),
             configs: [],
@@ -61,7 +59,7 @@ export const Compute = () => {
   };
 
   const onSetup = async (data: ComputeType) => {
-    await uploadMutation.mutateAsync(data.files, {
+    await fileUploadMutation.mutateAsync(data.files, {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (uploadResponse) => {
         await setupMutation.mutateAsync(
@@ -86,7 +84,7 @@ export const Compute = () => {
   return (
     <Card className="w-11/12 md:w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mb-12 mt-0 xs:mt-8 md:mt-0 relative">
       <Busy
-        isBusy={computationMutation.isPending || uploadMutation.isPending}
+        isBusy={computeMutation.isPending || fileUploadMutation.isPending}
       />
       <h2 className="text-5xl text-primary font-bold">Compute</h2>
       <Form {...form}>

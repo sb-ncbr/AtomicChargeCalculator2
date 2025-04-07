@@ -2,9 +2,9 @@ import uuid
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
-from core.integrations.chargefw2.base import Charges
-
 from db.models import Base
+
+from integrations.chargefw2.base import Charges
 
 
 class Calculation(Base):

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from jose import JWTError, jwt
 
-from core.logging.base import LoggerBase
+from services.logging.base import LoggerBase
 
 load_dotenv()
 

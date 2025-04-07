@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFileUploadMutation } from "@acc2/hooks/mutations/files";
+import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
 import { handleApiError } from "@acc2/api/base";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,7 +30,7 @@ type UploadType = z.infer<typeof uploadSchema>;
 
 export const UploadDialog = () => {
   const queryClient = useQueryClient();
-  const uploadMutation = useFileUploadMutation();
+  const { fileUploadMutation } = useFileMutations();
   const form = useForm<UploadType>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
@@ -40,7 +40,7 @@ export const UploadDialog = () => {
   const [open, setOpen] = useState<boolean>(false);
 
   const onSubmit = async (data: UploadType) => {
-    await uploadMutation.mutateAsync(data.files, {
+    await fileUploadMutation.mutateAsync(data.files, {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async () => {
         toast.success("Files have been successfully uploaded.");
@@ -61,7 +61,7 @@ export const UploadDialog = () => {
       </DialogTrigger>
       <Form {...form}>
         <DialogContent>
-          <Busy isBusy={uploadMutation.isPending}></Busy>
+          <Busy isBusy={fileUploadMutation.isPending}></Busy>
           <DialogHeader>
             <DialogTitle>Upload files</DialogTitle>
             <DialogDescription>

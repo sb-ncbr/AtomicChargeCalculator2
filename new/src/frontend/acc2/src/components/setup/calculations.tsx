@@ -32,6 +32,7 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
         {!calculations?.length && <span>No calculations chosen yet.</span>}
         {calculations?.map(({ method, parameters, ...settings }, index) => (
           <HoverDetailsList
+            key={`calculation-${index}`}
             trigger={
               <Badge
                 key={index}

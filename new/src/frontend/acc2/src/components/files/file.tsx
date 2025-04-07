@@ -11,10 +11,7 @@ import {
 import { ChevronsUpDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn, downloadBlob, formatBytes } from "@acc2/lib/utils";
-import {
-  useFileDeleteMutation,
-  useFileDownloadMutation,
-} from "@acc2/hooks/mutations/files";
+import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
 import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,8 +33,7 @@ export const File = ({
   isSelected,
   className,
 }: FileProps) => {
-  const fileDeleteMutation = useFileDeleteMutation();
-  const fileDownloadMutation = useFileDownloadMutation();
+  const { fileDeleteMutation, fileDownloadMutation } = useFileMutations();
   const queryClient = useQueryClient();
 
   const onDelete = async () => {
@@ -52,7 +48,8 @@ export const File = ({
     });
   };
 
-  const onDownload = async () => {
+  const onDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     await fileDownloadMutation.mutateAsync(file.fileHash, {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (data) => downloadBlob(data, file.fileName),

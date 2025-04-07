@@ -12,11 +12,10 @@ import {
 } from "../ui/dialog";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
-import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
 import { createSearchParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
-import { useSetupMutation } from "@acc2/hooks/mutations/use-setup-mutation";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 export type ComputeDialogProps = {
   files: FileResponse[];
@@ -25,12 +24,11 @@ export type ComputeDialogProps = {
 export const ComputeDialog = ({ files }: ComputeDialogProps) => {
   const [open, setOpen] = useState<boolean>(false);
 
-  const computationMutation = useComputationMutation();
-  const setupMutation = useSetupMutation();
+  const { computeMutation, setupMutation } = useComputationMutations();
   const navigate = useNavigate();
 
   const onCompute = async () => {
-    await computationMutation.mutateAsync(
+    await computeMutation.mutateAsync(
       {
         fileHashes: files.map((file) => file.fileHash),
         configs: [],
@@ -72,7 +70,7 @@ export const ComputeDialog = ({ files }: ComputeDialogProps) => {
         <Button disabled={files.length === 0}>Compute</Button>
       </DialogTrigger>
       <DialogContent>
-        <Busy isBusy={computationMutation.isPending} />
+        <Busy isBusy={computeMutation.isPending} />
         <DialogHeader>
           <DialogTitle>Compute charges.</DialogTitle>
           <DialogDescription>

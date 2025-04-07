@@ -1,7 +1,6 @@
 import traceback
 
-from core.logging.base import LoggerBase
-from core.models.calculation import (
+from models.calculation import (
     CalculationConfigDto,
     CalculationDto,
     CalculationResultDto,
@@ -10,8 +9,8 @@ from core.models.calculation import (
     CalculationsFilters,
     ChargeCalculationConfigDto,
 )
-from core.models.paging import PagedList
-from core.models.molecule_info import MoleculeSetStats
+from models.paging import PagedList
+from models.molecule_info import MoleculeSetStats
 from db.models.calculation.calculation import Calculation
 from db.models.calculation.calculation_config import CalculationConfig
 from db.models.calculation.calculation_set import CalculationSet
@@ -23,6 +22,8 @@ from db.repositories.calculation_set_repository import (
     CalculationSetRepository,
 )
 from db.repositories.moleculeset_stats_repository import MoleculeSetStatsRepository
+
+from services.logging.base import LoggerBase
 
 
 class CalculationStorageService:

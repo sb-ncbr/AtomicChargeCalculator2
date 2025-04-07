@@ -5,9 +5,9 @@ import { MolstarViewType } from "@acc2/components/results/controls/view-controls
 import { MolStarWrapper } from "@acc2/components/results/molstar";
 import { Busy } from "@acc2/components/shared/busy";
 import { ScrollArea } from "@acc2/components/ui/scroll-area";
-import { BusyContextProvider } from "@acc2/contexts/busy-context";
-import { ControlsContextProvider } from "@acc2/contexts/controls-context";
-import { useMoleculesMutation } from "@acc2/hooks/mutations/use-molecules-mutation";
+import { BusyContextProvider } from "@acc2/lib/contexts/busy-context";
+import { ControlsContextProvider } from "@acc2/lib/contexts/controls-context";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 import MolstarPartialCharges from "molstar-partial-charges";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -19,7 +19,7 @@ export type ResultsProps = {
 
 export const Results = ({ computationId }: ResultsProps) => {
   const navigate = useNavigate();
-  const moleculesMutation = useMoleculesMutation();
+  const { getMoleculesMutation } = useComputationMutations();
 
   const [molstar, setMolstar] = useState<MolstarPartialCharges>();
   const [molecules, setMolecules] = useState<string[]>([]);
@@ -37,7 +37,8 @@ export const Results = ({ computationId }: ResultsProps) => {
   const [methodNames, setMethodNames] = useState<(string | undefined)[]>([]);
 
   const loadMolecules = async () => {
-    await moleculesMutation.mutateAsync(computationId, {
+    // make this a query
+    await getMoleculesMutation.mutateAsync(computationId, {
       onError: (error) => {
         toast.error(handleApiError(error));
         navigate("/");

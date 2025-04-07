@@ -1,5 +1,5 @@
 import { Results } from "@acc2/components/results/results";
-import { useTitle } from "@acc2/hooks/use-title";
+import { useTitle } from "@acc2/lib/hooks/use-title";
 import { useNavigate, useSearchParams } from "react-router";
 
 export const ResultsPage = () => {

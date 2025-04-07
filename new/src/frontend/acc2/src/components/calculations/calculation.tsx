@@ -14,8 +14,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "../ui/hover-card";
-import { useCalculationDownloadMutation } from "@acc2/hooks/mutations/use-calculation-download-mutation";
-import { useCalculationDeleteMutation } from "@acc2/hooks/mutations/calculations";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 import { useQueryClient } from "@tanstack/react-query";
 import { InfoTooltip } from "../setup/info-tooltip";
 import { ConfirmAction } from "../shared/confirm-action";
@@ -34,8 +33,7 @@ export const Calculation = ({
 }: CalculationProps) => {
   const { id, configs, files, createdAt } = calculation;
   const navigate = useNavigate();
-  const downloadMutation = useCalculationDownloadMutation();
-  const deleteMutation = useCalculationDeleteMutation();
+  const { downloadMutation, deleteMutation } = useComputationMutations();
   const queryClient = useQueryClient();
 
   const onDownload = async () => {
@@ -73,7 +71,7 @@ export const Calculation = ({
             .toSorted((a, b) => a[0].localeCompare(b[0]))
             .map(([file, stats], index) => (
               <HoverCard openDelay={0} closeDelay={0} key={`file-${index}`}>
-                <HoverCardTrigger asChild>
+                <HoverCardTrigger>
                   <Badge className="cursor-pointer rounded" variant="secondary">
                     {file}
                   </Badge>
@@ -81,11 +79,11 @@ export const Calculation = ({
                 <HoverCardContent className="bg-white border z-50 p-4 text-sm shadow mt-2 flex flex-col gap-2">
                   <div className="flex flex-col">
                     <span className="mr-2 font-bold">Total Molecules</span>
-                    <span>{stats.totalMolecules}</span>
+                    <span className="text-xs">{stats.totalMolecules}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="mr-2 font-bold">Total Atoms</span>
-                    <span>{stats.totalAtoms}</span>
+                    <span className="text-xs">{stats.totalAtoms}</span>
                   </div>
                   <div>
                     <span className="block font-bold">Atom Type Counts</span>
@@ -98,7 +96,7 @@ export const Calculation = ({
                           <span className="font-bold mr-1 text-muted-foreground">
                             {symbol}:
                           </span>
-                          <span className="mr-2">{count}</span>
+                          <span className="mr-2 text-xs">{count}</span>
                         </div>
                       ))}
                   </div>
@@ -115,7 +113,7 @@ export const Calculation = ({
         <div className="flex gap-2 flex-wrap">
           {configs.map(({ method, parameters, ...settings }, index) => (
             <HoverDetailsList
-              key={`molecule-${index}`}
+              key={`${calculation.id}-molecule-${index}`}
               trigger={
                 <Badge className="cursor-pointer rounded" variant="secondary">
                   <span>{method}</span>

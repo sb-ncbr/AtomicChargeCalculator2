@@ -4,10 +4,10 @@ import pathlib
 from gemmi import cif
 
 from api.v1.constants import CHARGES_OUTPUT_EXTENSION
-from core.logging.base import LoggerBase
-from core.models.calculation import CalculationResultDto
+from models.calculation import CalculationResultDto
 
 from services.io import IOService
+from services.logging.base import LoggerBase
 
 
 class MmCIFService:

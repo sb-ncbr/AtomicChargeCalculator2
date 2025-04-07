@@ -7,7 +7,7 @@ from sqlalchemy import Select, func, select, and_
 from sqlalchemy.orm import joinedload
 
 
-from core.models.paging import PagedList, PagingFilters
+from models.paging import PagedList, PagingFilters
 
 from db.database import SessionManager
 from db.models.calculation.calculation_set import CalculationSet

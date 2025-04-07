@@ -10,8 +10,7 @@ import { Card } from "@acc2/components/ui/card";
 import { Form } from "@acc2/components/ui/form";
 import { ScrollArea } from "@acc2/components/ui/scroll-area";
 import { Separator } from "@acc2/components/ui/separator";
-import { useComputationMutation } from "@acc2/hooks/mutations/use-computation-mutation";
-import { useSuitableMethodsQuery } from "@acc2/hooks/queries/use-suitable-methods-query";
+import { useSuitableMethodsQuery } from "@acc2/lib/hooks/queries/use-calculations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -19,6 +18,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AdvancedSetupSettings } from "./advanced-settings";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 const setupSchema = z.object({
   computations: z.array(
@@ -46,7 +46,7 @@ export const Setup = ({ computationId }: SetupProps) => {
     isPending,
     isError,
   } = useSuitableMethodsQuery(computationId);
-  const computationMutation = useComputationMutation();
+  const { computeMutation } = useComputationMutations();
 
   const [currentMethod, setCurrentMethod] = useState<MethodType | undefined>(
     suitableMethods?.methods?.[0]
@@ -67,7 +67,7 @@ export const Setup = ({ computationId }: SetupProps) => {
   });
 
   const onSubmit = async (data: SetupFormType) => {
-    await computationMutation.mutateAsync(
+    await computeMutation.mutateAsync(
       {
         computationId,
         fileHashes: [],
@@ -150,7 +150,7 @@ export const Setup = ({ computationId }: SetupProps) => {
 
   return (
     <main className="mx-auto w-full selection:text-white selection:bg-primary mb-12">
-      <Busy isBusy={computationMutation.isPending || isPending} />
+      <Busy isBusy={computeMutation.isPending || isPending} />
       <ScrollArea type="auto" className="h-full">
         <Card className="w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mt-12 flex flex-col">
           <h2 className="text-3xl text-primary font-bold mb-2 md:text-5xl">

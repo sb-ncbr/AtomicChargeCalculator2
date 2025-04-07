@@ -4,8 +4,8 @@ from sqlalchemy import and_, Select, select
 from sqlalchemy.orm import joinedload
 
 
-from core.models.paging import PagedList, PagingFilters
-from core.models.calculation import CalculationsFilters
+from models.paging import PagedList, PagingFilters
+from models.calculation import CalculationsFilters
 
 from db.database import SessionManager
 from db.models.calculation.calculation import Calculation

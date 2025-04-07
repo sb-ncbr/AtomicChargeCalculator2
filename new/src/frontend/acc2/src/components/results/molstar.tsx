@@ -2,7 +2,7 @@ import MolstarPartialCharges from "molstar-partial-charges";
 import { HTMLAttributes, useEffect } from "react";
 import { Card } from "../ui/card";
 import { cn } from "@acc2/lib/utils";
-import { useBusyContext } from "@acc2/hooks/contexts/use-busy-context";
+import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
 import "@acc2/molstar.css";
 
 export type MolstarProps = {

@@ -4,8 +4,10 @@ from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from core.logging.base import LoggerBase
-from core.dependency_injection.container import Container
+
+from api.v1.container import Container
+
+from services.logging.base import LoggerBase
 
 RequestResponseEndpoint = Callable[[Request], Awaitable[Response]]
 

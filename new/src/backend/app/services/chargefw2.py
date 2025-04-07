@@ -12,19 +12,18 @@ from typing import Tuple
 # Temporary solution to get Molecules class
 from chargefw2 import Molecules
 
-from core.integrations.chargefw2.base import ChargeFW2Base
-from core.logging.base import LoggerBase
-from core.models.calculation import (
+from models.calculation import (
     CalculationConfigDto,
     CalculationDto,
     ChargeCalculationConfigDto,
     CalculationResultDto,
 )
-from core.models.molecule_info import MoleculeSetStats
-from core.models.method import Method
-from core.models.parameters import Parameters
-from core.models.suitable_methods import SuitableMethods
+from models.molecule_info import MoleculeSetStats
+from models.method import Method
+from models.parameters import Parameters
+from models.suitable_methods import SuitableMethods
 
+from integrations.chargefw2.base import ChargeFW2Base
 
 from api.v1.constants import CHARGES_OUTPUT_EXTENSION
 
@@ -32,6 +31,7 @@ from db.models.calculation.calculation_config import CalculationConfig
 
 
 from services.io import IOService
+from services.logging.base import LoggerBase
 from services.mmcif import MmCIFService
 from services.calculation_storage import CalculationStorageService
 
