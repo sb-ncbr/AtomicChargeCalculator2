@@ -1,18 +1,19 @@
-import { HTMLAttributes, useEffect, useState } from "react";
-import { Card } from "../../ui/card";
-import { Separator } from "../../ui/separator";
-import MolstarPartialCharges from "molstar-partial-charges";
-import { MolstarViewControls } from "./view-controls";
-import { MolstarColoringControls } from "./coloring-controls";
-import { MolstarChargesetControls } from "./chargeset-controls";
-import { MolstarStructureControls } from "./structure-controls";
-import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
-import { useControlsContext } from "@acc2/lib/hooks/contexts/use-controls-context";
-import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
 import { Button } from "@acc2/components/ui/button";
-import { downloadBlob } from "@acc2/lib/utils";
+import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
+import { useControlsContext } from "@acc2/lib/hooks/contexts/use-controls-context";
 import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
+import { downloadBlob } from "@acc2/lib/utils";
+import MolstarPartialCharges from "molstar-partial-charges";
+import { HTMLAttributes, useEffect, useState } from "react";
+import { toast } from "sonner";
+
+import { Card } from "../../ui/card";
+import { Separator } from "../../ui/separator";
+import { MolstarChargesetControls } from "./chargeset-controls";
+import { MolstarColoringControls } from "./coloring-controls";
+import { MolstarStructureControls } from "./structure-controls";
+import { MolstarViewControls } from "./view-controls";
 
 export type ControlsProps = {
   computationId: string;
@@ -57,7 +58,7 @@ export const Controls = ({
   };
 
   useEffect(() => {
-    loadMolecule(molecules?.[0]);
+    void loadMolecule(molecules?.[0]);
   }, [molstar]);
 
   useEffect(() => {

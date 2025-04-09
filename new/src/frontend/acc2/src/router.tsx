@@ -1,10 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router";
-import { HomePage } from "./pages/home";
-import { SetupPage } from "./pages/setup";
-import { ResultsPage } from "./pages/results";
+
 import { Layout } from "./components/layout/layout";
 import { CalculationsPage } from "./pages/calculations";
 import { FilesPage } from "./pages/files";
+import { HomePage } from "./pages/home";
+import { ResultsPage } from "./pages/results";
+import { SetupPage } from "./pages/setup";
 
 export const Router = () => {
   return (

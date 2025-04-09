@@ -1,4 +1,7 @@
+import { PagingFilters } from "@acc2/api/types";
 import { cn } from "@acc2/lib/utils";
+import { useSearchParams } from "react-router";
+
 import {
   Pagination,
   PaginationContent,
@@ -7,8 +10,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination";
-import { PagingFilters } from "@acc2/api/types";
-import { useSearchParams } from "react-router";
 
 export type PaginatorProps = {
   page: number;

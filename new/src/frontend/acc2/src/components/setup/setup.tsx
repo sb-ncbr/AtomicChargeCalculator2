@@ -1,6 +1,7 @@
-import { handleApiError } from "@acc2/api/base";
 import type { Method as MethodType } from "@acc2/api/methods/types";
 import type { Parameters as ParametersType } from "@acc2/api/parameters/types";
+
+import { handleApiError } from "@acc2/api/base";
 import { Calculations } from "@acc2/components/setup/calculations";
 import { Method } from "@acc2/components/setup/method/method";
 import { Parameters } from "@acc2/components/setup/parameters/parameters";
@@ -10,6 +11,7 @@ import { Card } from "@acc2/components/ui/card";
 import { Form } from "@acc2/components/ui/form";
 import { ScrollArea } from "@acc2/components/ui/scroll-area";
 import { Separator } from "@acc2/components/ui/separator";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 import { useSuitableMethodsQuery } from "@acc2/lib/hooks/queries/use-calculations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -17,8 +19,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+
 import { AdvancedSetupSettings } from "./advanced-settings";
-import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 const setupSchema = z.object({
   computations: z.array(
@@ -82,7 +84,7 @@ export const Setup = ({ computationId }: SetupProps) => {
       {
         onError: (error) => toast.error(handleApiError(error)),
         onSuccess: () => {
-          navigate({
+          void navigate({
             pathname: "/results",
             search: `?comp_id=${computationId}`,
           });
@@ -143,7 +145,7 @@ export const Setup = ({ computationId }: SetupProps) => {
 
   useEffect(() => {
     if (isError) {
-      navigate("/");
+      void navigate("/");
       toast.error("Something went wrong while fetching setup info.");
     }
   }, [isError]);

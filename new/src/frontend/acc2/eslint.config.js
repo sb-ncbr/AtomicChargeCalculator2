@@ -12,55 +12,73 @@ import tseslint from "typescript-eslint";
 import tsParser from "@typescript-eslint/parser";
 import path from "path";
 import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
   baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
 });
 
 export default tseslint.config(
-  { ignores: ["dist", "src/components/ui/**/*"] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    ignores: [
+      "dist",
+      "src/components/ui/**/*",
+      ".vite",
+      "tailwind.config.js",
+      "vite.config.ts",
+      "src/vite-env.d.ts",
+    ],
+  },
+
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...pluginQuery.configs["flat/recommended"],
+  ...compat.extends("plugin:react/recommended"),
+
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       globals: globals.browser,
       parser: tsParser,
       sourceType: "module",
-
       parserOptions: {
-        project: "./tsconfig.json",
+        project: ["./tsconfig.json"],
+        projectService: true,
+        tsconfigRootDir: __dirname,
       },
     },
-    ...compat.extends(
-      "eslint:recommended",
-      "plugin:react/recommended",
-      "plugin:@typescript-eslint/recommended"
-    ),
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       "unused-imports": unusedImports,
       "react-compiler": reactCompiler,
-      "@tanstack/query": pluginQuery,
       react,
       prettier,
       perfectionist,
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      ...pluginQuery.configs["flat/recommended"],
+
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": "warn",
+
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
+
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-non-null-assertion": "error",
@@ -70,59 +88,18 @@ export default tseslint.config(
       "no-param-reassign": "warn",
       "no-trailing-spaces": "warn",
 
-      "unused-imports/no-unused-vars": [
-        "warn",
-        {
-          vars: "all",
-          varsIngorePattern: ",^_",
-          args: "after-used",
-          argsIgnorePattern: "^_",
-        },
-      ],
-
       "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
 
-      "perfectionist/sort-imports": [
-        "error",
-        {
-          type: "alphabetical",
-          order: "asc",
-          ignoreCase: true,
-          specialCharacters: "keep",
-          internalPattern: ["^~/.+"],
-          partitionByComment: false,
-          partitionByNewLine: false,
-          newlinesBetween: "always",
-          maxLineLength: 120,
-          groups: [
-            "type",
-            ["builtin", "external"],
-            "internal-type",
-            "internal",
-            ["parent-type", "sibling-type", "index-type"],
-            ["parent", "sibling", "index"],
-            "object",
-            "unknown",
-          ],
-          customGroups: { type: {}, value: {} },
-          environment: "node",
-        },
-      ],
-      "perfectionist/sort-named-imports": [
-        "error",
-        {
-          type: "alphabetical",
-          order: "asc",
-          ignoreAlias: false,
-          ignoreCase: true,
-          specialCharacters: "keep",
-          groupKind: "mixed",
-          partitionByNewLine: false,
-          partitionByComment: false,
-        },
-      ],
+      "perfectionist/sort-imports": ["error", {}],
+      "perfectionist/sort-named-imports": ["error", {}],
 
       "react-compiler/react-compiler": "warn",
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
     },
   }
 );

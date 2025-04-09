@@ -1,7 +1,14 @@
-import { useEffect } from "react";
-import { Calculation } from "./calculation";
 import { isValidCalculationOrderField } from "@acc2/api/types";
+import { useCalculationFilters } from "@acc2/lib/hooks/filters/use-calculation-filters";
+import { useCalculationsQuery } from "@acc2/lib/hooks/queries/use-calculations";
+import { useQuotaQuery } from "@acc2/lib/hooks/queries/use-files";
+import { ArrowDownZA, ArrowUpZA } from "lucide-react";
+import { useEffect } from "react";
+
+import { Busy } from "../shared/busy";
 import { Paginator } from "../shared/paginator";
+import { QuotaProgress } from "../shared/quota-progress";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -9,13 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Button } from "../ui/button";
-import { ArrowDownZA, ArrowUpZA } from "lucide-react";
-import { Busy } from "../shared/busy";
-import { useQuotaQuery } from "@acc2/lib/hooks/queries/use-files";
-import { QuotaProgress } from "../shared/quota-progress";
-import { useCalculationsQuery } from "@acc2/lib/hooks/queries/use-calculations";
-import { useCalculationFilters } from "@acc2/lib/hooks/filters/use-calculation-filters";
+import { Calculation } from "./calculation";
 
 export const Calculations = () => {
   const { filters, setFilters } = useCalculationFilters();
@@ -34,8 +35,8 @@ export const Calculations = () => {
   } = useCalculationsQuery(filters);
 
   useEffect(() => {
-    refetch({ cancelRefetch: false });
-  }, [filters]);
+    void refetch({ cancelRefetch: false });
+  }, [filters, refetch]);
 
   return (
     <main className="min-h-main w-full max-w-content mx-auto flex flex-col p-4">

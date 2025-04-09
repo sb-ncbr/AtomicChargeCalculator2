@@ -1,19 +1,19 @@
-import { Paginator } from "../shared/paginator";
-
+import { FileResponse } from "@acc2/api/files/types";
+import { useFileFilters } from "@acc2/lib/hooks/filters/use-file-filters";
+import { useQuotaQuery } from "@acc2/lib/hooks/queries/use-files";
+import { useFilesQuery } from "@acc2/lib/hooks/queries/use-files";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { QuotaProgress } from "../shared/quota-progress";
 import { useEffect, useState } from "react";
-import { useQuotaQuery } from "@acc2/lib/hooks/queries/use-files";
-import { File } from "./file";
-import { useFileFilters } from "@acc2/lib/hooks/filters/use-file-filters";
-import { useFilesQuery } from "@acc2/lib/hooks/queries/use-files";
+
 import { Busy } from "../shared/busy";
-import { UploadDialog } from "./upload-dialog";
+import { Paginator } from "../shared/paginator";
+import { QuotaProgress } from "../shared/quota-progress";
 import { ComputeDialog } from "./compute-dialog";
-import { FileResponse } from "@acc2/api/files/types";
-import { FilesToolbar } from "./toolbar";
+import { File } from "./file";
 import { SelectedFiles } from "./selected-files";
+import { FilesToolbar } from "./toolbar";
+import { UploadDialog } from "./upload-dialog";
 
 dayjs.extend(localizedFormat);
 
@@ -36,8 +36,8 @@ export const Files = () => {
   const [selectedFiles, setSelectedFiles] = useState<FileResponse[]>([]);
 
   useEffect(() => {
-    refetch({ cancelRefetch: false });
-  }, [filters]);
+    void refetch({ cancelRefetch: false });
+  }, [filters, refetch]);
 
   return (
     <main className="min-h-main w-full max-w-content mx-auto flex flex-col p-4">

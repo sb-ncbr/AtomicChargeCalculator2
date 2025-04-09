@@ -30,7 +30,7 @@ export const MolstarColoringControls = ({
   const maxValueRef = useRef<HTMLInputElement>(null);
 
   const onMaxValueChange = async (maxValue: number) => {
-    context.set.maxValue(maxValue);
+    void context.set.maxValue(maxValue);
   };
 
   const resetMaxValue = async () => {
@@ -50,9 +50,9 @@ export const MolstarColoringControls = ({
   }, [molstar]);
 
   useEffect(() => {
-    context.set.coloringType(context.get.coloringType);
-    resetMaxValue();
-  }, [context.get.coloringType]);
+    void context.set.coloringType(context.get.coloringType);
+    void resetMaxValue();
+  }, [context.get, context.set]);
 
   return (
     <div className="flex gap-4 flex-col sm:flex-row">

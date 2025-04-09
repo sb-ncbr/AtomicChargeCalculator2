@@ -1,6 +1,7 @@
 import { FileResponse } from "@acc2/api/files/types";
-import { Badge } from "../ui/badge";
 import { X } from "lucide-react";
+
+import { Badge } from "../ui/badge";
 
 export type SelectedFilesProps = {
   selectedFiles: FileResponse[];

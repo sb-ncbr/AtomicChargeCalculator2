@@ -13,9 +13,7 @@ export type MolstarViewControlsProps = {
   molstar: MolstarPartialCharges;
 };
 
-const molstarViewTypes = ["balls-and-sticks", "cartoon", "surface"] as const;
-
-export type MolstarViewType = (typeof molstarViewTypes)[number];
+export type MolstarViewType = "balls-and-sticks" | "cartoon" | "surface";
 
 export const MolstarViewControls = ({ molstar }: MolstarViewControlsProps) => {
   const context = useControlsContext(molstar);
@@ -24,8 +22,8 @@ export const MolstarViewControls = ({ molstar }: MolstarViewControlsProps) => {
     molstar.type.isDefaultApplicable() ? "cartoon" : "balls-and-sticks";
 
   useEffect(() => {
-    context.set.viewType(getDefaultView());
-  }, [context.get.structure]);
+    void context.set.viewType(getDefaultView());
+  }, [context.get.structure, context.set]);
 
   return (
     <div>

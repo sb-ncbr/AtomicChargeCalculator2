@@ -1,24 +1,24 @@
-import { HTMLAttributes } from "react";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { cn, downloadBlob } from "@acc2/lib/utils";
-import { useNavigate } from "react-router";
-import { CalculationPreview } from "@acc2/api/calculations/types";
-import { toast } from "sonner";
 import { handleApiError } from "@acc2/api/base";
-
+import { CalculationPreview } from "@acc2/api/calculations/types";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
+import { cn, downloadBlob } from "@acc2/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import { HTMLAttributes } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+
+import { InfoTooltip } from "../setup/info-tooltip";
+import { ConfirmAction } from "../shared/confirm-action";
+import { HoverDetailsList } from "../shared/hover-details";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "../ui/hover-card";
-import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
-import { useQueryClient } from "@tanstack/react-query";
-import { InfoTooltip } from "../setup/info-tooltip";
-import { ConfirmAction } from "../shared/confirm-action";
-import { HoverDetailsList } from "../shared/hover-details";
 
 dayjs.extend(localizedFormat);
 
@@ -139,7 +139,7 @@ export const Calculation = ({
           variant={"default"}
           className="self-end w-full xs:w-28"
           onClick={() => {
-            navigate({
+            void navigate({
               pathname: "/results",
               search: `?comp_id=${id}`,
             });

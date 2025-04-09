@@ -1,3 +1,4 @@
+import { Parameters } from "@acc2/api/parameters/types";
 import {
   Select,
   SelectContent,
@@ -5,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@acc2/components/ui/select";
-import { Parameters } from "@acc2/api/parameters/types";
 import { SetStateAction } from "react";
 
 export type ParametersSelectorProps = {

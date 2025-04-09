@@ -1,8 +1,9 @@
+import { Parameters as ParametersType } from "@acc2/api/parameters/types";
+import { cn } from "@acc2/lib/utils";
+import { HTMLAttributes } from "react";
+
 import { Card } from "../../ui/card";
 import { Separator } from "../../ui/separator";
-import { HTMLAttributes } from "react";
-import { cn } from "@acc2/lib/utils";
-import { Parameters as ParametersType } from "@acc2/api/parameters/types";
 import { InfoTooltip } from "../info-tooltip";
 import { ParametersPublication } from "./publication";
 import { ParametersSelector } from "./selector";

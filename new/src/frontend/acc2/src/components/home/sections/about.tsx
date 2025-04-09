@@ -18,7 +18,7 @@ export const About = () => {
         <a
           href="https://github.com/sb-ncbr/AtomicChargeCalculator2/wiki"
           target="_blank"
-          className="text-primary hover:underline"
+          className="text-primary hover:underline" rel="noreferrer"
         >
           Short introduction
         </a>{" "}
@@ -28,7 +28,7 @@ export const About = () => {
           href="https://github.com/sb-ncbr/ChargeFW2"
           target="_blank"
           referrerPolicy="no-referrer"
-          className="text-primary hover:underline"
+          className="text-primary hover:underline" rel="noreferrer"
         >
           application
         </a>{" "}

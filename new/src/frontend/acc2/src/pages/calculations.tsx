@@ -14,7 +14,7 @@ export const CalculationsPage = () => {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       toast.error("You need to login to view calculations.");
-      navigate("/");
+      void navigate("/");
     }
   }, [loading, isAuthenticated, navigate]);
 

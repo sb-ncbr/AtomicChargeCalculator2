@@ -1,5 +1,12 @@
+import { handleApiError } from "@acc2/api/base";
 import { FileResponse } from "@acc2/api/files/types";
+import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
+import { useState } from "react";
+import { createSearchParams, useNavigate } from "react-router";
+import { toast } from "sonner";
+
 import { Busy } from "../shared/busy";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -10,12 +17,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { useState } from "react";
-import { Badge } from "../ui/badge";
-import { createSearchParams, useNavigate } from "react-router";
-import { toast } from "sonner";
-import { handleApiError } from "@acc2/api/base";
-import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 
 export type ComputeDialogProps = {
   files: FileResponse[];
@@ -36,7 +37,7 @@ export const ComputeDialog = ({ files }: ComputeDialogProps) => {
       {
         onError: (error) => toast.error(handleApiError(error)),
         onSuccess: (compId) => {
-          navigate({
+          void navigate({
             pathname: "/results",
             search: createSearchParams({
               comp_id: compId,
@@ -53,7 +54,7 @@ export const ComputeDialog = ({ files }: ComputeDialogProps) => {
       {
         onError: (error) => toast.error(handleApiError(error)),
         onSuccess: async (compId) => {
-          navigate({
+          void navigate({
             pathname: "/setup",
             search: createSearchParams({
               comp_id: compId,

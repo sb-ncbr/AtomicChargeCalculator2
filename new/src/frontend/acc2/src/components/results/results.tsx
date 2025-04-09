@@ -41,14 +41,14 @@ export const Results = ({ computationId }: ResultsProps) => {
     await getMoleculesMutation.mutateAsync(computationId, {
       onError: (error) => {
         toast.error(handleApiError(error));
-        navigate("/");
+        void navigate("/");
       },
       onSuccess: (molecules) => setMolecules(molecules),
     });
   };
 
   useEffect(() => {
-    loadMolecules();
+    void loadMolecules();
   }, []);
 
   return (

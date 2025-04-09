@@ -1,10 +1,11 @@
+import { Method as MethodType, SuitableMethods } from "@acc2/api/methods/types";
+import { cn } from "@acc2/lib/utils";
 import { HTMLAttributes } from "react";
+
 import { Card } from "../../ui/card";
 import { Separator } from "../../ui/separator";
-import { cn } from "@acc2/lib/utils";
-import { Method as MethodType, SuitableMethods } from "@acc2/api/methods/types";
-import { MethodSelector } from "./selector";
 import { MethodPublication } from "./publication";
+import { MethodSelector } from "./selector";
 
 export type MethodProps = {
   suitableMethods: SuitableMethods;

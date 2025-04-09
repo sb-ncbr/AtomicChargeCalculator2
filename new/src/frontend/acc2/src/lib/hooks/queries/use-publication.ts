@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export const usePublicationQuery = (data?: Parameters | Method) => {
   return useQuery({
-    queryKey: ["publication", data?.internalName],
+    queryKey: ["publication", data?.internalName, data?.publication],
     queryFn: async () => {
       const { default: publicationData } = await import(
         "@acc2/assets/publication_info.json"

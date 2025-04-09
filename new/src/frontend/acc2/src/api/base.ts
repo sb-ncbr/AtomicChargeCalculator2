@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+
 import { ErrorResponse } from "./types";
 
 export const baseApiUrl = import.meta.env.VITE_BASE_API_URL;

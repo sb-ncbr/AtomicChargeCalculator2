@@ -1,9 +1,9 @@
+import { cn } from "@acc2/lib/utils";
 import { InputHTMLAttributes } from "react";
+import { useSearchParams } from "react-router";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Input } from "../ui/input";
-import { useSearchParams } from "react-router";
-import { cn } from "@acc2/lib/utils";
 
 type SearchInputProps = InputHTMLAttributes<HTMLInputElement> & {
   searchKey: string;

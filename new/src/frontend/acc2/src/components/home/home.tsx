@@ -1,11 +1,11 @@
-import { ScrollArea } from "@acc2/components/ui/scroll-area";
 import { Banner } from "@acc2/components/home/banner";
-import { Compute } from "@acc2/components/home/sections/compute";
 import { About } from "@acc2/components/home/sections/about";
-import { Examples } from "@acc2/components/home/sections/examples";
 import { Citing } from "@acc2/components/home/sections/citing";
-import { License } from "@acc2/components/home/sections/license";
+import { Compute } from "@acc2/components/home/sections/compute";
 import { Elixir } from "@acc2/components/home/sections/elixir";
+import { Examples } from "@acc2/components/home/sections/examples";
+import { License } from "@acc2/components/home/sections/license";
+import { ScrollArea } from "@acc2/components/ui/scroll-area";
 
 export const Home = () => {
   return (

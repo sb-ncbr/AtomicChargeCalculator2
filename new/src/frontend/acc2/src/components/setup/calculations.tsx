@@ -1,12 +1,13 @@
+import { SetupFormType } from "@acc2/components/setup/setup";
+import { cn } from "@acc2/lib/utils";
 import { X } from "lucide-react";
+import { HTMLAttributes } from "react";
+import { useFormContext } from "react-hook-form";
+
+import { HoverDetailsList } from "../shared/hover-details";
 import { Badge } from "../ui/badge";
 import { Card } from "../ui/card";
-import { HTMLAttributes } from "react";
-import { cn } from "@acc2/lib/utils";
-import { useFormContext } from "react-hook-form";
-import { SetupFormType } from "@acc2/components/setup/setup";
 import { InfoTooltip } from "./info-tooltip";
-import { HoverDetailsList } from "../shared/hover-details";
 
 export type CalculationsProps = HTMLAttributes<HTMLElement>;
 

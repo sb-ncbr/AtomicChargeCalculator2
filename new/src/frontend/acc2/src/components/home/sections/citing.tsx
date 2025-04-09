@@ -12,7 +12,7 @@ export const Citing = () => {
             href="https://doi.org/10.1093/nar/gkaa367"
             target="_blank"
             referrerPolicy="no-referrer"
-            className="text-primary hover:underline"
+            className="text-primary hover:underline" rel="noreferrer"
           >
             Atomic Charge Calculator II: web-based tool for the calculation of
             partial atomic charges
@@ -24,7 +24,7 @@ export const Citing = () => {
           href="mailto:krab1k@mail.muni.cz"
           target="_blank"
           referrerPolicy="no-referrer"
-          className="text-primary hover:underline"
+          className="text-primary hover:underline" rel="noreferrer"
         >
           contact us
         </a>

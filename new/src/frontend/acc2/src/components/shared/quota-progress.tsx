@@ -1,6 +1,7 @@
-import { cn, formatBytes } from "@acc2/lib/utils";
-import { Progress } from "../ui/progress";
 import { QuotaResponse } from "@acc2/api/files/types";
+import { cn, formatBytes } from "@acc2/lib/utils";
+
+import { Progress } from "../ui/progress";
 
 export type QuotaProgressProps = {
   quota: QuotaResponse;

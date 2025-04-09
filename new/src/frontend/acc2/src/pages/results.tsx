@@ -11,7 +11,7 @@ export const ResultsPage = () => {
   const computationId = searchParams.get("comp_id");
   const exampleId = searchParams.get("example_id");
   if (!computationId && !exampleId) {
-    navigate("/");
+    void navigate("/");
     return null;
   }
 
@@ -19,5 +19,9 @@ export const ResultsPage = () => {
     return <Results computationId={`examples/${exampleId}`} />;
   }
 
-  return <Results computationId={computationId!} />;
+  if (computationId) {
+    return <Results computationId={computationId} />;
+  }
+
+  return null;
 };

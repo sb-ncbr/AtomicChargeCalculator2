@@ -1,6 +1,7 @@
-import { HTMLAttributes, PropsWithChildren } from "react";
-import { Paperclip } from "lucide-react";
 import { cn } from "@acc2/lib/utils";
+import { Paperclip } from "lucide-react";
+import { HTMLAttributes, PropsWithChildren } from "react";
+
 import { Separator } from "../ui/separator";
 
 export type SectionProps = {

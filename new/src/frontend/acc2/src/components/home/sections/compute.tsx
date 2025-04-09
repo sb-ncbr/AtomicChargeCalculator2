@@ -1,17 +1,17 @@
+import { handleApiError } from "@acc2/api/base";
+import { Busy } from "@acc2/components/shared/busy";
 import { Button } from "@acc2/components/ui/button";
 import { Card } from "@acc2/components/ui/card";
+import { Form } from "@acc2/components/ui/form";
 import { Input } from "@acc2/components/ui/input";
 import { Label } from "@acc2/components/ui/label";
-import { createSearchParams, useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { Form } from "@acc2/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
-import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
-import { toast } from "sonner";
-import { Busy } from "@acc2/components/shared/busy";
-import { handleApiError } from "@acc2/api/base";
 import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
+import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { createSearchParams, useNavigate } from "react-router";
+import { toast } from "sonner";
+import z from "zod";
 
 const computeSchema = z.object({
   files: z
@@ -45,7 +45,7 @@ export const Compute = () => {
           {
             onError: (error) => toast.error(handleApiError(error)),
             onSuccess: (compId) => {
-              navigate({
+              void navigate({
                 pathname: "results",
                 search: createSearchParams({
                   comp_id: compId,
@@ -68,7 +68,7 @@ export const Compute = () => {
             onError: () =>
               toast.error("Unable to setup computation. Try again later."),
             onSuccess: (compId) => {
-              navigate({
+              void navigate({
                 pathname: "setup",
                 search: createSearchParams({
                   comp_id: compId,

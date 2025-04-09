@@ -1,4 +1,5 @@
 import { Method } from "@acc2/api/methods/types";
+
 import { Publication } from "../publication";
 
 type MethodPublicationProps = {

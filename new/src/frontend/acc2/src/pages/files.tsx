@@ -14,7 +14,7 @@ export const FilesPage = () => {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       toast.error("You need to login to view files.");
-      navigate("/");
+      void navigate("/");
     }
   }, [loading, isAuthenticated, navigate]);
 

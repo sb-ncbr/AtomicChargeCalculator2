@@ -1,15 +1,16 @@
-import Propofol from "@acc2/assets/images/propofol.png";
 import Bax from "@acc2/assets/images/bax.png";
+import Propofol from "@acc2/assets/images/propofol.png";
 import Receptor from "@acc2/assets/images/receptor.png";
+import { createSearchParams, useNavigate } from "react-router";
+
 import { Example } from "../example";
 import { Section } from "../section";
-import { createSearchParams, useNavigate } from "react-router";
 
 export const Examples = () => {
   const navigate = useNavigate();
 
   const goToExample = async (exampleId: string) => {
-    navigate({
+    void navigate({
       pathname: "/results",
       search: createSearchParams({
         example_id: exampleId,
@@ -33,6 +34,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               DrugBank
             </a>
@@ -42,6 +44,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               PubChem
             </a>
@@ -63,6 +66,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               literature
             </a>
@@ -85,6 +89,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               1f16
             </a>
@@ -94,6 +99,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               2k7w
             </a>
@@ -115,6 +121,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               literature
             </a>
@@ -145,6 +152,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               details
             </a>
@@ -154,6 +162,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               2bg9
             </a>
@@ -163,6 +172,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               WHAT IF
             </a>{" "}
@@ -187,6 +197,7 @@ export const Examples = () => {
               target="_blank"
               referrerPolicy="no-referrer"
               className="text-primary hover:underline"
+              rel="noreferrer"
             >
               literature
             </a>

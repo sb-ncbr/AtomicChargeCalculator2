@@ -1,4 +1,5 @@
 import { createContext, PropsWithChildren, useEffect, useState } from "react";
+
 import { useAuthMutations } from "../hooks/mutations/use-auth";
 
 type AuthProviderType = {
@@ -32,7 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   useEffect(() => {
-    checkAuthStatus();
+    void checkAuthStatus();
   }, []);
 
   return (

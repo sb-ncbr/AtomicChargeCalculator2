@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { formatBytes as format } from "molstar/lib/mol-util";
 import { twMerge } from "tailwind-merge";
 

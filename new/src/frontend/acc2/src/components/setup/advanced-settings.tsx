@@ -1,13 +1,14 @@
+import { ChevronsUpDown } from "lucide-react";
 import { SetStateAction } from "react";
+
 import { Card } from "../ui/card";
-import { Switch } from "../ui/switch";
-import { InfoTooltip } from "./info-tooltip";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
-import { ChevronsUpDown } from "lucide-react";
+import { Switch } from "../ui/switch";
+import { InfoTooltip } from "./info-tooltip";
 
 type SetupSettings = {
   readHetatm: boolean;

@@ -1,3 +1,4 @@
+import { baseApiUrl } from "@acc2/api/base";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,11 +6,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@acc2/components/ui/dropdown-menu";
+import { useAuth } from "@acc2/lib/hooks/queries/use-auth";
 import { Menu } from "lucide-react";
 import { NavLink } from "react-router";
+
 import LoginImg from "../../../assets/images/button-login.svg";
-import { baseApiUrl } from "@acc2/api/base";
-import { useAuth } from "@acc2/lib/hooks/queries/use-auth";
 
 export const Nav = () => {
   const { isAuthenticated } = useAuth();

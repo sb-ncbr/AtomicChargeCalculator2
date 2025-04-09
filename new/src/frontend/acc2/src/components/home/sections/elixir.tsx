@@ -1,5 +1,6 @@
-import { Section } from "../section";
 import ElixirLogo from "@acc2/assets/images/elixirlogo.png";
+
+import { Section } from "../section";
 
 export const Elixir = () => {
   return (
@@ -15,7 +16,7 @@ export const Elixir = () => {
         <p>
           Atomic Charge Calculator II is a part of services provided by ELIXIR –
           European research infrastructure for biological information. For other
-          services provided by ELIXIR's Czech Republic Node visit{" "}
+          services provided by ELIXIR&apos;s Czech Republic Node visit{" "}
           <a
             href="https://www.elixir-czech.cz/services"
             target="_blank"

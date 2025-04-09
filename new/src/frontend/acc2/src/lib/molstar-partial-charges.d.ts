@@ -1,6 +1,6 @@
 declare module "molstar-partial-charges" {
-  import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
   import { BuiltInTrajectoryFormat } from "molstar/lib/mol-plugin-state/formats/trajectory";
+  import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 
   export interface AtomKey {
     chainId?: string;

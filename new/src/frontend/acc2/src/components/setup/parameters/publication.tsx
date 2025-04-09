@@ -1,4 +1,5 @@
 import { Parameters } from "@acc2/api/parameters/types";
+
 import { Publication } from "../publication";
 
 export type ParametersPublicationProps = {

@@ -32,7 +32,7 @@ export const useAvailableMethodsQuery = () => {
 
 export const useSuitableMethodsQuery = (computationId: string) => {
   return useQuery({
-    queryKey: ["suitable-methods"],
+    queryKey: ["suitable-methods", computationId],
     queryFn: async () => await getSuitableMethods(computationId),
   });
 };

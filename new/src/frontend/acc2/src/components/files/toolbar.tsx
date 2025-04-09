@@ -1,5 +1,8 @@
-import { SearchInput } from "../shared/search-input";
 import { FilesFilters, isValidFilesOrderField } from "@acc2/api/types";
+import { ArrowDownZA, ArrowUpZA } from "lucide-react";
+
+import { SearchInput } from "../shared/search-input";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -7,8 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Button } from "../ui/button";
-import { ArrowUpZA, ArrowDownZA } from "lucide-react";
 
 export type FilesToolbarProps = {
   filters: FilesFilters;

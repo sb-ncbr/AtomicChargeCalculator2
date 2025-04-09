@@ -1,0 +1,35 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - architecture-redesign # TODO: change to main when merged to upstream
+  pull_request:
+    branches:
+      - architecture-redesign # TODO: change to main when merged to upstream
+  workflow_dispatch:
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ./new/src/frontend/acc2
+
+      - name: Lint
+        run: pnpm lint
+        working-directory: ./new/src/frontend/acc2
+
+      - name: Build
+        run: pnpm build
+        working-directory: ./new/src/frontend/acc2

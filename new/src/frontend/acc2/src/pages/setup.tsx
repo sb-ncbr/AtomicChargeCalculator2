@@ -10,7 +10,7 @@ export const SetupPage = () => {
 
   const computationId = searchParams.get("comp_id");
   if (!computationId) {
-    navigate("/");
+    void navigate("/");
     return null;
   }
 
