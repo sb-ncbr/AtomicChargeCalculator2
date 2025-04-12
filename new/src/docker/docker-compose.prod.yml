@@ -1,0 +1,18 @@
+services:
+  db:
+    environment:
+      POSTGRES_DB: postgres_prod
+      POSTGRES_USER: prod_user
+      POSTGRES_PASSWORD: ${PROD_DB_PASSWORD}
+
+  api:
+    ports:
+    - "8000:8000"
+    environment:
+      - ACC2_DB_URL=postgresql://prod_user:${PROD_DB_PASSWORD}@db:5432/postgres_prod
+  web:
+    build:
+      args:
+        VITE_BASE_API_URL: https://acc2-dev.biodata.ceitec.cz/api/v1
+    ports:
+      - "3000:3000"

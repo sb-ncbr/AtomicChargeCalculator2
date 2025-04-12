@@ -1,0 +1,29 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: postgres_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password_dev
+  
+  api:
+    ports:
+      - "8000:8000"
+    environment:
+      ACC2_DB_URL: postgresql://postgres:password_dev@db:5432/postgres_dev
+      CHARGEFW2_INSTALL_DIR: /ChargeFW2/build
+    volumes:
+      - ../backend:/app
+      - ../backend/logs:/var/log/acc2
+
+  web:
+    build:
+      args:
+        - VITE_BASE_API_URL=http://localhost:8000/v1
+    environment:
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/acc2/src:/app/src

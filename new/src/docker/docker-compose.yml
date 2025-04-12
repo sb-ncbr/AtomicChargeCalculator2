@@ -4,14 +4,12 @@ services:
     image: postgres:17-alpine
     volumes:
       - db-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_DB:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_DB:-postgres}
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -21,14 +19,13 @@ services:
 
   api:
     container_name: acc2-api
-    build: ./backend
+    build: ../backend
     volumes:
-      - api-data:/home/acc2
-      - api-logs:/var/log/acc2
-    ports:
-      - "8000:8000"
+      - /home/acc2:/home/acc2
+      - /var/log/acc2:/var/log/acc2
     environment:
-      - ACC2_DB_URL=postgresql://postgres:postgres@db:5432/postgres
+      ACC2_DB_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-postgres}"
+      CHARGEFW2_INSTALL_DIR: ${CHARGEFW2_INSTALL_DIR:-/ChargeFW2/build}
     depends_on:
       db:
         condition: service_healthy
@@ -38,9 +35,10 @@ services:
 
   web:
     container_name: acc2-web
-    build: ./frontend/acc2
-    ports:
-      - "3000:3000"
+    build: 
+      context: ../frontend/acc2
+      args:
+        - VITE_BASE_API_URL
     networks:
       - acc2-network
     restart: unless-stopped
@@ -51,5 +49,4 @@ networks:
 
 volumes:
   db-data:
-  api-data:
   api-logs:

@@ -23,7 +23,7 @@ export const MolstarViewControls = ({ molstar }: MolstarViewControlsProps) => {
 
   useEffect(() => {
     void context.set.viewType(getDefaultView());
-  }, [context.get.structure, context.set]);
+  }, [context.get.structure]);
 
   return (
     <div>

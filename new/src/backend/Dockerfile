@@ -25,12 +25,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends ${DEPS} && \
     apt-get clean && rm -rf /var/lib/apt/lists*
 
-RUN git clone -b development --depth 1 https://github.com/pilatmartin/ChargeFW2.git && \
+RUN git clone -b devel --depth 1 https://github.com/pilatmartin/ChargeFW2.git && \
     cd ChargeFW2 && \
     mkdir build && \
     cd build && \
     cmake .. -DCMAKE_INSTALL_PREFIX=. -DPYTHON_MODULE=ON && \
-    make -j$(nproc) && \
+    make -j1 && \
     make install
 
 # Bundle dependencies

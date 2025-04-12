@@ -1,4 +1,4 @@
-# Atomic Charge Calculator II
+# Atomic Charge Calculator II API
 
 ## Manual Setup
 
@@ -17,6 +17,13 @@ $ cmake .. -DCMAKE_INSTALL_PREFIX=<WHERE-TO-INSTALL> -DPYTHON_MODULE=ON
 
 *Note:* `PYTHONPATH` environment variable is set in `app/.env` file. Overwrite it if you wish to install ChargeFW2 somewhere else.
 
+### Startup Script
+The remaining startup steps can be simplified using the `startup.sh` script:
+
+```bash
+$ ./startup.sh
+```
+
 ### Installing Dependencies
 ACC II uses [Poetry](https://python-poetry.org/) for depencency management.
 
@@ -33,31 +40,25 @@ $ poetry install
 ```
 
 ### Startup
-We firstly need to start the database. This can be simply achieved by using an official postgresql docker image. Connection string is located in `.env` file.
+We firstly need to start the database. Easiest way is by using an official postgresql docker image. Connection string is located in the `.env` file.
 ```bash
 $ docker run -it --rm -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:17-alpine
 ```
 
+Following commands require being in the `app` directory:
+```bash
+$ cd app
+```
 
-Application can now be started just by running the main file:
+After the database is ready, we need to run migrations:
+```bash
+$ poetry run alembic upgrade head
+```
+
+API can now be started just by running the main file:
 
 ```bash
-# development
-$ poetry run fastapi dev app/main.py
-
-# production
-$ poetry run fastapi run app/main.py
+$ poetry run gunicorn --workers 4 --worker-class uvicorn.workers.UvicornWorker main:web_app
 ```
 
-Application runs by default on `localhost:8000`. Documentation (Swagger) is available on `localhost:8000/docs`.
-
-## Docker
-A quicker way of running ACC II is to use docker.
-
-```bash 
-# build image with name acc2
-$ docker build -t acc2 .
-
-# run container with name acc2-container
-$ docker run --name acc2-container -p 8000:8000 acc2
-```
+API runs by default on `--bind 127.0.0.1:8000`. Documentation (Swagger) is available on `--bind 127.0.0.1:8000/docs`.
