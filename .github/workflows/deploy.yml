@@ -1,0 +1,78 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      services_to_deploy:
+        description: "Select services to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - api
+          - api including chargefw2
+          - web
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            DEPLOY_TARGET=${{ github.event.inputs.services_to_deploy }}
+
+            echo "Deployment target: $DEPLOY_TARGET"
+
+            cd /AtomicChargeCalculator2
+            echo "Changed directory to $(pwd)"
+
+            echo "Pulling latest changes ..."
+            sudo git checkout architecture-redesign
+            sudo git fetch origin
+            sudo git reset --hard origin/architecture-redesign
+
+            if [ $? -ne 0 ]; then echo "Git pull failed"; exit 1; fi;
+
+            COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+
+            if [ "$DEPLOY_TARGET" = "api" ]; then
+              echo "Deploying API only ..."
+              sudo docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate api
+            
+              if [ $? -ne 0 ]; then echo "API deployment failed!"; exit 1; fi
+                echo "API service deployment finished."
+            
+            elif [ "$DEPLOY_TARGET" = "api including chargefw2" ]; then
+              echo "Deploying API including chargefw2 ..."
+              sudo docker compose $COMPOSE_FILES build --no-cache api
+              sudo docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate api
+              echo "API service deployment with ChargeFW2 finished."
+
+            elif [ "$DEPLOY_TARGET" = "web" ]; then
+              echo "Deploying web ..."
+              sudo docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate web
+              echo "Web service deployment finished."
+            elif [ "$DEPLOY_TARGET" = "all" ]; then
+              echo "Deploying all services ..."
+              sudo docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate
+              echo "All services deployment finished."
+            else
+              echo "Error: Invalid deployment target: $DEPLOY_TARGET"
+              exit 1
+            fi
+
+            echo "Pruning old Docker images..."
+            sudo docker image prune -af
+
+            echo "Deployment finished successfully."
