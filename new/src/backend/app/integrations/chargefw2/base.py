@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from chargefw2 import Molecules
 from models.method import Method
+from models.parameters import Parameters
 
 Charges = Dict[str, list[float]]
 
@@ -44,7 +45,7 @@ class ChargeFW2Base(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_available_parameters(self, method: str) -> list[str]:
+    def get_available_parameters(self, method: str) -> list[Parameters]:
         """Get all parameters available for provided method.
 
         Args:
@@ -56,7 +57,7 @@ class ChargeFW2Base(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_suitable_methods(self, molecules: Molecules) -> list[tuple[str, list[dict]]]:
+    def get_suitable_methods(self, molecules: Molecules) -> list[tuple[Method, list[Parameters]]]:
         """Get methods and parameters that are suitable for a given set of molecules.
 
         Args:
@@ -64,18 +65,6 @@ class ChargeFW2Base(ABC):
 
         Returns:
             list[tuple[str, list[str]]]: List of tuples containing method name and parameters for that method.
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_parameters_metadata(self, parameters: str) -> list[dict]:
-        """Get metadata for parameters.
-
-        Args:
-            parameters_name (str): Internal parameters name.
-
-        Returns:
-            dict: Dictionary with parameters metadata (name and publication).
         """
         raise NotImplementedError()
 

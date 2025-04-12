@@ -4,6 +4,7 @@ from typing import Dict
 import chargefw2
 
 from models.method import Method
+from models.parameters import Parameters
 
 from integrations.chargefw2.base import ChargeFW2Base
 
@@ -34,7 +35,17 @@ class ChargeFW2Local(ChargeFW2Base):
             list[str]: List of method names.
         """
         methods = chargefw2.get_available_methods()
-        return [Method(**method) for method in methods]
+        return [
+            Method(
+                internal_name=method.internal_name,
+                name=method.internal_name,  # TODO: fix this
+                full_name=method.full_name,
+                publication=method.publication,
+                type=method.type,
+                has_parameters=method.has_parameters,
+            )
+            for method in methods
+        ]
 
     def get_available_parameters(self, method: str) -> list[str]:
         """Get all parameters available for provided method.
@@ -45,9 +56,20 @@ class ChargeFW2Local(ChargeFW2Base):
         Returns:
             list[str]: List of parameter names.
         """
-        return chargefw2.get_available_parameters(method)
+        parameters_list = chargefw2.get_available_parameters(method)
+        return [
+            Parameters(
+                full_name=parameters.full_name,
+                internal_name=parameters.internal_name,
+                method=parameters.method,
+                publication=parameters.publication,
+            )
+            for parameters in parameters_list
+        ]
 
-    def get_suitable_methods(self, molecules: chargefw2.Molecules) -> list[tuple[str, list[dict]]]:
+    def get_suitable_methods(
+        self, molecules: chargefw2.Molecules
+    ) -> list[tuple[Method, list[Parameters]]]:
         """Get methods and parameters that are suitable for a given set of molecules.
 
         Args:
@@ -56,7 +78,30 @@ class ChargeFW2Local(ChargeFW2Base):
         Returns:
             list[tuple[str, list[str]]]: List of tuples containing method name and parameters for that method.
         """
-        return chargefw2.get_suitable_methods(molecules)
+
+        suitable = chargefw2.get_suitable_methods(molecules)
+        result = []
+        for method, parameters_list in suitable:
+            method_obj = Method(
+                internal_name=method.internal_name,
+                full_name=method.full_name,
+                name=method.internal_name,  # TODO: fix this
+                publication=method.publication,
+                type=method.type,
+                has_parameters=method.has_parameters,
+            )
+            parameters_obj = [
+                Parameters(
+                    full_name=parameters.full_name,
+                    internal_name=parameters.internal_name,
+                    method=parameters.method,
+                    publication=parameters.publication,
+                )
+                for parameters in parameters_list
+            ]
+            result.append((method_obj, parameters_obj))
+
+        return result
 
     def get_parameters_metadata(self, parameters_name: str) -> dict:
         """Get metadata for parameters.

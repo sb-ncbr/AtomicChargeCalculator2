@@ -1,5 +1,5 @@
 export type Parameters = {
-  name: string;
+  fullName: string;
   internalName: string;
   publication: string;
 };

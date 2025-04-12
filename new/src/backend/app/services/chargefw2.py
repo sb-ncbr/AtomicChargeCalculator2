@@ -109,6 +109,7 @@ class ChargeFW2Service:
         self, file_hashes: list[str], user_id: str | None
     ) -> SuitableMethods:
         """Helper method to find suitable methods for calculation."""
+
         suitable_methods = Counter()
         workdir = self.io.get_file_storage_path(user_id)
 
@@ -123,7 +124,7 @@ class ChargeFW2Service:
 
             input_file = os.path.join(workdir, file)
             molecules = await self.read_molecules(input_file)
-            methods: list[tuple[str, list[str]]] = await self._run_in_executor(
+            methods: list[tuple[Method, list[Parameters]]] = await self._run_in_executor(
                 self.chargefw2.get_suitable_methods, molecules
             )
             for method, parameters in methods:
@@ -149,14 +150,10 @@ class ChargeFW2Service:
             if len(pair) == 2:
                 parameters[pair[0]].append(pair[1])
 
-        # Add metadata to methods and paremeters
-        all_methods_with_metadata = self.get_available_methods()
-        methods_with_metadata = [m for m in all_methods_with_metadata if m.internal_name in methods]
         parameters_with_metadata = {
-            method: [Parameters(**(await self.get_parameters_metadata(p))) for p in params]
-            for method, params in parameters.items()
+            method.internal_name: params for method, params in parameters.items()
         }
-        return SuitableMethods(methods=methods_with_metadata, parameters=parameters_with_metadata)
+        return SuitableMethods(methods=methods, parameters=parameters_with_metadata)
 
     async def get_available_parameters(self, method: str) -> list[Parameters]:
         """Get available parameters for charge calculation method."""
@@ -167,23 +164,9 @@ class ChargeFW2Service:
                 self.chargefw2.get_available_parameters, method
             )
 
-            return [Parameters(**(await self.get_parameters_metadata(p))) for p in parameters]
+            return parameters
         except Exception as e:
             self.logger.error(f"Error getting available parameters for method {method}: {e}")
-            raise e
-
-    async def get_parameters_metadata(self, parameters: str) -> list[Parameters]:
-        """Get parameters metadata for charge calculation."""
-
-        try:
-            self.logger.info(f"Getting parameters metadata: {parameters}")
-            parameters_metadata = await self._run_in_executor(
-                self.chargefw2.get_parameters_metadata, parameters
-            )
-
-            return parameters_metadata
-        except Exception as e:
-            self.logger.error(f"Error getting parameters metadata: {e}")
             raise e
 
     async def read_molecules(

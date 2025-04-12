@@ -41,7 +41,7 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
                 variant={"secondary"}
               >
                 <span>{method.name}</span>
-                {parameters && <span>&nbsp;({parameters.name})</span>}
+                {parameters && <span>&nbsp;({parameters.fullName})</span>}
                 <X
                   height={10}
                   width={10}
@@ -52,7 +52,7 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
             }
             data={{
               Method: method.name,
-              Parameters: parameters?.name ?? "None",
+              Parameters: parameters?.fullName ?? "None",
               "Read HETATM": settings.readHetatm ? "Enabled" : "Disabled",
               "Ignore water": settings.ignoreWater ? "Enabled" : "Disabled",
               "Permissive types": settings.permissiveTypes

@@ -37,7 +37,7 @@ export const ParametersSelector = ({
       <SelectContent>
         {parameters?.map((parameters, index) => (
           <SelectItem key={index} value={parameters.internalName}>
-            {parameters.name}
+            {parameters.fullName}
           </SelectItem>
         ))}
       </SelectContent>

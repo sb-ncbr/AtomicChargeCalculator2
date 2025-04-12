@@ -20,7 +20,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         self.logger: LoggerBase = Container.logger_service()
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        self.logger.info(message=f"Request: {request.method} {request.url}")
+        self.logger.info(
+            message=f"Request from {request.client.host}: {request.method} {request.url}"
+        )
 
         response = await call_next(request)
 

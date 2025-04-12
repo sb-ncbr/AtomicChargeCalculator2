@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Parameters:
     """Parameters for charge calculation."""
 
-    name: str
+    full_name: str
     internal_name: str
     publication: str
+    method: str
