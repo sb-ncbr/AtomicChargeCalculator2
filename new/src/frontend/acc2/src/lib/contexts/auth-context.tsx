@@ -1,49 +1,27 @@
-import { createContext, PropsWithChildren, useEffect, useState } from "react";
+import { createContext, PropsWithChildren } from "react";
 
-import { useAuthMutations } from "../hooks/mutations/use-auth";
+import { useAuthQuery } from "../hooks/queries/use-auth";
 
 type AuthProviderType = {
   isAuthenticated: boolean;
-  loading: boolean;
-  checkAuthStatus: () => Promise<void> | void;
+  isLoading: boolean;
 };
 
 export const AuthContext = createContext<AuthProviderType>({
   isAuthenticated: false,
-  loading: false,
-  checkAuthStatus: () => {},
+  isLoading: false,
 });
 
 type AuthProviderProps = PropsWithChildren;
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const { verifyMutation } = useAuthMutations();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const checkAuthStatus = async () => {
-    try {
-      const { isAuthenticated } = await verifyMutation.mutateAsync();
-      setIsAuthenticated(isAuthenticated);
-    } catch (error) {
-      setIsAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void checkAuthStatus();
-  }, []);
+  const verifyQuery = useAuthQuery();
+  const isAuthenticated =
+    verifyQuery.data?.isAuthenticated ?? !verifyQuery.isError;
+  const isLoading = verifyQuery.isLoading || verifyQuery.isFetching;
 
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        loading,
-        checkAuthStatus,
-      }}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

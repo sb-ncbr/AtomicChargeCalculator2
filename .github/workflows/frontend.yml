@@ -5,6 +5,7 @@ on:
     branches:
       - architecture-redesign # TODO: change to main when merged to upstream
   pull_request:
+    types: [opened, synchronize, reopened]
     branches:
       - architecture-redesign # TODO: change to main when merged to upstream
   workflow_dispatch:

@@ -8,15 +8,15 @@ import { toast } from "sonner";
 export const CalculationsPage = () => {
   useTitle("Calculations");
 
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       toast.error("You need to login to view calculations.");
       void navigate("/");
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   return <Calculations />;
 };

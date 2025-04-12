@@ -8,15 +8,15 @@ import { toast } from "sonner";
 export const FilesPage = () => {
   useTitle("Files");
 
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       toast.error("You need to login to view files.");
       void navigate("/");
     }
-  }, [loading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   return <Files />;
 };
