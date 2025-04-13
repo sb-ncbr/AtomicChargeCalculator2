@@ -1,0 +1,36 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - architecture-redesign # TODO: change to main when merged to upstream
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - architecture-redesign # TODO: change to main when merged to upstream
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install --no-interaction --no-root
+        working-directory: ./new/src/backend
+
+      - name: Run tests
+        run: |
+          poetry run pytest ./tests
+        working-directory: ./new/src/backend

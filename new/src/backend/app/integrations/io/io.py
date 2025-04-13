@@ -8,7 +8,6 @@ import shutil
 
 
 import aiofiles
-import aiofiles.base
 from dotenv import load_dotenv
 from fastapi import UploadFile
 
