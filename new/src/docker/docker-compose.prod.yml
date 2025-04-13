@@ -1,5 +1,7 @@
 services:
   db:
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: postgres_prod
       POSTGRES_USER: prod_user
@@ -7,9 +9,10 @@ services:
 
   api:
     ports:
-    - "8000:8000"
+      - "8000:8000"
     environment:
-      - ACC2_DB_URL=postgresql://prod_user:${PROD_DB_PASSWORD}@db:5432/postgres_prod
+      ACC2_DB_URL: "postgresql://prod_user:${PROD_DB_PASSWORD}@db:5432/postgres_prod"
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
   web:
     build:
       args:

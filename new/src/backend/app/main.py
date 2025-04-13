@@ -27,16 +27,17 @@ def move_example_files() -> None:
         raise EnvironmentError("ACC2_EXAMPLES_DIR environment variable is not set.")
 
     if os.path.exists(examples_dir):
-        shutil.rmtree(examples_dir)
+        shutil.rmtree(examples_dir, ignore_errors=True)
 
     try:
+        os.makedirs(examples_dir, exist_ok=True)
         shutil.copytree("examples", examples_dir, dirs_exist_ok=True)
     except Exception as e:
         raise EnvironmentError(f"Could not copy example files. {str(e)}") from e
 
 
 def create_app() -> FastAPI:
-    """Creates FastAPI aps with routers and middleware."""
+    """Creates FastAPI apps with routers and middleware."""
 
     move_example_files()
 

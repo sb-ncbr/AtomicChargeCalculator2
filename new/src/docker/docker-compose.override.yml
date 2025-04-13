@@ -26,4 +26,4 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend/acc2/src:/app/src
+      - ../frontend/acc2/src:/app/src

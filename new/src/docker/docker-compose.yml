@@ -19,7 +19,9 @@ services:
 
   api:
     container_name: acc2-api
-    build: ../backend
+    build: 
+      context: ../backend
+      dockerfile: Dockerfile.app
     volumes:
       - /home/acc2:/home/acc2
       - /var/log/acc2:/var/log/acc2
@@ -49,4 +51,3 @@ networks:
 
 volumes:
   db-data:
-  api-logs:
