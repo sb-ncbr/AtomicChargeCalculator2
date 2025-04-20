@@ -20,16 +20,11 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { AdvancedSetupSettings } from "./advanced-settings";
-
 const setupSchema = z.object({
   computations: z.array(
     z.object({
       method: z.custom<MethodType>(),
       parameters: z.custom<ParametersType>().optional(),
-      readHetatm: z.boolean(),
-      ignoreWater: z.boolean(),
-      permissiveTypes: z.boolean(),
     })
   ),
 });
@@ -55,12 +50,6 @@ export const Setup = ({ computationId }: SetupProps) => {
   );
   const [currentParameters, setCurrentParameters] = useState<ParametersType>();
 
-  const [settings, setSettings] = useState({
-    readHetatm: true,
-    ignoreWater: false,
-    permissiveTypes: true,
-  });
-
   const form = useForm<SetupFormType>({
     resolver: zodResolver(setupSchema),
     defaultValues: {
@@ -73,13 +62,10 @@ export const Setup = ({ computationId }: SetupProps) => {
       {
         computationId,
         fileHashes: [],
-        configs: data.computations.map(
-          ({ method, parameters, ...settings }) => ({
-            method: method.internalName,
-            parameters: parameters?.internalName,
-            ...settings,
-          })
-        ),
+        configs: data.computations.map(({ method, parameters }) => ({
+          method: method.internalName,
+          parameters: parameters?.internalName,
+        })),
       },
       {
         onError: (error) => toast.error(handleApiError(error)),
@@ -117,9 +103,6 @@ export const Setup = ({ computationId }: SetupProps) => {
       {
         method: currentMethod,
         parameters: currentParameters,
-        readHetatm: settings.readHetatm,
-        ignoreWater: settings.ignoreWater,
-        permissiveTypes: settings.permissiveTypes,
       },
     ]);
   };
@@ -185,10 +168,6 @@ export const Setup = ({ computationId }: SetupProps) => {
                   </>
                 )}
               </div>
-              <AdvancedSetupSettings
-                settings={settings}
-                setSettings={setSettings}
-              />
               <Button
                 type="button"
                 className="mt-4 self-start"

@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 ENV CHARGEFW2_DIR=/ChargeFW2/build
 
-RUN git clone -b devel --depth 1 https://github.com/pilatmartin/ChargeFW2.git /ChargeFW2_source && \
+RUN git clone -b feat/save-charges-in-python --depth 1 https://github.com/pilatmartin/ChargeFW2.git /ChargeFW2_source && \
     cd /ChargeFW2_source && \
     mkdir build_temp && \
     cd build_temp && \
@@ -40,5 +40,6 @@ COPY --from=ubuntu:24.04 /usr/lib/x86_64-linux-gnu/libgomp.so.1* \
     /usr/lib/x86_64-linux-gnu/libboost_program_options.so.* \
     /usr/lib/x86_64-linux-gnu/
 
+# Setup ENV variables for use with Python bindings
 ENV LD_LIBRARY_PATH=${CHARGEFW2_DIR}/lib:$LD_LIBRARY_PATH
 ENV PYTHONPATH=${CHARGEFW2_DIR}/lib

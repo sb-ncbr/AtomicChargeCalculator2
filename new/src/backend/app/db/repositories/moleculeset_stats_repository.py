@@ -1,21 +1,17 @@
 """This module provides a repository for calculation configs."""
 
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 
 
-from db.database import SessionManager
-from db.models.calculation.calculation_config import CalculationConfig
-from db.models.moleculeset_stats import MoleculeSetStats
+from db.schemas.calculation import CalculationConfig
+from db.schemas.stats import MoleculeSetStats
 
 
 class MoleculeSetStatsRepository:
     """Repository for managing MoleculeSetStats."""
 
-    def __init__(self, session_manager: SessionManager):
-        self.session_manager = session_manager
-
-    def get(self, file_hash: str) -> MoleculeSetStats | None:
+    def get(self, session: Session, file_hash: str) -> MoleculeSetStats | None:
         """Get info about a file based on file hash.
 
         Args:
@@ -32,12 +28,11 @@ class MoleculeSetStatsRepository:
             .where(MoleculeSetStats.file_hash == file_hash)
         )
 
-        with self.session_manager.session() as session:
-            info = (session.execute(statement)).scalars().first()
+        info = (session.execute(statement)).scalars().first()
 
-            return info
+        return info
 
-    def store(self, info: MoleculeSetStats) -> CalculationConfig:
+    def store(self, session: Session, info: MoleculeSetStats) -> CalculationConfig:
         """Store info about a file in the database.
            If a given config already exists, it is returned.
 
@@ -51,13 +46,10 @@ class MoleculeSetStatsRepository:
             CalculationConfig: Stored calculation config.
         """
 
-        exists = self.get(info.file_hash)
+        exists = self.get(session, info.file_hash)
 
         if exists is not None:
             return exists
 
-        with self.session_manager.session() as session:
-            session.add(info)
-            session.commit()
-            session.refresh(info)
-            return info
+        session.add(info)
+        return info

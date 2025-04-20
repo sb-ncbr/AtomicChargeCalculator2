@@ -14,6 +14,7 @@ from api.v1.schemas.response import Response
 
 from models.calculation import (
     CalculationConfigDto,
+    CalculationResultDto,
     CalculationSetPreviewDto,
 )
 from models.method import Method
@@ -26,6 +27,7 @@ from db.repositories.calculation_set_repository import CalculationSetFilters
 
 from api.v1.container import Container
 
+from models.setup import AdvancedSettingsDto, SetupConfigDto
 from services.calculation_storage import CalculationStorageService
 from services.mmcif import MmCIFService
 from services.io import IOService
@@ -163,6 +165,7 @@ async def calculate_charges(
     request: Request,
     configs: list[CalculationConfigDto],
     file_hashes: list[str],
+    settings: AdvancedSettingsDto | None = None,
     computation_id: str | None = None,
     response_format: Annotated[
         Literal["charges", "none"], Query(description="Output format.")
@@ -190,58 +193,74 @@ async def calculate_charges(
                 + f"Maximum storage space is {quota_mb} MB.",
             )
 
-    if configs is None or len(configs) == 0:
-        # get most suitable when no config is provided
-        # TODO: calling this endpoint multiple times without config inserts the most suitable one into database
-        #  and cache (db) is not being used
+    if not configs:
+        # cache (db) is not being used when no config is provided
         configs = [CalculationConfigDto()]
 
     computation_id = computation_id or str(uuid.uuid4())
+    calculation_set = storage_service.get_calculation_set(computation_id)
 
-    if (
-        file_hashes is None
-        or len(file_hashes) == 0
-        and storage_service.get_calculation_set(computation_id) is None
-    ):
+    if not file_hashes and calculation_set is None:
         # if no file hashes provided and computation has not been set up
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No file hashes provided.",
         )
 
+    settings = calculation_set.advanced_settings if calculation_set is not None else settings
+
+    if settings is None:
+        settings = AdvancedSettingsDto()
+
     try:
         io_service.prepare_inputs(user_id, computation_id, file_hashes)
 
-        if file_hashes is None or len(file_hashes) == 0:
+        if not file_hashes:
             # get all files if none provided and computation has already been set up
             inputs_path = io_service.get_inputs_path(computation_id, user_id)
             file_hashes = [
                 io_service.parse_filename(file)[0] for file in io_service.listdir(inputs_path)
             ]
 
-        if user_id is not None:
-            filtered = storage_service.filter_existing_calculations(
-                computation_id, file_hashes, configs
+        if not file_hashes:
+            # no files found and provided
+            raise BadRequestError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No file hashes provided.",
             )
-        else:
-            # calculate all if not logged in
-            filtered = {config: list(file_hashes) for config in configs}
 
-        calculations = await chargefw2.calculate_charges_multi(computation_id, filtered, user_id)
+        # split calculations into those that need to be calculated and those that are cached
+        to_calculate, cached = storage_service.filter_existing_calculations(
+            settings, file_hashes, configs
+        )
+        calculations = await chargefw2.calculate_charges(
+            computation_id, settings, to_calculate, user_id
+        )
 
-        if user_id is not None:
-            storage_service.store_calculation_results(computation_id, calculations, user_id)
-            calculations = storage_service.get_calculation_results(computation_id)
+        # add cached items to results
+        for result in calculations:
+            if result.config in cached:
+                result.calculations.extend(cached[result.config])
 
+        calculations.extend(
+            [
+                CalculationResultDto(config=config, calculations=results)
+                for config, results in cached.items()
+            ]
+        )
+
+        storage_service.store_calculation_results(computation_id, settings, calculations, user_id)
+        await chargefw2.save_charges(settings, computation_id, calculations, user_id)
         _ = mmcif_service.write_to_mmcif(user_id, computation_id, calculations)
 
         if user_id is None:
+            # free guest compute space if needed
             io_service.free_guest_compute_space()
 
         if response_format == "none":
             return Response(data=computation_id)
 
-        return Response(data=calculations)
+        return Response(data={"computationId": computation_id, "results": calculations})
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error calculating charges."
@@ -252,7 +271,7 @@ async def calculate_charges(
 @inject
 async def setup(
     request: Request,
-    file_hashes: list[str],
+    config: SetupConfigDto,
     io_service: IOService = Depends(Provide[Container.io_service]),
     storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ):
@@ -261,13 +280,18 @@ async def setup(
     user_id = str(request.state.user.id) if request.state.user is not None else None
     computation_id = str(uuid.uuid4())
 
+    if config.settings is None:
+        config.settings = AdvancedSettingsDto()
+
     try:
-        io_service.prepare_inputs(user_id, computation_id, file_hashes)
-        storage_service.store_calculation_results(computation_id, [], user_id)
+        io_service.prepare_inputs(user_id, computation_id, config.file_hashes)
+        storage_service.setup_calculation(
+            computation_id, config.settings, config.file_hashes, user_id
+        )
         return Response(data=computation_id)
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error setting up calculation.."
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error setting up calculation."
         ) from e
 
 
@@ -280,14 +304,14 @@ async def get_mmcif(
     molecule: Annotated[str | None, Query(description="Molecule name.")] = None,
     io: IOService = Depends(Provide[Container.io_service]),
     mmcif_service: MmCIFService = Depends(Provide[Container.mmcif_service]),
-    set_repository: CalculationStorageService = Depends(Provide[Container.storage_service]),
+    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ) -> FileResponse:
     """Returns a mmcif file for the provided molecule in the computation."""
 
     user_id = str(request.state.user.id) if request.state.user is not None else None
 
     # this is a workaround because molstar is not able to send cookies when fetching mmcif
-    set_exists = set_repository.get_calculation_set(computation_id)
+    set_exists = storage_service.get_calculation_set(computation_id)
     if set_exists is not None and set_exists.user_id is not None:
         user_id = str(set_exists.user_id)
 

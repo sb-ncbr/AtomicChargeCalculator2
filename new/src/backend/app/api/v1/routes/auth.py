@@ -6,7 +6,7 @@ import urllib.parse
 import httpx
 from api.v1.container import Container
 from api.v1.schemas.response import Response
-from db.models.user.user import User
+from db.schemas.user import User
 from db.repositories.user_repository import UserRepository
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, Request, status

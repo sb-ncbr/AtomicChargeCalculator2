@@ -87,3 +87,22 @@ class ChargeFW2Base(ABC):
             Dict[str, list[float]]: Dictionary with molecule names as keys and list of charges (floats) as values.
         """
         raise NotImplementedError()
+
+    def save_charges(
+        self,
+        charges: Dict[str, list[float]],
+        molecules: Molecules,
+        method_name: str,
+        parameters_name: str | None = None,
+        chg_out_dir: str | None = None,
+    ) -> None:
+        """Save charges for a given molecules and method.
+
+        Args:
+            charges (Dict[str, list[float]]): Dictionary with molecule names as keys and list of charges (floats) as values.
+            molecules (chargefw2.Molecules): Set of molecules.
+            method_name (str): Method name to be used.
+            parameters_name (Optional[str], optional): Parameters to be used with provided method. Defaults to None.
+            chg_out_dir (Optional[str], optional): Path to the directory where to save the charges. Defaults to current working directory.
+        """
+        raise NotImplementedError()

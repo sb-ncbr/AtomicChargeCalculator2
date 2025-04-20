@@ -11,6 +11,7 @@ from models.paging import PagingFilters
 from models.molecule_info import MoleculeSetStats
 
 from integrations.chargefw2.base import Charges
+from models.setup import AdvancedSettingsDto
 
 
 @dataclass
@@ -26,15 +27,14 @@ class CalculationsFilters:
     paging: PagingFilters = field(default_factory=lambda: PagingFilters(1, 10))
 
 
-@dataclass
-class ChargeCalculationConfigDto:
-    """Configuration for charge calculation"""
+class CalculationConfigDto(BaseModel):
+    """Calculation configuration data transfer object"""
 
     method: str | None = None
     parameters: str | None = None
-    read_hetatm: bool = True
-    ignore_water: bool = False
-    permissive_types: bool = False
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+    __hash__ = object.__hash__
 
 
 class CalculationDto(BaseModel):
@@ -43,21 +43,9 @@ class CalculationDto(BaseModel):
     file: str
     file_hash: str
     charges: Charges
+    config: CalculationConfigDto
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
-
-
-class CalculationConfigDto(BaseModel):
-    """Calculation configuration data transfer object"""
-
-    method: str | None = None
-    parameters: str | None = None
-    read_hetatm: bool = True
-    ignore_water: bool = False
-    permissive_types: bool = False
-
-    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
-    __hash__ = object.__hash__
 
 
 class CalculationPreviewDto(BaseModel):
@@ -74,6 +62,7 @@ class CalculationSetDto(BaseModel):
     id: uuid.UUID
     calculations: list[CalculationDto]
     configs: list[CalculationConfigDto]
+    settings: AdvancedSettingsDto
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
 
@@ -84,6 +73,7 @@ class CalculationSetPreviewDto(BaseModel):
     id: uuid.UUID
     files: dict[str, MoleculeSetStats]
     configs: list[CalculationConfigDto]
+    settings: AdvancedSettingsDto
     created_at: datetime
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)

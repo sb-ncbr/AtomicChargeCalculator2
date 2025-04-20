@@ -5,6 +5,9 @@ export type SetupResponse = {
 export type ComputationConfig = {
   method?: string;
   parameters?: string;
+};
+
+export type AdvancedSettings = {
   readHetatm: boolean;
   ignoreWater: boolean;
   permissiveTypes: boolean;

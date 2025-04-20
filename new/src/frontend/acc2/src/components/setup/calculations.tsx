@@ -31,7 +31,7 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
       </h3>
       <div className="flex gap-4 flex-wrap">
         {!calculations?.length && <span>No calculations chosen yet.</span>}
-        {calculations?.map(({ method, parameters, ...settings }, index) => (
+        {calculations?.map(({ method, parameters }, index) => (
           <HoverDetailsList
             key={`calculation-${index}`}
             trigger={
@@ -53,11 +53,6 @@ export const Calculations = ({ className, ...props }: CalculationsProps) => {
             data={{
               Method: method.name,
               Parameters: parameters?.fullName ?? "None",
-              "Read HETATM": settings.readHetatm ? "Enabled" : "Disabled",
-              "Ignore water": settings.ignoreWater ? "Enabled" : "Disabled",
-              "Permissive types": settings.permissiveTypes
-                ? "Enabled"
-                : "Disabled",
             }}
           />
         ))}

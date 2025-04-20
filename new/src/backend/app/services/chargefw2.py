@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from pathlib import Path
 import traceback
 
 from collections import Counter, defaultdict
@@ -13,21 +14,19 @@ from typing import Tuple
 from chargefw2 import Molecules
 
 from models.calculation import (
-    CalculationConfigDto,
     CalculationDto,
-    ChargeCalculationConfigDto,
+    CalculationConfigDto,
     CalculationResultDto,
 )
 from models.molecule_info import MoleculeSetStats
 from models.method import Method
 from models.parameters import Parameters
+from models.setup import AdvancedSettingsDto
 from models.suitable_methods import SuitableMethods
 
 from integrations.chargefw2.base import ChargeFW2Base
 
 from api.v1.constants import CHARGES_OUTPUT_EXTENSION
-
-from db.models.calculation.calculation_config import CalculationConfig
 
 
 from services.io import IOService
@@ -74,7 +73,9 @@ class ChargeFW2Service:
             self.logger.error(f"Error getting available methods: {e}")
             raise e
 
-    async def get_suitable_methods(self, file_hashes: str, user_id: str | None) -> SuitableMethods:
+    async def get_suitable_methods(
+        self, file_hashes: list[str], user_id: str | None
+    ) -> SuitableMethods:
         """Get suitable methods for charge calculation based on file hashes."""
 
         try:
@@ -192,8 +193,9 @@ class ChargeFW2Service:
         self,
         user_id: str,
         computation_id: str | None,
+        settings: AdvancedSettingsDto,
+        config: CalculationConfigDto,
         file_hashes: list[str],
-        config: CalculationConfig,
     ) -> CalculationResultDto:
         """Calculate charges for provided files."""
 
@@ -201,7 +203,9 @@ class ChargeFW2Service:
 
         semaphore = asyncio.Semaphore(4)  # limit to 4 concurrent calculations
 
-        async def process_file(file_hash: str, config: CalculationConfig) -> CalculationDto | None:
+        async def process_file(
+            file_hash: str, config: CalculationConfigDto
+        ) -> CalculationDto | None:
             file_name = next(
                 (
                     file
@@ -216,6 +220,7 @@ class ChargeFW2Service:
                 return
 
             async with semaphore:
+                print("Calculating charges for file", file_name, config.method)
                 charges_dir = self.io.get_charges_path(computation_id, user_id)
                 self.io.create_dir(charges_dir)
 
@@ -223,7 +228,10 @@ class ChargeFW2Service:
                 file_name = self.io.parse_filename(file_name)[1]
 
                 molecules = await self.read_molecules(
-                    full_path, config.read_hetatm, config.ignore_water, config.permissive_types
+                    full_path,
+                    settings.read_hetatm,
+                    settings.ignore_water,
+                    settings.permissive_types,
                 )
 
                 charges = await self._run_in_executor(
@@ -234,9 +242,8 @@ class ChargeFW2Service:
                     charges_dir,
                 )
 
-                info = MoleculeSetStats(molecules.info().to_dict())
                 result = CalculationDto(
-                    file=file_name, file_hash=file_hash, info=info, charges=charges
+                    file=file_name, file_hash=file_hash, charges=charges, config=config
                 )
 
                 return result
@@ -250,12 +257,9 @@ class ChargeFW2Service:
                 )
                 if calculation is not None
             ]
-            config_dto = ChargeCalculationConfigDto(
+            config_dto = CalculationConfigDto(
                 method=config.method,
                 parameters=config.parameters,
-                read_hetatm=config.read_hetatm,
-                ignore_water=config.ignore_water,
-                permissive_types=config.permissive_types,
             )
 
             return CalculationResultDto(
@@ -266,9 +270,10 @@ class ChargeFW2Service:
             self.logger.error(f"Error calculating charges: {traceback.format_exc()}")
             raise e
 
-    async def calculate_charges_multi(
+    async def calculate_charges(
         self,
         computation_id: str,
+        settings: AdvancedSettingsDto,
         data: Tuple[CalculationConfigDto, list[str]],
         user_id: str | None,
     ) -> list[CalculationResultDto]:
@@ -276,7 +281,7 @@ class ChargeFW2Service:
 
         Args:
             computation_id (str): Computation id.
-            data (Tuple[ChargeCalculationConfigDto, list[str]]): Dictionary of configs and file_hashes.
+            data (Tuple[CalculationConfigDto, list[str]]): Dictionary of configs and file_hashes.
             user_id (str): User id making the calculation.
 
         Returns:
@@ -286,7 +291,7 @@ class ChargeFW2Service:
 
         calculations = await asyncio.gather(
             *[
-                self._process_config(user_id, computation_id, file_hashes, config)
+                self._process_config(user_id, computation_id, settings, file_hashes, config)
                 for config, file_hashes in data.items()
             ],
             return_exceptions=False,
@@ -297,10 +302,43 @@ class ChargeFW2Service:
 
         return calculations
 
+    async def save_charges(
+        self,
+        settings: AdvancedSettingsDto,
+        computation_id: str,
+        results: list[CalculationResultDto],
+        user_id: str | None,
+    ) -> None:
+        workdir = self.io.get_file_storage_path(user_id)
+        charges_dir = self.io.get_charges_path(computation_id, user_id)
+        self.io.create_dir(charges_dir)
+
+        
+
+        for result in results:
+            for calculation in result.calculations:
+                file_path = str(Path(workdir) / f"{calculation.file_hash}_{calculation.file}")
+                molecules = await self.read_molecules(
+                    file_path,
+                    settings.read_hetatm,
+                    settings.ignore_water,
+                    settings.permissive_types,
+                )
+                config = calculation.config
+                await self._run_in_executor(
+                    self.chargefw2.save_charges,
+                    calculation.charges,
+                    molecules,
+                    config.method,
+                    config.parameters,
+                    charges_dir,
+                )
+
     async def _process_config(
         self,
         user_id: str | None,
         computation_id: str,
+        settings: AdvancedSettingsDto,
         file_hashes: list[str],
         config: CalculationConfigDto,
     ) -> CalculationResultDto:
@@ -322,7 +360,7 @@ class ChargeFW2Service:
                         Using method '{config.method}' with parameters '{config.parameters}'."""
             )
 
-        return await self._calculate_charges(user_id, computation_id, file_hashes, config)
+        return await self._calculate_charges(user_id, computation_id, settings, config, file_hashes)
 
     async def info(self, path: str) -> MoleculeSetStats:
         """Get information about the provided file."""

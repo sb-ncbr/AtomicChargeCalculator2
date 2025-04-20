@@ -1,11 +1,9 @@
 FROM chargefw2-base:local
 
-# Set environment variables
 ENV POETRY_HOME=/opt/poetry
 ENV POETRY_VIRTUALENVS_CREATE=false
 ENV PATH="/opt/poetry/bin:$PATH"
 
-# Install runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -19,7 +17,7 @@ RUN apt-get update && \
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     poetry config virtualenvs.create false
 
-# Copy project files
+
 WORKDIR /acc2
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-interaction --no-ansi --no-root

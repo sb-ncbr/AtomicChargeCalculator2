@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
     container = Container()
 
     app = FastAPI(root_path="/api")
+    app = FastAPI(root_path="/api", swagger_ui_parameters={"syntaxHighlight": False})
     # app = FastAPI()
 
     container.wire()

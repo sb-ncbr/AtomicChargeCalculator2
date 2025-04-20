@@ -34,6 +34,7 @@ class SessionManager:
         session: Session = self._session_factory()
         try:
             yield session
+            session.commit()
         except Exception:
             session.rollback()
             raise

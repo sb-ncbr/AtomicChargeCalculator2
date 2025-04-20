@@ -31,7 +31,8 @@ export const Calculation = ({
   className,
   ...props
 }: CalculationProps) => {
-  const { id, configs, files, createdAt } = calculation;
+  const { id, configs, files, settings, createdAt } = calculation;
+
   const navigate = useNavigate();
   const { downloadMutation, deleteMutation } = useComputationMutations();
   const queryClient = useQueryClient();
@@ -105,13 +106,13 @@ export const Calculation = ({
             ))}
         </div>
       </div>
-      <div>
+      <div className="mb-4">
         <span className="block font-bold text-md mb-2">
           Calculations
           <InfoTooltip info="Hovering over individual calculations will display its details." />
         </span>
         <div className="flex gap-2 flex-wrap">
-          {configs.map(({ method, parameters, ...settings }, index) => (
+          {configs.map(({ method, parameters }, index) => (
             <HoverDetailsList
               key={`${calculation.id}-molecule-${index}`}
               trigger={
@@ -123,16 +124,35 @@ export const Calculation = ({
               data={{
                 Method: method,
                 Parameters: parameters ?? "None",
-                "Read HETATM": settings.readHetatm ? "Enabled" : "Disabled",
-                "Ignore water": settings.ignoreWater ? "Enabled" : "Disabled",
-                "Permissive types": settings.permissiveTypes
-                  ? "Enabled"
-                  : "Disabled",
               }}
             />
           ))}
         </div>
       </div>
+      {Object.values(settings).some(Boolean) && (
+        <div>
+          <span className="block font-bold text-md mb-2">
+            Advanced Settings
+          </span>
+          <div className="flex gap-2 flex-wrap">
+            {settings.readHetatm && (
+              <Badge className="rounded" variant={"secondary"}>
+                Read HETATM
+              </Badge>
+            )}
+            {settings.ignoreWater && (
+              <Badge className="rounded" variant={"secondary"}>
+                Ignore water
+              </Badge>
+            )}
+            {settings.permissiveTypes && (
+              <Badge className="rounded" variant={"secondary"}>
+                Permissive types
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
       <div className="mt-4 flex flex-col justify-end gap-2 xs:flex-row">
         <Button
           type="button"

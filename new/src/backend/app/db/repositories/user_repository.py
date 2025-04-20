@@ -1,4 +1,4 @@
-from db.models.user.user import User
+from db.schemas.user import User
 from db.database import SessionManager
 
 from sqlalchemy import select

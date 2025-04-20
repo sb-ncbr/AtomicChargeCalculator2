@@ -36,9 +36,9 @@ class IOLocal(IOBase):
         os.symlink(path_src, path_dst)
 
     def last_modified(self, path: str) -> datetime.datetime:
-        path = pathlib.Path(path)
-        if path.exists():
-            timestamp = path.lstat().st_mtime
+        ppath = pathlib.Path(path)
+        if ppath.exists():
+            timestamp = ppath.lstat().st_mtime
             return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
         return 0.0
@@ -49,8 +49,8 @@ class IOLocal(IOBase):
 
     def file_size(self, path: str) -> int:
         # Also checking if path exsits since broken symlinks will throw an error
-        path = pathlib.Path(path)
-        return path.lstat().st_size if path.exists() else 0
+        ppath = pathlib.Path(path)
+        return ppath.lstat().st_size if ppath.exists() else 0
 
     def zip(self, path: str, destination: str) -> str:
         return shutil.make_archive(destination, "zip", path)
@@ -62,7 +62,7 @@ class IOLocal(IOBase):
             return []
 
     async def store_upload_file(self, file: UploadFile, directory: str) -> tuple[str, str]:
-        tmp_path: str = os.path.join(directory, IOBase.get_unique_filename(file.filename))
+        tmp_path: str = os.path.join(directory, IOBase.get_unique_filename(file.filename or "file"))
         hasher = hashlib.sha256()
         chunk_size = 1024 * 1024  # 1 MB
 

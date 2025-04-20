@@ -1,13 +1,20 @@
 import { handleApiError } from "@acc2/api/base";
+import { AdvancedSettings } from "@acc2/components/home/advanced-settings";
 import { Busy } from "@acc2/components/shared/busy";
 import { Button } from "@acc2/components/ui/button";
 import { Card } from "@acc2/components/ui/card";
 import { Form } from "@acc2/components/ui/form";
 import { Input } from "@acc2/components/ui/input";
 import { Label } from "@acc2/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@acc2/components/ui/popover";
 import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
 import { useFileMutations } from "@acc2/lib/hooks/mutations/use-files";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronsUpDown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { createSearchParams, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -17,6 +24,11 @@ const computeSchema = z.object({
   files: z
     .instanceof(FileList, { message: "Files are required." })
     .refine((files) => files.length > 0),
+  settings: z.object({
+    readHetatm: z.boolean(),
+    ignoreWater: z.boolean(),
+    permissiveTypes: z.boolean(),
+  }),
 });
 
 type ComputeType = z.infer<typeof computeSchema>;
@@ -30,6 +42,11 @@ export const Compute = () => {
     resolver: zodResolver(computeSchema),
     defaultValues: {
       files: undefined,
+      settings: {
+        readHetatm: true,
+        ignoreWater: false,
+        permissiveTypes: true,
+      },
     },
   });
 
@@ -41,6 +58,7 @@ export const Compute = () => {
           {
             fileHashes: uploadResponse.map((file) => file.fileHash),
             configs: [],
+            settings: data.settings,
           },
           {
             onError: (error) => toast.error(handleApiError(error)),
@@ -63,7 +81,10 @@ export const Compute = () => {
       onError: (error) => toast.error(handleApiError(error)),
       onSuccess: async (uploadResponse) => {
         await setupMutation.mutateAsync(
-          uploadResponse.map((file) => file.fileHash),
+          {
+            fileHashes: uploadResponse.map((file) => file.fileHash),
+            settings: data.settings,
+          },
           {
             onError: () =>
               toast.error("Unable to setup computation. Try again later."),
@@ -105,10 +126,10 @@ export const Compute = () => {
               <span className="font-bold"> pdb</span>,
               <span className="font-bold"> mmcif</span>. You can upload one or
               multiple files at the same time. Maximum allowed upload size is
-              <span className="font-bold"> 250MB</span>.
+              <span className="font-bold"> 50MB</span>.
             </p>
           </div>
-          <div className="flex gap-4 flex-col xs:flex-row">
+          <div className="flex gap-4 flex-col sm:flex-row">
             <Button
               type="submit"
               title="Direct computation of charges using automatically selected empirical charge calculation method."
@@ -125,6 +146,16 @@ export const Compute = () => {
             >
               Setup Computation
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant={"ghost"} disabled={!form.formState.isValid}>
+                  Advanced <ChevronsUpDown size={15} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <AdvancedSettings />
+              </PopoverContent>
+            </Popover>
           </div>
         </form>
       </Form>

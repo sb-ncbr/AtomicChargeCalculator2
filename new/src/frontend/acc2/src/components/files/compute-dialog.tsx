@@ -50,7 +50,9 @@ export const ComputeDialog = ({ files }: ComputeDialogProps) => {
 
   const onSetup = async () => {
     await setupMutation.mutateAsync(
-      files.map((file) => file.fileHash),
+      {
+        fileHashes: files.map((file) => file.fileHash),
+      },
       {
         onError: (error) => toast.error(handleApiError(error)),
         onSuccess: async (compId) => {

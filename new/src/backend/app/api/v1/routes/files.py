@@ -21,6 +21,7 @@ from models.paging import PagedList
 from api.v1.container import Container
 
 
+from services.file_storage import FileStorageService
 from services.chargefw2 import ChargeFW2Service
 from services.calculation_storage import CalculationStorageService
 from services.io import IOService
@@ -39,8 +40,7 @@ async def get_files(
     ] = "uploaded_at",
     search: Annotated[str, Query(description="Search term")] = "",
     order: Annotated[Literal["asc", "desc"], Query(description="Order direction.")] = "desc",
-    io: IOService = Depends(Provide[Container.io_service]),
-    storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
+    storage_service: FileStorageService = Depends(Provide[Container.file_storage_service]),
 ) -> Response[PagedList[FileResponseModel]]:
     """Returns the list of files uploaded by the user.."""
 
@@ -53,39 +53,15 @@ async def get_files(
         )
 
     try:
-        workdir = io.get_file_storage_path(user_id)
-        files = [io.parse_filename(pathlib.Path(name).name) for name in io.listdir(workdir)]
+        data = storage_service.get_files(
+            order_by=order_by,
+            order=order,
+            page=page,
+            page_size=page_size,
+            search=search,
+            user_id=user_id,
+        )
 
-        is_reverse = order == "desc"
-
-        match order_by:
-            case "name":
-                files.sort(key=lambda x: x[1], reverse=is_reverse)
-            case "size":
-                files.sort(key=lambda x: io.get_file_size(x[0], user_id), reverse=is_reverse)
-            case "uploaded_at" | _:
-                files.sort(
-                    key=lambda x: io.get_last_modification(x[0], user_id), reverse=is_reverse
-                )
-
-        if search != "":
-            files = [file for file in files if search.casefold() in file[1].casefold()]
-
-        page_start = (page - 1) * page_size
-        page_end = page * page_size
-
-        items = [
-            FileResponseModel(
-                file_name=name,
-                file_hash=file_hash,
-                size=io.get_file_size(file_hash, user_id),
-                stats=storage_service.get_info(file_hash),
-                uploaded_at=io.get_last_modification(file_hash, user_id),
-            )
-            for [file_hash, name] in files[page_start:page_end]
-        ]
-
-        data = PagedList(page=page, page_size=page_size, total_count=len(files), items=items)
         return Response(data=data)
     except Exception as e:
         traceback.print_exc()

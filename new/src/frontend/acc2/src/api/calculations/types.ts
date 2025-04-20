@@ -4,10 +4,12 @@ export type CalculationPreview = {
   configs: {
     method: string;
     parameters: string;
+  }[];
+  settings: {
     readHetatm: boolean;
     ignoreWater: boolean;
     permissiveTypes: boolean;
-  }[];
+  };
   createdAt: string;
 };
 

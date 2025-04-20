@@ -10,7 +10,7 @@ from typing import Tuple
 from dotenv import load_dotenv
 from fastapi import UploadFile
 
-from models.calculation import ChargeCalculationConfigDto
+from models.calculation import CalculationConfigDto
 
 from integrations.io.base import IOBase
 from services.logging.base import LoggerBase
@@ -84,7 +84,8 @@ class IOService:
 
         try:
             path = self.get_filepath(file_hash, user_id)
-            self.io.rm(path)
+            if path:
+                self.io.rm(path)
         except Exception as e:
             self.logger.error(f"Error removing file {file_hash}: {traceback.format_exc()}")
             raise e
@@ -111,7 +112,7 @@ class IOService:
                 elif extension == "cif":
                     self.io.cp(file_path, str(Path(archive_dir) / extension))
 
-            return self.io.zip(archive_dir, archive_dir)
+            return self.io.zip(str(archive_dir), str(archive_dir))
         except Exception as e:
             self.logger.error(f"Error creating archive from {directory}: {traceback.format_exc()}")
             raise e
@@ -267,7 +268,7 @@ class IOService:
     async def store_configs(
         self,
         computation_id: str,
-        configs: list[ChargeCalculationConfigDto],
+        configs: list[CalculationConfigDto],
         user_id: str | None = None,
     ) -> None:
         """Store configs for computation to a json file."""
