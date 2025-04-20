@@ -181,6 +181,29 @@ async def download_charges(
         ) from e
 
 
+@files_router.get("/download/examples/{example_id}")
+@inject
+async def download_example(
+    example_id: Annotated[str, Path(description="ID of the example.", example="phenols")],
+    io: IOService = Depends(Provide[Container.io_service]),
+) -> FileResponse:
+    try:
+        charges_path = io.get_example_path(example_id)
+        if not io.path_exists(charges_path):
+            raise FileNotFoundError()
+
+        archive_path = io.zip_charges(charges_path)
+
+        return FileResponse(path=archive_path, media_type="application/zip")
+    except FileNotFoundError as e:
+        raise NotFoundError(detail=f"Example '{example_id}' not found.") from e
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong while downloading example.",
+        ) from e
+
+
 @files_router.get("/quota")
 @inject
 async def get_quota(
