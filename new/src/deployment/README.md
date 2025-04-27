@@ -1,3 +1,7 @@
+## Nginx
+
+`nginx.conf` provides a configuration that can be used to deploy ACCII using nginx.
+
 ## Setup Using Docker
 A quicker way of running ACC II locally is to use `docker compose`. This will start up 3 containers for API, web and database.
 
