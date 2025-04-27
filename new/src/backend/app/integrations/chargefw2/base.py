@@ -19,7 +19,7 @@ class ChargeFW2Base(ABC):
         file_path: str,
         read_hetatm: bool = True,
         ignore_water: bool = False,
-        permissive_types: bool = False,
+        permissive_types: bool = True,
     ) -> Molecules:
         """Load molecules from a file
 
@@ -27,6 +27,7 @@ class ChargeFW2Base(ABC):
             file_path (str): File path from which to load molecules.
             read_hetatm (bool, optional): Read HETATM records from PDB/mmCIF files. Defaults to True.
             ignore_water (bool, optional): Discard water molecules from PDB/mmCIF files. Defaults to False.
+            permissive_types (bool, optional): Use similar parameters for similar atom/bond types if no exact match is found. Defaults to False.
 
         Returns:
             Molecules: Parsed molecules
@@ -53,6 +54,23 @@ class ChargeFW2Base(ABC):
 
         Returns:
             list[str]: List of parameter names.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_best_parameters(
+        self, molecules: Molecules, method: str, permissive_types: bool
+    ) -> Parameters:
+        """Get best parameters for provided method.
+
+        Args:
+            method (str): Method name.
+            molecules (chargefw2.Molecules): Set of molecules.
+            permissive_types (bool): Use similar parameters for similar atom/bond types if no exact match is found.
+
+        Returns:
+            Parameters: Best Parameters for provided method.
+
         """
         raise NotImplementedError()
 

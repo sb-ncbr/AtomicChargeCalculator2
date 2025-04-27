@@ -74,14 +74,14 @@ class ChargeFW2Service:
             raise e
 
     async def get_suitable_methods(
-        self, file_hashes: list[str], user_id: str | None
+        self, file_hashes: list[str], permissive_types: bool = True, user_id: str | None = None
     ) -> SuitableMethods:
         """Get suitable methods for charge calculation based on file hashes."""
 
         try:
             self.logger.info(f"Getting suitable methods for file hashes '{file_hashes}'")
 
-            return await self._find_suitable_methods(file_hashes, user_id)
+            return await self._find_suitable_methods(file_hashes, permissive_types, user_id)
         except Exception as e:
             self.logger.error(
                 f"Error getting suitable methods for file hashes '{file_hashes}': {e}"
@@ -96,10 +96,18 @@ class ChargeFW2Service:
         try:
             self.logger.info(f"Getting suitable methods for computation '{computation_id}'")
 
+            calculation_set = self.calculation_storage.get_calculation_set(computation_id)
+
+            settings = AdvancedSettingsDto()
+            if calculation_set is not None:
+                settings = calculation_set.advanced_settings
+
             workdir = self.io.get_inputs_path(computation_id, user_id)
             file_hashes = [self.io.parse_filename(file)[0] for file in self.io.listdir(workdir)]
 
-            return await self._find_suitable_methods(file_hashes, user_id)
+            return await self._find_suitable_methods(
+                file_hashes, settings.permissive_types, user_id
+            )
         except Exception as e:
             self.logger.error(
                 f"Error getting suitable methods for computation '{computation_id}': {e}"
@@ -107,7 +115,7 @@ class ChargeFW2Service:
             raise e
 
     async def _find_suitable_methods(
-        self, file_hashes: list[str], user_id: str | None
+        self, file_hashes: list[str], permissive_types: bool, user_id: str | None
     ) -> SuitableMethods:
         """Helper method to find suitable methods for calculation."""
 
@@ -124,7 +132,7 @@ class ChargeFW2Service:
                 continue
 
             input_file = os.path.join(workdir, file)
-            molecules = await self.read_molecules(input_file)
+            molecules = await self.read_molecules(input_file, True, False, permissive_types)
             methods: list[tuple[Method, list[Parameters]]] = await self._run_in_executor(
                 self.chargefw2.get_suitable_methods, molecules
             )
@@ -168,6 +176,24 @@ class ChargeFW2Service:
             return parameters
         except Exception as e:
             self.logger.error(f"Error getting available parameters for method {method}: {e}")
+            raise e
+
+    async def get_best_parameters(
+        self, method: str, file_path: str, permissive_types: bool = True
+    ) -> Parameters:
+        """Get best parameters for charge calculation method."""
+
+        try:
+            molecules = await self.read_molecules(file_path)
+
+            self.logger.info(f"Getting best parameters for method {method}.")
+            parameters = await self._run_in_executor(
+                self.chargefw2.get_best_parameters, molecules, method, permissive_types
+            )
+
+            return parameters
+        except Exception as e:
+            self.logger.error(f"Error getting best parameters for method {method}: {e}")
             raise e
 
     async def read_molecules(
@@ -312,8 +338,6 @@ class ChargeFW2Service:
         workdir = self.io.get_file_storage_path(user_id)
         charges_dir = self.io.get_charges_path(computation_id, user_id)
         self.io.create_dir(charges_dir)
-
-        
 
         for result in results:
             for calculation in result.calculations:

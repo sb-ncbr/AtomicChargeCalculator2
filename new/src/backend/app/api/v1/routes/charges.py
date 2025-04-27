@@ -4,7 +4,7 @@ import uuid
 
 
 from typing import Annotated, Literal
-from fastapi import Depends, File, HTTPException, Path, Query, Request, status
+from fastapi import Depends, HTTPException, Path, Query, Request, status
 from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from dependency_injector.wiring import inject, Provide
@@ -26,8 +26,16 @@ from models.suitable_methods import SuitableMethods
 from db.repositories.calculation_set_repository import CalculationSetFilters
 
 from api.v1.container import Container
+from api.v1.schemas.charges import (
+    BestParametersRequest,
+    CalculateChargesRequest,
+    SetupRequest,
+    StatsRequest,
+    SuitableMethodsRequest,
+)
 
-from models.setup import AdvancedSettingsDto, SetupConfigDto
+from models.setup import AdvancedSettingsDto
+
 from services.calculation_storage import CalculationStorageService
 from services.mmcif import MmCIFService
 from services.io import IOService
@@ -36,7 +44,7 @@ from services.chargefw2 import ChargeFW2Service
 charges_router = APIRouter(prefix="/charges", tags=["charges"])
 
 
-@charges_router.get("/methods")
+@charges_router.get("/methods/available")
 @inject
 async def available_methods(
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
@@ -53,18 +61,20 @@ async def available_methods(
         ) from e
 
 
-@charges_router.post("/methods")
+@charges_router.post("/methods/suitable")
 @inject
 async def suitable_methods(
     request: Request,
-    file_hashes: list[str],
+    data: SuitableMethodsRequest,
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ) -> Response[SuitableMethods]:
     """Returns suitable methods for the provided computation."""
     user_id = str(request.state.user.id) if request.state.user is not None else None
 
     try:
-        data = await chargefw2.get_suitable_methods(file_hashes, user_id)
+        data = await chargefw2.get_suitable_methods(
+            data.file_hashes, data.permissive_types, user_id
+        )
         return Response(data=data)
     except Exception as e:
         raise BadRequestError(
@@ -72,7 +82,7 @@ async def suitable_methods(
         ) from e
 
 
-@charges_router.post("/{computation_id}/methods")
+@charges_router.post("/{computation_id}/methods/suitable", include_in_schema=False)
 @inject
 async def computation_suitable_methods(
     request: Request,
@@ -94,7 +104,7 @@ async def computation_suitable_methods(
         ) from e
 
 
-@charges_router.get("/parameters/{method_name}")
+@charges_router.get("/parameters/{method_name}/available")
 @inject
 async def available_parameters(
     method_name: Annotated[
@@ -113,7 +123,7 @@ async def available_parameters(
     methods = chargefw2.get_available_methods()
     if not any(method.internal_name == method_name for method in methods):
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Method '{method_name}' not found.",
         )
 
@@ -127,11 +137,47 @@ async def available_parameters(
         ) from e
 
 
-@charges_router.post("/info")
+@charges_router.post("/parameters/best")
+@inject
+async def best_parameters(
+    data: BestParametersRequest,
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+    io_service: IOService = Depends(Provide[Container.io_service]),
+) -> Response[Parameters]:
+    """Returns the best parameters for the provided method and file."""
+
+    methods = chargefw2.get_available_methods()
+    if not any(method.internal_name == data.method_name for method in methods):
+        raise BadRequestError(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Method '{data.method_name}' not found.",
+        )
+
+    file_path = io_service.get_filepath(data.file_hash)
+
+    if file_path is None:
+        raise BadRequestError(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File '{data.file_hash}' not found.",
+        )
+
+    try:
+        parameters = await chargefw2.get_best_parameters(
+            data.method_name, file_path, data.permissive_types
+        )
+        return Response[Parameters](data=parameters)
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error getting best parameters for method '{data.method_name}'.",
+        ) from e
+
+
+@charges_router.post("/stats")
 @inject
 async def info(
     request: Request,
-    file_hash: Annotated[str, File(description="Hash of a file for which to get information.")],
+    data: StatsRequest,
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
     io_service: IOService = Depends(Provide[Container.io_service]),
 ) -> Response[MoleculeSetStats]:
@@ -143,7 +189,7 @@ async def info(
     user_id = str(request.state.user.id) if request.state.user is not None else None
 
     try:
-        filepath = io_service.get_filepath(file_hash, user_id)
+        filepath = io_service.get_filepath(data.file_hash, user_id)
 
         if filepath is None:
             raise FileNotFoundError()
@@ -163,10 +209,7 @@ async def info(
 @inject
 async def calculate_charges(
     request: Request,
-    configs: list[CalculationConfigDto],
-    file_hashes: list[str],
-    settings: AdvancedSettingsDto | None = None,
-    computation_id: str | None = None,
+    data: CalculateChargesRequest,
     response_format: Annotated[
         Literal["charges", "none"], Query(description="Output format.")
     ] = "charges",
@@ -193,36 +236,37 @@ async def calculate_charges(
                 + f"Maximum storage space is {quota_mb} MB.",
             )
 
+    configs = data.configs
     if not configs:
         # cache (db) is not being used when no config is provided
         configs = [CalculationConfigDto()]
 
-    computation_id = computation_id or str(uuid.uuid4())
+    computation_id = data.computation_id or str(uuid.uuid4())
     calculation_set = storage_service.get_calculation_set(computation_id)
 
-    if not file_hashes and calculation_set is None:
+    if not data.file_hashes and calculation_set is None:
         # if no file hashes provided and computation has not been set up
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No file hashes provided.",
         )
 
-    settings = calculation_set.advanced_settings if calculation_set is not None else settings
+    settings = calculation_set.advanced_settings if calculation_set is not None else data.settings
 
     if settings is None:
         settings = AdvancedSettingsDto()
 
     try:
-        io_service.prepare_inputs(user_id, computation_id, file_hashes)
+        io_service.prepare_inputs(user_id, computation_id, data.file_hashes)
 
-        if not file_hashes:
+        if not data.file_hashes:
             # get all files if none provided and computation has already been set up
             inputs_path = io_service.get_inputs_path(computation_id, user_id)
-            file_hashes = [
+            data.file_hashes = [
                 io_service.parse_filename(file)[0] for file in io_service.listdir(inputs_path)
             ]
 
-        if not file_hashes:
+        if not data.file_hashes:
             # no files found and provided
             raise BadRequestError(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -231,7 +275,7 @@ async def calculate_charges(
 
         # split calculations into those that need to be calculated and those that are cached
         to_calculate, cached = storage_service.filter_existing_calculations(
-            settings, file_hashes, configs
+            settings, data.file_hashes, configs
         )
         calculations = await chargefw2.calculate_charges(
             computation_id, settings, to_calculate, user_id
@@ -267,11 +311,11 @@ async def calculate_charges(
         ) from e
 
 
-@charges_router.post("/setup")
+@charges_router.post("/setup", include_in_schema=False)
 @inject
 async def setup(
     request: Request,
-    config: SetupConfigDto,
+    config: SetupRequest,
     io_service: IOService = Depends(Provide[Container.io_service]),
     storage_service: CalculationStorageService = Depends(Provide[Container.storage_service]),
 ):
@@ -328,7 +372,7 @@ async def get_mmcif(
         ) from e
 
 
-@charges_router.get("/examples/{example_id}/mmcif")
+@charges_router.get("/examples/{example_id}/mmcif", include_in_schema=False)
 @inject
 async def get_example_mmcif(
     example_id: Annotated[str, Path(description="ID of the example.", example="phenols")],
@@ -352,7 +396,7 @@ async def get_example_mmcif(
         ) from e
 
 
-@charges_router.get("/{computation_id}/molecules")
+@charges_router.get("/{computation_id}/molecules", include_in_schema=False)
 @inject
 async def get_molecules(
     request: Request,
@@ -376,7 +420,7 @@ async def get_molecules(
         ) from e
 
 
-@charges_router.get("/examples/{example_id}/molecules")
+@charges_router.get("/examples/{example_id}/molecules", include_in_schema=False)
 @inject
 async def get_example_molecules(
     example_id: Annotated[str, Path(description="Id of the example.", example="phenols")],
@@ -397,7 +441,7 @@ async def get_example_molecules(
         ) from e
 
 
-@charges_router.get("/calculations")
+@charges_router.get("/calculations", include_in_schema=False)
 @inject
 async def get_calculations(
     request: Request,

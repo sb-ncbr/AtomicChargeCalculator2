@@ -67,6 +67,32 @@ class ChargeFW2Local(ChargeFW2Base):
             for parameters in parameters_list
         ]
 
+    def get_best_parameters(
+        self, molecules: chargefw2.Molecules, method: str, permissive_types: bool
+    ) -> Parameters | None:
+        """Get best parameters for provided method.
+
+        Args:
+            method (str): Method name.
+            molecules (chargefw2.Molecules): Set of molecules.
+            permissive_types (bool): Use similar parameters for similar atom/bond types if no exact match is found.
+
+        Returns:
+            Parameters | None: Best Parameters for provided method.
+
+        """
+        parameters = chargefw2.get_best_parameters(molecules, method, permissive_types)
+
+        if parameters is None:
+            return None
+
+        return Parameters(
+            full_name=parameters.full_name,
+            internal_name=parameters.internal_name,
+            method=parameters.method,
+            publication=parameters.publication,
+        )
+
     def get_suitable_methods(
         self, molecules: chargefw2.Molecules
     ) -> list[tuple[Method, list[Parameters]]]:

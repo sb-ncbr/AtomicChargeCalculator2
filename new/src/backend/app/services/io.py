@@ -285,7 +285,7 @@ class IOService:
             self.logger.error(f"Unable to store configs: {traceback.format_exc()}")
             raise e
 
-    def get_filepath(self, file_hash: str, user_id: str | None) -> str | None:
+    def get_filepath(self, file_hash: str, user_id: str | None = None) -> str | None:
         """Get path to file with provided hash.
 
         Args:
@@ -309,7 +309,7 @@ class IOService:
             raise e
 
     def get_last_modification(
-        self, file_hash: str, user_id: str | None
+        self, file_hash: str, user_id: str | None = None
     ) -> datetime.datetime | None:
         """Get last modification time of file with provided hash.
 

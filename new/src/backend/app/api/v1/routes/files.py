@@ -29,7 +29,7 @@ from services.io import IOService
 files_router = APIRouter(prefix="/files", tags=["files"])
 
 
-@files_router.get(path="")
+@files_router.get(path="", include_in_schema=False)
 @inject
 async def get_files(
     request: Request,
@@ -181,7 +181,7 @@ async def download_charges(
         ) from e
 
 
-@files_router.get("/download/examples/{example_id}")
+@files_router.get("/download/examples/{example_id}", include_in_schema=False)
 @inject
 async def download_example(
     example_id: Annotated[str, Path(description="ID of the example.", example="phenols")],
@@ -204,7 +204,7 @@ async def download_example(
         ) from e
 
 
-@files_router.get("/quota")
+@files_router.get("/quota", include_in_schema=False)
 @inject
 async def get_quota(
     request: Request,
@@ -230,7 +230,7 @@ async def get_quota(
         ) from e
 
 
-@files_router.delete("/{file_hash}")
+@files_router.delete("/{file_hash}", include_in_schema=False)
 @inject
 async def delete_file(
     request: Request,

@@ -6,11 +6,11 @@ export const getSuitableMethods = async (
   computationId: string
 ): Promise<SuitableMethods> => {
   const response = await api.post<ApiResponse<SuitableMethods>>(
-    `/charges/${computationId}/methods`
+    `/charges/${computationId}/methods/suitable`
   );
 
   if (!response.data.success) {
-    throw new Error(response.data.message);
+    throw new Error(response.data.message ?? "Something went wrong.");
   }
 
   const data = response.data.data;

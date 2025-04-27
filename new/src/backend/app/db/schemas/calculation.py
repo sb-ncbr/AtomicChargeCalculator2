@@ -36,7 +36,7 @@ class CalculationSet(Base):
         viewonly=True,
     )
     molecule_set_stats_associations = relationship(
-        "CalculationSetStats", back_populates="calculation_set"
+        "CalculationSetStats", back_populates="calculation_set", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

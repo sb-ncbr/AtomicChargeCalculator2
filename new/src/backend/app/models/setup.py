@@ -20,10 +20,3 @@ class AdvancedSettingsDto(BaseModel):
         populate_by_name=True,
         from_attributes=True,
     )
-
-
-class SetupConfigDto(BaseModel):
-    """SetupConfigDto model."""
-
-    file_hashes: list[str]
-    settings: AdvancedSettingsDto | None

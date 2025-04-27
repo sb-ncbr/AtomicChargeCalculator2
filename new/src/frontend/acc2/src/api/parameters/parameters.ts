@@ -6,11 +6,11 @@ export const getAvailableParameters = async (
   method: string
 ): Promise<Parameters[]> => {
   const response = await api.get<ApiResponse<Parameters[]>>(
-    `/charges/parameters/${method}`
+    `/charges/parameters/${method}/available`
   );
 
   if (!response.data.success) {
-    throw new Error(response.data.message);
+    throw new Error(response.data.message ?? "Something went wrong.");
   }
 
   return response.data.data;

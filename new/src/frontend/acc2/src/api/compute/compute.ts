@@ -7,8 +7,8 @@ export const setup = async (
   settings?: AdvancedSettings
 ): Promise<string> => {
   const response = await api.post<ApiResponse<string>>("/charges/setup", {
-    file_hashes: fileHashes,
-    ...settingsToParams(settings),
+    fileHashes,
+    ...(settings ? { settings } : {}),
   });
 
   if (!response.data.success) {
@@ -25,12 +25,13 @@ export const compute = async (
   computationId?: string
 ): Promise<string> => {
   const body = {
-    file_hashes: fileHashes,
+    fileHashes,
     configs: configs.map((comp) => ({
       method: comp.method || null,
       parameters: comp.parameters || null,
     })),
-    ...settingsToParams(settings),
+    ...(computationId ? { computation_id: computationId } : {}),
+    ...(settings ? { settings } : {}),
   };
 
   const response = await api.post<ApiResponse<string>>(
@@ -39,13 +40,12 @@ export const compute = async (
     {
       params: {
         response_format: "none",
-        ...(computationId ? { computation_id: computationId } : {}),
       },
     }
   );
 
   if (!response.data?.success) {
-    throw new Error(response.data.message);
+    throw new Error(response.data.message ?? "Something went wrong.");
   }
 
   return response.data.data;
@@ -59,22 +59,8 @@ export const getMolecules = async (
   );
 
   if (!response.data.success) {
-    throw Error(response.data.message);
+    throw Error(response.data.message ?? "Something went wrong.");
   }
 
   return response.data.data;
-};
-
-const settingsToParams = (settings?: AdvancedSettings) => {
-  if (!settings) {
-    return {};
-  }
-
-  return {
-    settings: {
-      read_hetatm: settings.readHetatm,
-      ignore_water: settings.ignoreWater,
-      permissive_types: settings.permissiveTypes,
-    },
-  };
 };

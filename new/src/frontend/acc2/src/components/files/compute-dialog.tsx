@@ -52,6 +52,11 @@ export const ComputeDialog = ({ files }: ComputeDialogProps) => {
     await setupMutation.mutateAsync(
       {
         fileHashes: files.map((file) => file.fileHash),
+        settings: {
+          readHetatm: true,
+          ignoreWater: false,
+          permissiveTypes: true,
+        },
       },
       {
         onError: (error) => toast.error(handleApiError(error)),

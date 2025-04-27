@@ -4,6 +4,7 @@ from typing import Literal
 from db.database import SessionManager
 from api.v1.schemas.file import FileResponse
 from models.paging import PagedList
+from models.molecule_info import MoleculeSetStats
 from services.calculation_storage import CalculationStorageService
 from services.io import IOService
 from services.logging.base import LoggerBase
@@ -40,7 +41,7 @@ class FileStorageService:
 
         match order_by:
             case "name":
-                files.sort(key=lambda x: x[1], reverse=is_reverse)
+                files.sort(key=lambda x: x[-1], reverse=is_reverse)
             case "size":
                 files.sort(key=lambda x: self.io.get_file_size(x[0], user_id), reverse=is_reverse)
             case "uploaded_at" | _:
@@ -60,7 +61,8 @@ class FileStorageService:
                     file_name=name,
                     file_hash=file_hash,
                     size=self.io.get_file_size(file_hash, user_id) or 0,
-                    stats=self.storage_service.get_info(session, file_hash),
+                    stats=self.storage_service.get_info(session, file_hash)
+                    or MoleculeSetStats.default(),
                     uploaded_at=self.io.get_last_modification(file_hash, user_id) or datetime.min,
                 )
                 for [file_hash, name] in files[page_start:page_end]

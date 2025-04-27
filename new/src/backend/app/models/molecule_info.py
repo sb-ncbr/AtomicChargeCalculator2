@@ -34,6 +34,12 @@ class MoleculeSetStats(BaseModel):
             atom_type_counts=[AtomTypeCount(c) for c in info.get("atom_type_counts", [])],
         )
 
+    @staticmethod
+    def default() -> "MoleculeSetStats":
+        return MoleculeSetStats(
+            info={"total_molecules": 0, "total_atoms": 0, "atom_type_counts": []}
+        )
+
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
