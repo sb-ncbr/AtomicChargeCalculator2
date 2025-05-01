@@ -53,6 +53,7 @@ class ChargeFW2Service:
         self.mmcif_service = mmcif_service
         self.calculation_storage = calculation_storage
         self.executor = ThreadPoolExecutor(max_workers)
+        self.semaphore = asyncio.Semaphore(4)  # used to limit to 4 concurrent calculations
 
     async def _run_in_executor(self, func, *args, executor=None):
         loop = asyncio.get_event_loop()
@@ -217,8 +218,8 @@ class ChargeFW2Service:
 
     async def _calculate_charges(
         self,
-        user_id: str,
-        computation_id: str | None,
+        user_id: str | None,
+        computation_id: str,
         settings: AdvancedSettingsDto,
         config: CalculationConfigDto,
         file_hashes: list[str],
@@ -226,8 +227,6 @@ class ChargeFW2Service:
         """Calculate charges for provided files."""
 
         workdir = self.io.get_file_storage_path(user_id)
-
-        semaphore = asyncio.Semaphore(4)  # limit to 4 concurrent calculations
 
         async def process_file(
             file_hash: str, config: CalculationConfigDto
@@ -245,7 +244,7 @@ class ChargeFW2Service:
                 self.logger.warn(f"File with hash {file_hash} not found in {workdir}, skipping.")
                 return
 
-            async with semaphore:
+            async with self.semaphore:
                 print("Calculating charges for file", file_name, config.method)
                 charges_dir = self.io.get_charges_path(computation_id, user_id)
                 self.io.create_dir(charges_dir)
@@ -366,23 +365,9 @@ class ChargeFW2Service:
         file_hashes: list[str],
         config: CalculationConfigDto,
     ) -> CalculationResultDto:
-        if not config.method:
-            # No method provided -> use most suitable method and parameters
-            suitable = await self.get_computation_suitable_methods(computation_id, user_id)
-
-            if len(suitable.methods) == 0:
-                self.logger.error(
-                    f"No suitable methods found for charge calculation {computation_id}."
-                )
-                raise Exception("No suitable methods found.")
-
-            config.method = suitable.methods[0].internal_name
-            parameters = suitable.parameters.get(config.method, [])
-            config.parameters = parameters[0].internal_name if len(parameters) > 0 else None
-            self.logger.info(
-                f"""No method provided.
-                        Using method '{config.method}' with parameters '{config.parameters}'."""
-            )
+        self.logger.info(
+            f"Calculating charges with method {config.method} and parameters {config.parameters}."
+        )
 
         return await self._calculate_charges(user_id, computation_id, settings, config, file_hashes)
 
@@ -436,5 +421,7 @@ class ChargeFW2Service:
             self.calculation_storage.delete_calculation_set(computation_id)
             self.io.delete_computation(computation_id, user_id)
         except Exception as e:
-            self.logger(f"Error deleting computation {computation_id}: {traceback.format_exc()}")
+            self.logger.error(
+                f"Error deleting computation {computation_id}: {traceback.format_exc()}"
+            )
             raise e

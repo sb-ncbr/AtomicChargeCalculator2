@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
+from pydantic.json_schema import SkipJsonSchema
 
 from models.calculation import CalculationConfigDto
 from models.setup import AdvancedSettingsDto
@@ -28,7 +29,9 @@ class CalculateChargesRequest(BaseRequestModel):
     configs: list[CalculationConfigDto]
     file_hashes: list[str]
     settings: AdvancedSettingsDto | None = None
-    computation_id: str | None = None
+
+    # exclude computation_id from docs
+    computation_id: SkipJsonSchema[str | None] = Field(None, exclude=True)
 
 
 class SetupRequest(BaseRequestModel):

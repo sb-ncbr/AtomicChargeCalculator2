@@ -236,11 +236,6 @@ async def calculate_charges(
                 + f"Maximum storage space is {quota_mb} MB.",
             )
 
-    configs = data.configs
-    if not configs:
-        # cache (db) is not being used when no config is provided
-        configs = [CalculationConfigDto()]
-
     computation_id = data.computation_id or str(uuid.uuid4())
     calculation_set = storage_service.get_calculation_set(computation_id)
 
@@ -272,6 +267,21 @@ async def calculate_charges(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No file hashes provided.",
             )
+
+        configs = data.configs
+        if not configs:
+            # use most suitable method and parameters if none provided
+            suitable = await chargefw2.get_computation_suitable_methods(computation_id, user_id)
+
+            if len(suitable.methods) == 0:
+                # TODO: show message?
+                raise Exception("No suitable methods found.")
+
+            method_name = suitable.methods[0].internal_name
+            parameters = suitable.parameters.get(method_name, [])
+            parameters_name = parameters[0].internal_name if len(parameters) > 0 else None
+
+            configs = [CalculationConfigDto(method=method_name, parameters=parameters_name)]
 
         # split calculations into those that need to be calculated and those that are cached
         to_calculate, cached = storage_service.filter_existing_calculations(
@@ -340,7 +350,7 @@ async def setup(
 
 
 # chemical/x-cif
-@charges_router.get("/{computation_id}/mmcif")
+@charges_router.get("/{computation_id}/mmcif", include_in_schema=False)
 @inject
 async def get_mmcif(
     request: Request,
@@ -472,7 +482,7 @@ async def get_calculations(
         ) from e
 
 
-@charges_router.delete("/{computation_id}")
+@charges_router.delete("/{computation_id}", include_in_schema=False)
 @inject
 async def delete_calculation(
     request: Request,
