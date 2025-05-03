@@ -1,3 +1,7 @@
 [submodule "LiteMolChargesViewer"]
-	path = LiteMolChargesViewer
-	url = https://dev.dominiktousek.eu/gitlab/ceitec/LiteMolChargesViewer.git
+    path = LiteMolChargesViewer
+    url = https://dev.dominiktousek.eu/gitlab/ceitec/LiteMolChargesViewer.git
+
+[submodule "ChargeFW2"]
+    path = ChargeFW2
+    url = https://github.com/sb-ncbr/ChargeFW2.git

@@ -1,0 +1,46 @@
+# build stage is borrowed from https://github.com/sb-ncbr/ChargeFW2/blob/master/Dockerfile
+FROM ubuntu:24.04 AS build
+
+ARG DEPS="\
+    ca-certificates \
+    cmake \
+    make \
+    g++ \
+    gemmi \
+    gemmi-dev \
+    git \
+    libboost-program-options-dev \
+    libeigen3-dev \
+    libfmt-dev \
+    libnanoflann-dev \
+    libomp-dev \
+    libstb-dev \
+    nlohmann-json3-dev \
+    zlib1g-dev \
+    tao-pegtl-dev \
+    python3-pybind11"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ${DEPS} && \
+    apt-get clean && rm -rf /var/lib/apt/lists*
+
+ENV CHARGEFW2_DIR=/ChargeFW2/build
+
+COPY ChargeFW2 /ChargeFW2
+
+RUN cd /ChargeFW2 && \
+    mkdir build_temp && \
+    cd build_temp && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=${CHARGEFW2_DIR} -DPYTHON_MODULE=ON && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf /ChargeFW2
+
+COPY --from=ubuntu:24.04 /usr/lib/x86_64-linux-gnu/libgomp.so.1* \
+    /usr/lib/x86_64-linux-gnu/libfmt.so.* \
+    /usr/lib/x86_64-linux-gnu/libboost_program_options.so.* \
+    /usr/lib/x86_64-linux-gnu/
+
+# Setup ENV variables for use with Python bindings
+ENV LD_LIBRARY_PATH=${CHARGEFW2_DIR}/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=${CHARGEFW2_DIR}/lib

@@ -1,0 +1,104 @@
+@startuml database_schema
+
+skinparam Linetype ortho
+skinparam Nodesep 80
+skinparam Ranksep 50
+skinparam padding 2
+skinparam shadowing false
+skinparam backgroundColor transparent
+skinparam handwritten false
+skinparam ClassFontStyle bold
+skinparam ClassAttributeFontStyle   bold
+skinparam NoteFontStyle bold
+
+hide circle
+
+entity users {
+    * id: uuid
+    ---
+    openid: varchar
+}
+
+entity calculation_sets {
+    * id: uuid
+    user_id: <<FK users>>
+    advanced_settings_id: <<FK advanced_settings>> 
+    ---
+    created_at: timestamptz
+}
+
+entity calculation_set_configs {
+    * calculation_set_id: <<FK calculation_sets>>
+    * config_id <<FK calculation_configs>>
+}
+
+entity calculation_configs {
+    * id: uuid
+    ---
+    method: varchar
+    parameters: varchar
+}
+
+entity calculation_set_stats {
+    * calculation_set_id: <<FK calculation_sets>>
+    * molecule_set_stats_id: <<FK molecule_set_stats>>
+    ---
+    file_name: varchar
+}
+
+entity calculations {
+    * id: uuid
+    config_id: <<FK calculation_configs>>
+    advanced_settings_id <<FK advanced_settings>>
+    ---
+    file_name: varchar
+    file_hash: varchar
+    charges: json
+}
+
+entity molecule_set_stats {
+    * file_hash: varchar
+    ---
+    total_molecules: integer
+    total_atoms: integer
+}
+
+entity atom_type_counts {
+    * id: uuid
+    molecule_set_id: <<FK molecule_set_stats>>
+    ---
+    symbol: varchar
+    count: integer
+}
+
+entity advanced_settings {
+    * id: uuid
+    ---
+    read_hetatm: boolean
+    ignore_water: boolean
+    permissive_types: boolean
+}
+
+note top of calculations {
+    Cache used to skip already
+    existing calculations
+}
+
+calculation_sets }o-u-o| users
+
+' M:N between calculation_sets and configs
+calculation_sets ||--{ calculation_set_configs
+calculation_configs ||--o{ calculation_set_configs
+
+calculations }|--|| calculation_configs
+
+molecule_set_stats ||-u-|{ atom_type_counts
+
+' M:N between calculation_sets and molecule_set_stats
+calculation_sets ||--o{ calculation_set_stats
+molecule_set_stats ||--o{ calculation_set_stats
+
+advanced_settings ||--o{ calculation_sets
+advanced_settings ||--o{ calculations
+
+@enduml

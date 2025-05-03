@@ -25,12 +25,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: ./new/src/frontend/acc2
+        working-directory: ./src/frontend/acc2
 
       - name: Lint
         run: pnpm lint
-        working-directory: ./new/src/frontend/acc2
+        working-directory: ./src/frontend/acc2
 
       - name: Build
         run: pnpm build
-        working-directory: ./new/src/frontend/acc2
+        working-directory: ./src/frontend/acc2
