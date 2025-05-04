@@ -1,3 +1,14 @@
+## Nginx
+
+`nginx.conf` provides a configuration that can be used to deploy ACCII using nginx. Reusable declarations are located in `./snippets` to avoid unnecessary duplicity.
+
+## SSL Configuration
+Simple way is to use certbot (Let's Encrypt):
+
+```bash 
+$ certbot --nginx -d <url>
+```
+
 ## Setup Using Docker
 A quicker way of running ACC II locally is to use `docker compose`. This will start up 3 containers for API, web and database.
 

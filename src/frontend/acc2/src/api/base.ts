@@ -13,12 +13,15 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+export const DEFAULT_ERROR_MESSAGE =
+  "An unexpected error occurred. Please try again.";
+
 export const handleApiError = (error: unknown) => {
   if (axios.isAxiosError(error)) {
     const responseError: AxiosError<ErrorResponse> = error;
 
     if (responseError.response?.data) {
-      return responseError.response.data.message;
+      return responseError.response.data.message || DEFAULT_ERROR_MESSAGE;
     }
 
     if (responseError.code === "ERR_NETWORK") {
@@ -28,9 +31,13 @@ export const handleApiError = (error: unknown) => {
     if (responseError.code === "ECONNABORTED") {
       return "Request timed out. Please try again.";
     }
+
+    if (responseError.status === 429) {
+      return "Too many requests. Please try again later.";
+    }
   }
 
   console.log(error);
 
-  return "An unexpected error occured. Please try again.";
+  return DEFAULT_ERROR_MESSAGE;
 };
