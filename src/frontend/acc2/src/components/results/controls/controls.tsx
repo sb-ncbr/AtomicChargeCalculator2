@@ -1,14 +1,17 @@
 import { handleApiError } from "@acc2/api/base";
+import { Busy } from "@acc2/components/shared/busy";
 import { Button } from "@acc2/components/ui/button";
-import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
 import { useControlsContext } from "@acc2/lib/hooks/contexts/use-controls-context";
 import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
+import {
+  useAvailableMethodsQuery,
+  useAvailableParametersQuery,
+} from "@acc2/lib/hooks/queries/use-calculations";
 import { downloadBlob } from "@acc2/lib/utils";
 import MolstarPartialCharges from "molstar-partial-charges";
 import { HTMLAttributes, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Card } from "../../ui/card";
 import { Separator } from "../../ui/separator";
 import { MolstarChargesetControls } from "./chargeset-controls";
 import { MolstarColoringControls } from "./coloring-controls";
@@ -28,15 +31,20 @@ export const Controls = ({
 }: ControlsProps) => {
   const context = useControlsContext(molstar);
 
-  const { loadMmcifMutation, downloadMutation } = useComputationMutations();
-
   const [mmcifLoaded, setMmcifLoaded] = useState<boolean>(false);
-  const { addBusy, removeBusy } = useBusyContext();
 
   const [names, setNames] = useState({ method: "", params: "" });
 
+  const { data: availableMethods, isPending: isMethodsPending } =
+    useAvailableMethodsQuery();
+  const {
+    data: availableParameters,
+    refetch: refetchAvailableParameters,
+    isRefetching: isParametersPending,
+  } = useAvailableParametersQuery(names.method);
+  const { loadMmcifMutation, downloadMutation } = useComputationMutations();
+
   const loadMolecule = async (molecule: string) => {
-    addBusy();
     await loadMmcifMutation.mutateAsync(
       { molstar, computationId, molecule },
       {
@@ -47,7 +55,6 @@ export const Controls = ({
 
     await molstar.color.relative();
     context.set.methodNames(molstar.charges.getMethodNames());
-    removeBusy();
   };
 
   const downloadCharges = async () => {
@@ -64,21 +71,32 @@ export const Controls = ({
   useEffect(() => {
     const name = context.get.methodNames?.[context.get.currentTypeId - 1];
     const [method, params] = name?.split("/") ?? ["", ""];
-    setNames({ method, params });
+    setNames((prev) => {
+      if (method && method !== prev.method) {
+        void refetchAvailableParameters();
+      }
+      return { method, params };
+    });
   }, [context.get.currentTypeId, context.get.methodNames]);
 
-  // TODO get correct name for method and params
   return (
-    <Card className="w-4/5 rounded-none mx-auto p-4 max-w-content mt-4 flex flex-col relative">
+    <>
+      <Busy isBusy={isMethodsPending || isParametersPending} />
       <div className="flex flex-col justify-between items-stretch sm:flex-row sm:items-center">
         <div>
           <div className="flex gap-2">
             <h3 className="font-bold">Method:</h3>
-            <span>{names.method}</span>
+            <span>
+              {availableMethods?.find((m) => m.internalName === names.method)
+                ?.name || names.method}
+            </span>
           </div>
           <div className="flex gap-2">
             <h3 className="font-bold">Parameters:</h3>
-            <span>{names.params}</span>
+            <span>
+              {availableParameters?.find((p) => p.internalName === names.params)
+                ?.fullName || names.params}
+            </span>
           </div>
         </div>
         <Button
@@ -104,6 +122,6 @@ export const Controls = ({
           <MolstarColoringControls molstar={molstar} />
         </div>
       )}
-    </Card>
+    </>
   );
 };

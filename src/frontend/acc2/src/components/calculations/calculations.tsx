@@ -44,6 +44,7 @@ export const Calculations = () => {
         isBusy={
           isCalculationsPending || isQuotaPending || isCalculationsFetching
         }
+        fullscreen
       >
         Loading Calculations
       </Busy>

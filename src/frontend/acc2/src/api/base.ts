@@ -37,7 +37,7 @@ export const handleApiError = (error: unknown) => {
     }
   }
 
-  console.log(error);
+  console.error(error);
 
   return DEFAULT_ERROR_MESSAGE;
 };

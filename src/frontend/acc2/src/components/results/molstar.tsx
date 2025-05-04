@@ -1,4 +1,3 @@
-import { useBusyContext } from "@acc2/lib/hooks/contexts/use-busy-context";
 import { cn } from "@acc2/lib/utils";
 import MolstarPartialCharges from "molstar-partial-charges";
 import { HTMLAttributes, useEffect } from "react";
@@ -18,13 +17,10 @@ export const MolStarWrapper = ({
   className,
   ...props
 }: MolstarProps) => {
-  const { addBusy, removeBusy } = useBusyContext();
   const setup = async () => {
-    addBusy();
     const molstar = await MolstarPartialCharges.create("molstar-root", {
       SbNcbrPartialCharges: true,
     });
-    removeBusy();
     setMolstar(molstar);
   };
 

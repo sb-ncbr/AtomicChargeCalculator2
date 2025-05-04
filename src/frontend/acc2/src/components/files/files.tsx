@@ -45,8 +45,11 @@ export const Files = () => {
         Uploaded Files
       </h2>
 
-      <Busy isBusy={isFilesPending || isQuotaPending || isFilesFetching}>
-        Fetching files
+      <Busy
+        isBusy={isFilesPending || isQuotaPending || isFilesFetching}
+        fullscreen
+      >
+        Loading files
       </Busy>
 
       <div className="w-full flex items-center gap-4">

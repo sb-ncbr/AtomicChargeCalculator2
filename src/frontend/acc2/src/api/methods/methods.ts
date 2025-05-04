@@ -1,6 +1,9 @@
 import { api } from "../base";
 import { ApiResponse } from "../types";
-import { SuitableMethods } from "./types";
+import { Method, SuitableMethods } from "./types";
+
+// we don't want to show 'dummy' method on frontend
+const DUMMY_KEY = "dummy";
 
 export const getSuitableMethods = async (
   computationId: string
@@ -15,12 +18,25 @@ export const getSuitableMethods = async (
 
   const data = response.data.data;
 
-  // we don't want to show 'dummy' method on frontend
-  const dummyKey = "dummy";
   data.methods = data.methods.filter(
-    (method) => method.internalName !== dummyKey
+    (method) => method.internalName !== DUMMY_KEY
   );
-  delete data.parameters[dummyKey];
+  delete data.parameters[DUMMY_KEY];
 
   return data;
+};
+
+export const getAvailableMethods = async (): Promise<Method[]> => {
+  const response = await api.get<ApiResponse<Method[]>>(
+    `/charges/methods/available`
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message ?? "Something went wrong.");
+  }
+
+  const data = response.data.data;
+  const methods = data.filter((method) => method.internalName !== DUMMY_KEY);
+
+  return methods;
 };

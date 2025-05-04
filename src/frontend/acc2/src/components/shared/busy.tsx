@@ -6,6 +6,7 @@ import { useDebouncedCallback } from "use-debounce";
 export type BusyProps = {
   isBusy: boolean;
   size?: BusySize;
+  fullscreen?: boolean;
 } & HTMLAttributes<HTMLElement> &
   PropsWithChildren;
 
@@ -20,6 +21,7 @@ const BusyDelayMs = 200;
 export const Busy = ({
   isBusy,
   size = BusySize.Small,
+  fullscreen = false,
   children,
   className,
   ...rest
@@ -43,7 +45,8 @@ export const Busy = ({
     <div
       {...rest}
       className={cn(
-        "absolute inset-0 bg-secondary/35 place-content-center z-40",
+        "inset-0 bg-secondary/35 place-content-center z-40",
+        fullscreen ? "fixed" : "absolute",
         showBusy ? "grid" : "hidden",
         className
       )}
