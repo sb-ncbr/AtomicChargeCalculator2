@@ -1,4 +1,17 @@
 services:
+  nginx:
+    container_name: acc2-nginx
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - /AtomicChargeCalculator2/src/deployment/nginx/nginx-dev.conf:/etc/nginx/nginx.conf
+      - /AtomicChargeCalculator2/src/deployment/nginx/snippets:/etc/nginx/snippets
+    networks:
+      - acc2-network
+    restart: 
+      unless-stopped
+
   db:
     container_name: acc2-db
     image: postgres:17-alpine

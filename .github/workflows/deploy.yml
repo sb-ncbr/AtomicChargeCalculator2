@@ -81,6 +81,16 @@ jobs:
               
               echo "API service deployment with ChargeFW2 finished."
 
+            elif [ "$DEPLOY_TARGET" = "nginx" ]; then
+              echo "Deploying nginx ..."
+              
+              docker compose $COMPOSE_FILES down nginx
+              
+              docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate nginx
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+              
+              echo "Nginx service deployment finished."
+
             elif [ "$DEPLOY_TARGET" = "web" ]; then
               echo "Deploying web ..."
               
