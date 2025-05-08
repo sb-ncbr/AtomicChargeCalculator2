@@ -137,7 +137,10 @@ export const Setup = ({ computationId }: SetupProps) => {
     <main className="mx-auto w-full selection:text-white selection:bg-primary mb-12">
       <ScrollArea type="auto" className="h-full">
         <Card className="w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mt-12 flex flex-col relative">
-          <Busy isBusy={computeMutation.isPending || isPending} />
+          <Busy isBusy={computeMutation.isPending || isPending}>
+            {computeMutation.isPending && "Computing charges..."}
+            {isPending && "Loading suitable methods..."}
+          </Busy>
           <h2 className="text-3xl text-primary font-bold mb-2 md:text-5xl">
             Computation Settings
           </h2>

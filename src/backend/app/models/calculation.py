@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Dict
 import uuid
 
 from pydantic import BaseModel, ConfigDict
@@ -10,8 +11,9 @@ from pydantic.alias_generators import to_camel
 from models.paging import PagingFilters
 from models.molecule_info import MoleculeSetStats
 
-from integrations.chargefw2.base import Charges
 from models.setup import AdvancedSettingsDto
+
+Charges = Dict[str, list[float]]
 
 
 @dataclass

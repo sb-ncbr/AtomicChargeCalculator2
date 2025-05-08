@@ -104,9 +104,10 @@ export const Compute = () => {
 
   return (
     <Card className="w-11/12 md:w-4/5 rounded-none shadow-xl mx-auto p-4 max-w-content mb-12 mt-0 xs:mt-8 md:mt-0 relative">
-      <Busy
-        isBusy={computeMutation.isPending || fileUploadMutation.isPending}
-      />
+      <Busy isBusy={computeMutation.isPending || fileUploadMutation.isPending}>
+        {fileUploadMutation.isPending && "Uploading files..."}
+        {computeMutation.isPending && "Computing charges..."}
+      </Busy>
       <h2 className="text-5xl text-primary font-bold">Compute</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -126,7 +127,7 @@ export const Compute = () => {
               <span className="font-bold"> pdb</span>,
               <span className="font-bold"> mmcif</span>. You can upload one or
               multiple files at the same time. Maximum allowed upload size is
-              <span className="font-bold"> 250MB</span>.
+              <span className="font-bold"> 250 MB</span>.
             </p>
           </div>
           <div className="flex gap-4 flex-col sm:flex-row">

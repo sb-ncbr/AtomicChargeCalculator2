@@ -13,6 +13,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: 
+      image: pilatmartin/acc2-chargefw2
 
     steps:
       - name: Checkout
@@ -25,8 +27,12 @@ jobs:
 
       - name: Install dependencies
         run: |
+          apt-get update && apt-get install -y curl python3.12-dev libpq-dev gcc
           python -m pip install --upgrade pip
           curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="/github/home/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH # allow poetry to be used in next step
+          poetry env use python3.12
           poetry install --no-interaction --no-root
         working-directory: ./src/backend
 

@@ -3,11 +3,10 @@
 from typing import Dict
 from abc import ABC, abstractmethod
 
+from models.calculation import Charges
 from chargefw2 import Molecules
 from models.method import Method
 from models.parameters import Parameters
-
-Charges = Dict[str, list[float]]
 
 
 class ChargeFW2Base(ABC):

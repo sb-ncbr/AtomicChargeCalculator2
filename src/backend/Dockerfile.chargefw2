@@ -34,7 +34,7 @@ RUN cd /ChargeFW2 && \
     cmake .. -DCMAKE_INSTALL_PREFIX=${CHARGEFW2_DIR} -DPYTHON_MODULE=ON && \
     make -j$(nproc) && \
     make install && \
-    cd / && rm -rf /ChargeFW2
+    cd /
 
 COPY --from=ubuntu:24.04 /usr/lib/x86_64-linux-gnu/libgomp.so.1* \
     /usr/lib/x86_64-linux-gnu/libfmt.so.* \
