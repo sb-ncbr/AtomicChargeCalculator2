@@ -13,6 +13,7 @@ on:
           - api
           - api including chargefw2
           - web
+          - nginx
 
 jobs:
   deploy:
