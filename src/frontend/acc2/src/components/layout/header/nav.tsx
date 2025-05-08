@@ -56,7 +56,8 @@ export const Nav = () => {
             </>
           )}
         </div>
-        {!isAuthenticated && (
+        {/* checking explicitly for false so that the button does not blink */}
+        {isAuthenticated === false && (
           <button className="ml-auto hover:scale-105" onClick={onLoginClick}>
             <img src={LoginImg} alt="Login Button" width={150} />
           </button>
@@ -109,7 +110,7 @@ export const Nav = () => {
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              {!isAuthenticated && (
+              {isAuthenticated === false && (
                 <button onClick={onLoginClick}>
                   <img
                     src={LoginImg}

@@ -1,6 +1,9 @@
+import { useAuth } from "@acc2/lib/hooks/queries/use-auth";
 import { NavLink } from "react-router";
 
 export const Footer = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <footer className="w-full bg-primary px-8 py-4 text-white h-footer">
       <div className="max-w-content mx-auto">
@@ -13,11 +16,20 @@ export const Footer = () => {
                   Home
                 </NavLink>
               </li>
-              <li>
-                <NavLink className="hover:underline" to={"/calculations"}>
-                  Calculations
-                </NavLink>
-              </li>
+              {isAuthenticated && (
+                <>
+                  <li>
+                    <NavLink className="hover:underline" to={"/calculations"}>
+                      Calculations
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink className="hover:underline" to={"/files"}>
+                      Files
+                    </NavLink>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
           <div className="flex flex-col items-start">

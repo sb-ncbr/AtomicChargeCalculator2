@@ -86,7 +86,11 @@ export const UploadDialog = () => {
               multiple
             />
             <DialogFooter className="mt-4">
-              <Button variant={"secondary"} onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant={"secondary"}
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={!form.formState.isValid}>

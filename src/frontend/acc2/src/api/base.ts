@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 
 import { ErrorResponse } from "./types";
 
-export const baseApiUrl = import.meta.env.VITE_BASE_API_URL;
+export const baseApiUrl: string = import.meta.env.VITE_BASE_API_URL;
 
 if (!baseApiUrl) {
   throw new Error("BASE_API_URL environment variable is not defined.");

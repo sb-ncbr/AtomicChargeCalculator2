@@ -1,3 +1,5 @@
+import { baseApiUrl } from "@acc2/api/base";
+
 import { Section } from "../section";
 
 export const About = () => {
@@ -18,19 +20,31 @@ export const About = () => {
         <a
           href="https://github.com/sb-ncbr/AtomicChargeCalculator2/wiki"
           target="_blank"
-          className="text-primary hover:underline" rel="noreferrer"
+          className="text-primary hover:underline"
+          rel="noreferrer"
         >
           Short introduction
         </a>{" "}
         covers the basic usage of ACC II. All methods and parameters are also
-        available in a command-line{" "}
+        available in a{" "}
         <a
           href="https://github.com/sb-ncbr/ChargeFW2"
           target="_blank"
           referrerPolicy="no-referrer"
-          className="text-primary hover:underline" rel="noreferrer"
+          className="text-primary hover:underline"
+          rel="noreferrer"
         >
-          application
+          command-line application
+        </a>{" "}
+        and a{" "}
+        <a
+          href={`${baseApiUrl.replace("v1", "docs")}`}
+          target="_blank"
+          referrerPolicy="no-referrer"
+          className="text-primary hover:underline"
+          rel="noreferrer"
+        >
+          web API
         </a>{" "}
         that can be used in user workflows.
       </p>
