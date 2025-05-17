@@ -1,5 +1,7 @@
 """Provides logging middleware for the application."""
 
+from datetime import timedelta
+from timeit import default_timer as timer
 from typing import Awaitable, Callable
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -24,8 +26,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             message=f"Request from {request.client.host}: {request.method} {request.url}"
         )
 
+        start = timer()
         response = await call_next(request)
+        end = timer()
 
-        self.logger.info(message=f"Response status: {response.status_code}")
+        self.logger.info(
+            message=f"Response for {request.client.host}: {request.method} {request.url} finished with code {response.status_code} in {timedelta(seconds=end - start)}"
+        )
 
         return response
