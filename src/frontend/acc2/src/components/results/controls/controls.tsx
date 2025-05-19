@@ -49,12 +49,17 @@ export const Controls = ({
       { molstar, computationId, molecule },
       {
         onError: (error) => toast.error(handleApiError(error)),
-        onSuccess: () => setMmcifLoaded(true),
+        onSuccess: async () => {
+          await Promise.all([
+            await context.set.viewType(context.get.viewType),
+            await context.set.coloringType("charges-relative"),
+          ]);
+
+          context.set.methodNames(molstar.charges.getMethodNames());
+          setMmcifLoaded(true);
+        },
       }
     );
-
-    await molstar.color.relative();
-    context.set.methodNames(molstar.charges.getMethodNames());
   };
 
   const downloadCharges = async () => {

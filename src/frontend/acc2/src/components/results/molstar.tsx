@@ -1,10 +1,9 @@
 import { cn } from "@acc2/lib/utils";
 import MolstarPartialCharges from "molstar-partial-charges";
 import { HTMLAttributes, useEffect } from "react";
+import "@acc2/molstar.css";
 
 import { Card } from "../ui/card";
-
-import "@acc2/molstar.css";
 
 export type MolstarProps = {
   setMolstar: React.Dispatch<
@@ -21,6 +20,7 @@ export const MolStarWrapper = ({
     const molstar = await MolstarPartialCharges.create("molstar-root", {
       SbNcbrPartialCharges: true,
     });
+
     setMolstar(molstar);
   };
 
