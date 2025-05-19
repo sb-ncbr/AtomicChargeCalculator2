@@ -257,13 +257,13 @@ class TestChargeFW2Service:
             ],
         )
 
-        service._process_config = AsyncMock(return_value=result_dto)
+        service._calculate_charges = AsyncMock(return_value=result_dto)
 
         result = await service.calculate_charges(computation_id, settings, data, user_id)
 
         assert result == [result_dto]
-        service._process_config.assert_called_once_with(
-            user_id, computation_id, settings, file_hashes, config
+        service._calculate_charges.assert_called_once_with(
+            user_id, computation_id, settings, config, file_hashes
         )
         service.io.store_configs.assert_called_once_with(
             computation_id, [result_dto.config], user_id

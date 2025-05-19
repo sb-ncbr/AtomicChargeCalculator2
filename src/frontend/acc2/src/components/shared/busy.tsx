@@ -45,13 +45,13 @@ export const Busy = ({
     <div
       {...rest}
       className={cn(
-        "inset-0 bg-secondary/35 place-content-center z-40",
+        "inset-0 bg-secondary/35 place-content-center z-40 text-primary",
         fullscreen ? "fixed" : "absolute",
         showBusy ? "grid" : "hidden",
         className
       )}
     >
-      <span className="flex gap-4 items-center text-primary">
+      <span className="flex gap-4 items-center">
         <LoaderCircle size={size} className="animate-spin" />
         {children}
       </span>

@@ -129,17 +129,6 @@ class ChargeFW2Local(ChargeFW2Base):
 
         return result
 
-    def get_parameters_metadata(self, parameters_name: str) -> dict:
-        """Get metadata for parameters.
-
-        Args:
-            parameters_name (str): Internal parameters name.
-
-        Returns:
-            dict: Dictionary with parameters metadata (name and publication).
-        """
-        return chargefw2.get_parameters_metadata(parameters_name)
-
     def calculate_charges(
         self,
         molecules: chargefw2.Molecules,

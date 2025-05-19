@@ -217,6 +217,38 @@ class ChargeFW2Service:
             self.logger.error(f"Error loading molecules from file {file_path}: {e}")
             raise e
 
+    async def calculate_charges(
+        self,
+        computation_id: str,
+        settings: AdvancedSettingsDto,
+        data: Tuple[CalculationConfigDto, list[str]],
+        user_id: str | None,
+    ) -> list[CalculationResultDto]:
+        """Calculate charges for provided files.
+
+        Args:
+            computation_id (str): Computation id.
+            data (Tuple[CalculationConfigDto, list[str]]): Dictionary of configs and file_hashes.
+            user_id (str): User id making the calculation.
+
+        Returns:
+            ChargeCalculationResult: List of successful calculations.
+                Failed calculations are skipped.
+        """
+
+        calculations = await asyncio.gather(
+            *[
+                self._calculate_charges(user_id, computation_id, settings, config, file_hashes)
+                for config, file_hashes in data.items()
+            ],
+            return_exceptions=False,
+        )
+        configs = [calculation.config for calculation in calculations]
+
+        await self.io.store_configs(computation_id, configs, user_id)
+
+        return calculations
+
     async def _calculate_charges(
         self,
         user_id: str | None,
@@ -226,6 +258,10 @@ class ChargeFW2Service:
         file_hashes: list[str],
     ) -> CalculationResultDto:
         """Calculate charges for provided files."""
+
+        self.logger.info(
+            f"Calculating charges with method {config.method} and parameters {config.parameters}."
+        )
 
         workdir = self.io.get_file_storage_path(user_id)
 
@@ -246,7 +282,6 @@ class ChargeFW2Service:
                 return
 
             async with self.semaphore:
-                print("Calculating charges for file", file_name, config.method)
                 charges_dir = self.io.get_charges_path(computation_id, user_id)
                 self.io.create_dir(charges_dir)
 
@@ -279,7 +314,7 @@ class ChargeFW2Service:
                 calculation
                 for calculation in await asyncio.gather(
                     *[process_file(file_hash, config) for file_hash in file_hashes],
-                    return_exceptions=False,  # TODO: what should happen if only one computation fails?
+                    return_exceptions=False,
                 )
                 if calculation is not None
             ]
@@ -295,38 +330,6 @@ class ChargeFW2Service:
         except Exception as e:
             self.logger.error(f"Error calculating charges: {traceback.format_exc()}")
             raise e
-
-    async def calculate_charges(
-        self,
-        computation_id: str,
-        settings: AdvancedSettingsDto,
-        data: Tuple[CalculationConfigDto, list[str]],
-        user_id: str | None,
-    ) -> list[CalculationResultDto]:
-        """Calculate charges for provided files.
-
-        Args:
-            computation_id (str): Computation id.
-            data (Tuple[CalculationConfigDto, list[str]]): Dictionary of configs and file_hashes.
-            user_id (str): User id making the calculation.
-
-        Returns:
-            ChargeCalculationResult: List of successful calculations.
-                Failed calculations are skipped.
-        """
-
-        calculations = await asyncio.gather(
-            *[
-                self._process_config(user_id, computation_id, settings, file_hashes, config)
-                for config, file_hashes in data.items()
-            ],
-            return_exceptions=False,
-        )
-        configs = [calculation.config for calculation in calculations]
-
-        await self.io.store_configs(computation_id, configs, user_id)
-
-        return calculations
 
     async def save_charges(
         self,
@@ -357,20 +360,6 @@ class ChargeFW2Service:
                     config.parameters,
                     charges_dir,
                 )
-
-    async def _process_config(
-        self,
-        user_id: str | None,
-        computation_id: str,
-        settings: AdvancedSettingsDto,
-        file_hashes: list[str],
-        config: CalculationConfigDto,
-    ) -> CalculationResultDto:
-        self.logger.info(
-            f"Calculating charges with method {config.method} and parameters {config.parameters}."
-        )
-
-        return await self._calculate_charges(user_id, computation_id, settings, config, file_hashes)
 
     async def info(self, path: str) -> MoleculeSetStats:
         """Get information about the provided file."""

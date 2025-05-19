@@ -13,9 +13,6 @@ services:
     environment:
       ACC2_DB_URL: postgresql://postgres:password_dev@db:5432/postgres_dev
       CHARGEFW2_INSTALL_DIR: /ChargeFW2/build
-    volumes:
-      - ../backend:/app
-      - ../backend/logs:/var/log/acc2
 
   web:
     build:
@@ -25,5 +22,3 @@ services:
       NODE_ENV: development
     ports:
       - "3000:3000"
-    volumes:
-      - ../frontend/acc2/src:/app/src

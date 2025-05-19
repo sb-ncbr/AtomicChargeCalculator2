@@ -1,0 +1,2 @@
+# Pages
+Pages are also React components, but more high-level. They usually check conditions that need to be fulfilled (e.g., required query parameters). Each Page component represents an individual *page* (home, results, ...). Components are also divided per pages they are used on (or shared).

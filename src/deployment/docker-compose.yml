@@ -5,8 +5,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - /AtomicChargeCalculator2/src/deployment/nginx/nginx-dev.conf:/etc/nginx/nginx.conf
-      - /AtomicChargeCalculator2/src/deployment/nginx/snippets:/etc/nginx/snippets
+      - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf
+      - ./nginx/snippets:/etc/nginx/snippets
     networks:
       - acc2-network
     restart: 

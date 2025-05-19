@@ -8,8 +8,10 @@ import traceback
 from typing import Tuple
 
 from dotenv import load_dotenv
-from fastapi import UploadFile
+from fastapi import UploadFile, status
 
+from api.v1.exceptions import BadRequestError
+from api.v1.constants import ALLOWED_FILE_TYPES
 from models.calculation import CalculationConfigDto
 
 from integrations.io.base import IOBase
@@ -21,22 +23,27 @@ load_dotenv()
 class IOService:
     """Service for handling file operations."""
 
-    workdir = Path(os.environ.get("ACC2_DATA_DIR"))
-    examples_dir = Path(os.environ.get("ACC2_EXAMPLES_DIR"))
-
-    user_quota = int(os.environ.get("ACC2_USER_STORAGE_QUOTA_BYTES"))
-    guest_file_quota = int(os.environ.get("ACC2_GUEST_FILE_STORAGE_QUOTA_BYTES"))
-    guest_compute_quota = int(os.environ.get("ACC2_GUEST_COMPUTE_STORAGE_QUOTA_BYTES"))
-
-    max_file_size = int(os.environ.get("ACC2_MAX_FILE_SIZE_BYTES"))
-    max_upload_size = int(os.environ.get("ACC2_MAX_UPLOAD_SIZE_BYTES"))
-
     def __init__(self, io: IOBase, logger: LoggerBase):
         self.io = io
         self.logger = logger
 
+        self.workdir = Path(os.environ.get("ACC2_DATA_DIR", ""))
+        self.examples_dir = Path(os.environ.get("ACC2_EXAMPLES_DIR", ""))
+
+        self.user_quota = int(os.environ.get("ACC2_USER_STORAGE_QUOTA_BYTES", 0))
+        self.guest_file_quota = int(os.environ.get("ACC2_GUEST_FILE_STORAGE_QUOTA_BYTES", 0))
+        self.guest_compute_quota = int(os.environ.get("ACC2_GUEST_COMPUTE_STORAGE_QUOTA_BYTES", 0))
+
+        self.max_file_size = int(os.environ.get("ACC2_MAX_FILE_SIZE_BYTES", 0))
+        self.max_upload_size = int(os.environ.get("ACC2_MAX_UPLOAD_SIZE_BYTES", 0))
+
+        self._ensure_env_set()
+
     def create_dir(self, path: str) -> None:
         """Create directory based on path."""
+
+        if self.io.path_exists(path):
+            return
 
         self.logger.info(f"Creating directory {path}")
 
@@ -70,12 +77,12 @@ class IOService:
             self.logger.error(f"Error storing file {file.filename}: {traceback.format_exc()}")
             raise e
 
-    def remove_file(self, file_hash: str, user_id: str) -> None:
+    def remove_file(self, file_hash: str, user_id: str | None = None) -> None:
         """Remove file with provided hash.
 
         Args:
             file_hash (str): File hash.
-            user_id (str): User id.
+            user_id (str | None): User id.
 
         Raises:
             e: Error removing file.
@@ -474,3 +481,80 @@ class IOService:
         available_space = quota - used_space
 
         return used_space, available_space, quota
+
+    def ensure_upload_files_provided(self, files: list[UploadFile]) -> None:
+        if len(files) == 0:
+            raise BadRequestError(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No files provided."
+            )
+
+    def ensure_upload_files_sizes_valid(self, files: list[UploadFile]) -> None:
+        if any((file.size or 0) > self.max_file_size for file in files):
+            max_file_size_mb = self.max_file_size / 1024 / 1024
+            raise BadRequestError(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Unable to upload files. One or more files are too large. "
+                + f"Maximum allowed size is {max_file_size_mb} MB.",
+            )
+
+        upload_size_b = sum((file.size or 0) for file in files)
+
+        if upload_size_b > self.max_upload_size:
+            max_upload_size_mb = self.max_upload_size / 1024 / 1024
+            raise BadRequestError(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Unable to upload files. Maximum upload size exceeded. "
+                + f"Maximum upload size is {max_upload_size_mb} MB.",
+            )
+
+    def ensure_uploaded_file_types_valid(self, files: list[UploadFile]) -> None:
+        if not all(self._is_ext_valid(file.filename or "") for file in files):
+            raise BadRequestError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type. Allowed file types are {', '.join(ALLOWED_FILE_TYPES)}",
+            )
+
+    def ensure_quota_not_exceeded(self, upload_size_b: int, user_id: str | None = None) -> None:
+        if user_id is not None:
+            _, available_b, quota_b = self.get_quota(user_id)
+
+            if upload_size_b > available_b:
+                quota_mb = quota_b / 1024 / 1024
+                raise BadRequestError(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Unable to upload files. Quota exceeded. "
+                    + f"Maximum storage space is {quota_mb} MB.",
+                )
+        else:
+            _, available, _ = self.get_quota()
+            if upload_size_b > available:
+                self.free_guest_file_space(upload_size_b)
+
+    def _is_ext_valid(self, filename: str) -> bool:
+        return any(filename.endswith(f".{ext}") for ext in ALLOWED_FILE_TYPES)
+
+    def _ensure_env_set(self) -> None:
+        if not self.workdir.name:
+            raise EnvironmentError("ACC2_DATA_DIR environment variable is not set.")
+
+        if not self.examples_dir.name:
+            raise EnvironmentError("ACC2_EXAMPLES_DIR environment variable is not set.")
+
+        if not self.user_quota:
+            raise EnvironmentError("ACC2_USER_STORAGE_QUOTA_BYTES environment variable is not set.")
+
+        if not self.guest_file_quota:
+            raise EnvironmentError(
+                "ACC2_GUEST_FILE_STORAGE_QUOTA_BYTES environment variable is not set."
+            )
+
+        if not self.guest_compute_quota:
+            raise EnvironmentError(
+                "ACC2_GUEST_COMPUTE_STORAGE_QUOTA_BYTES environment variable is not set."
+            )
+
+        if not self.max_file_size:
+            raise EnvironmentError("ACC2_MAX_FILE_SIZE_BYTES environment variable is not set.")
+
+        if not self.max_upload_size:
+            raise EnvironmentError("ACC2_MAX_UPLOAD_SIZE_BYTES environment variable is not set.")

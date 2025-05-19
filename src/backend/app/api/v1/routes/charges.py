@@ -10,7 +10,7 @@ from fastapi.routing import APIRouter
 from dependency_injector.wiring import inject, Provide
 
 from api.v1.exceptions import BadRequestError, NotFoundError
-from api.v1.schemas.response import Response
+from api.v1.schemas.response import Response, ResponseError
 
 from models.calculation import (
     CalculationConfigDto,
@@ -43,6 +43,8 @@ from services.chargefw2 import ChargeFW2Service
 
 charges_router = APIRouter(prefix="/charges", tags=["charges"])
 
+# --- Public API handlers ---
+
 
 @charges_router.get("/methods/available")
 @inject
@@ -68,43 +70,46 @@ async def suitable_methods(
     data: SuitableMethodsRequest,
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
 ) -> Response[SuitableMethods]:
-    """Returns suitable methods for the provided computation."""
+    """
+    Returns suitable methods for the provided computation.
+
+        fileHashes: List of file hashes to get suitable methods for.
+        permissiveTypes: Use similar parameters for similar atom/bond types if no exact match is found.
+    """
     user_id = str(request.state.user.id) if request.state.user is not None else None
 
     try:
-        data = await chargefw2.get_suitable_methods(
+        suitable = await chargefw2.get_suitable_methods(
             data.file_hashes, data.permissive_types, user_id
         )
-        return Response(data=data)
+        return Response(data=suitable)
     except Exception as e:
         raise BadRequestError(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting suitable methods."
         ) from e
 
 
-@charges_router.post("/{computation_id}/methods/suitable", include_in_schema=False)
-@inject
-async def computation_suitable_methods(
-    request: Request,
-    computation_id: Annotated[str, Path(description="UUID of the computation.")],
-    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
-) -> Response[SuitableMethods]:
-    """Returns suitable methods for the provided computation."""
-    user_id = str(request.state.user.id) if request.state.user is not None else None
-
-    try:
-        data = await chargefw2.get_computation_suitable_methods(
-            computation_id,
-            user_id,
-        )
-        return Response(data=data)
-    except Exception as e:
-        raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting suitable methods."
-        ) from e
-
-
-@charges_router.get("/parameters/{method_name}/available")
+@charges_router.get(
+    "/parameters/{method_name}/available",
+    responses={
+        404: {
+            "description": "Method not found.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {"example": {"success": False, "message": "Method not found."}}
+            },
+        },
+        400: {
+            "description": "Error getting available parameters.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {
+                    "example": {"success": False, "message": "Error getting available parameters."}
+                }
+            },
+        },
+    },
+)
 @inject
 async def available_parameters(
     method_name: Annotated[
@@ -112,7 +117,7 @@ async def available_parameters(
         Path(
             description="""
             Method name to get parameters for. 
-            One of the available methods (list can be received from GET "/api/v1/methods").
+            One of the available methods (list can be received from GET "/api/v1/methods/available").
             """
         ),
     ],
@@ -137,14 +142,40 @@ async def available_parameters(
         ) from e
 
 
-@charges_router.post("/parameters/best")
+@charges_router.post(
+    "/parameters/best",
+    responses={
+        404: {
+            "description": "Method not found.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {"example": {"success": False, "message": "Method not found."}}
+            },
+        },
+        400: {
+            "description": "Error getting best parameters.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {
+                    "example": {"success": False, "message": "Error getting best parameters."}
+                }
+            },
+        },
+    },
+)
 @inject
 async def best_parameters(
     data: BestParametersRequest,
     chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
     io_service: IOService = Depends(Provide[Container.io_service]),
 ) -> Response[Parameters]:
-    """Returns the best parameters for the provided method and file."""
+    """
+    Returns the best parameters for the provided method and file.
+
+        methodName: Method name to get the best parameters for.
+        fileHash: File hashes to get suitable methods for.
+        permissiveTypes: Use similar parameters for similar atom/bond types if no exact match is found.
+    """
 
     methods = chargefw2.get_available_methods()
     if not any(method.internal_name == data.method_name for method in methods):
@@ -173,7 +204,27 @@ async def best_parameters(
         ) from e
 
 
-@charges_router.post("/stats")
+@charges_router.post(
+    "/stats",
+    responses={
+        404: {
+            "description": "File not found.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {"example": {"success": False, "message": "File not found."}}
+            },
+        },
+        400: {
+            "description": "Error getting file information.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {
+                    "example": {"success": False, "message": "Error getting file information."}
+                }
+            },
+        },
+    },
+)
 @inject
 async def info(
     request: Request,
@@ -184,6 +235,8 @@ async def info(
     """
     Returns information about the provided file.
     Number of molecules, total atoms and individual atoms.
+
+        fileHash: File hashes to get suitable methods for.
     """
 
     user_id = str(request.state.user.id) if request.state.user is not None else None
@@ -205,7 +258,61 @@ async def info(
         ) from e
 
 
-@charges_router.post("/calculate")
+@charges_router.post(
+    "/calculate",
+    responses={
+        200: {
+            "description": "Charges calculated successfully.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "data": {
+                            "computationId": "0b9ee9e0-bd69-409d-a3af-3bf11666ee86",
+                            "results": [
+                                {
+                                    "calculations": [
+                                        {
+                                            "file": "file_name.cif",
+                                            "fileHash": "4d689a346c6e852f21e3083025d827d7ba165c7c468d8a3c970216e9365fb3bd",
+                                            "charges": {
+                                                "molecule1": [0.1, 0.2],
+                                                "molecule2": [0.3, 0.4],
+                                            },
+                                            "config": {
+                                                "method": "sqeqp",
+                                                "parameters": "SQEqp_10_Schindler2021_CCD_gen",
+                                            },
+                                        }
+                                    ],
+                                }
+                            ],
+                        },
+                    }
+                }
+            },
+        },
+        413: {
+            "description": "Unable to calculate charges. Calculation is too large.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": False,
+                        "message": "Unable to calculate charges. Calculation is too large.",
+                    }
+                }
+            },
+        },
+        400: {
+            "description": "No files provided.",
+            "model": ResponseError,
+            "content": {
+                "application/json": {"example": {"success": False, "message": "No files provided."}}
+            },
+        },
+    },
+)
 @inject
 async def calculate_charges(
     request: Request,
@@ -222,6 +329,16 @@ async def calculate_charges(
     Calculates partial atomic charges for files in the provided directory.
     Returns a list of dictionaries with charges (decimal numbers).
     If no config is provided, the most suitable method and its parameters will be used.
+
+        configs: List of combinations of suitable methods and parameters.
+        fileHashes: List of file hashes to calculate charges for.
+
+    settings:
+
+        readHetatm: Read HETATM records from PDB/mmCIF files.
+        ignoreWater: Discard water molecules from PDB/mmCIF files.
+        permissiveTypes: Use similar parameters for similar atom/bond types if no exact match is found.
+
     """
 
     user_id = str(request.state.user.id) if request.state.user is not None else None
@@ -288,8 +405,9 @@ async def calculate_charges(
             suitable = await chargefw2.get_computation_suitable_methods(computation_id, user_id)
 
             if len(suitable.methods) == 0:
-                # TODO: show message?
-                raise Exception("No suitable methods found.")
+                raise BadRequestError(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="No suitable methods found."
+                )
 
             method_name = suitable.methods[0].internal_name
             parameters = suitable.parameters.get(method_name, [])
@@ -333,7 +451,32 @@ async def calculate_charges(
         raise e
     except Exception as e:
         raise BadRequestError(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Error calculating charges."
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error calculating charges. {str(e)}"
+        ) from e
+
+
+# --- Route handlers used by ACC II Web ---
+
+
+@charges_router.post("/{computation_id}/methods/suitable", include_in_schema=False)
+@inject
+async def computation_suitable_methods(
+    request: Request,
+    computation_id: Annotated[str, Path(description="UUID of the computation.")],
+    chargefw2: ChargeFW2Service = Depends(Provide[Container.chargefw2_service]),
+) -> Response[SuitableMethods]:
+    """Returns suitable methods for the provided computation."""
+    user_id = str(request.state.user.id) if request.state.user is not None else None
+
+    try:
+        data = await chargefw2.get_computation_suitable_methods(
+            computation_id,
+            user_id,
+        )
+        return Response(data=data)
+    except Exception as e:
+        raise BadRequestError(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Error getting suitable methods."
         ) from e
 
 

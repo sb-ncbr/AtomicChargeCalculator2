@@ -35,7 +35,6 @@ export const useControlsContext = (
   const coloringType = async (type: MolstarColoringType) => {
     switch (type) {
       case "structure":
-        // TODO: this does not work for some reason
         await molstar.color.default();
         break;
       case "charges-relative":

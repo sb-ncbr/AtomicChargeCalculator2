@@ -18,7 +18,7 @@ class CalculationSetFilters(PagingFilters):
 
     order_by: str
     order: Literal["asc", "desc"]
-    user_id: str
+    user_id: str | None = None
 
 
 class CalculationSetRepository:

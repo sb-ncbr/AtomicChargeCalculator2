@@ -51,7 +51,6 @@ jobs:
 
             if [ $? -ne 0 ]; then echo "Git pull failed"; exit 1; fi;
 
-
             cd ./src/deployment
             echo "Changed directory to $(pwd)"
 

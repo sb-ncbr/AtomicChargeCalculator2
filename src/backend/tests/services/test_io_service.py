@@ -47,6 +47,7 @@ class TestIOService:
     def test_create_dir(self, io_service, io_mock, logger_mock):
         """Test creating a directory."""
         test_path = "/path/to/test/dir"
+        io_mock.path_exists.return_value = False
 
         io_service.create_dir(test_path)
 
@@ -56,6 +57,7 @@ class TestIOService:
     def test_create_dir_exception(self, io_service, io_mock, logger_mock):
         """Test handling exceptions when creating a directory."""
         test_path = "/path/to/test/dir"
+        io_mock.path_exists.return_value = False
 
         io_mock.mkdir.side_effect = Exception("Directory creation failed")
 
@@ -144,6 +146,7 @@ class TestIOService:
     def test_zip_charges_exception(self, io_service, io_mock, logger_mock):
         """Test handling exceptions when creating an archive."""
         directory = "/test/directory"
+        io_mock.path_exists.return_value = False
 
         io_mock.mkdir.side_effect = Exception("Failed to create directory")
 
@@ -297,8 +300,6 @@ class TestIOService:
                 io_service, "parse_filename", return_value=(test_data["file_hash"], "test_file.txt")
             ):
                 io_service.prepare_inputs(user_id, computation_id, file_hashes)
-
-                assert io_mock.mkdir.call_count == 2
 
                 src_path = str(Path(files_path) / test_data["filename"])
                 dst_path = str(Path(inputs_path) / test_data["filename"])

@@ -102,8 +102,10 @@ export const Controls = ({
         <Button
           variant={"secondary"}
           onClick={downloadCharges}
-          className="mt-2 sm:mt-0"
+          className="mt-2 sm:mt-0 relative"
+          disabled={downloadMutation.isPending}
         >
+          <Busy isBusy={downloadMutation.isPending} className="text-black" />
           Download
         </Button>
       </div>
