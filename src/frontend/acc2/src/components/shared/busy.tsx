@@ -7,6 +7,7 @@ export type BusyProps = {
   isBusy: boolean;
   size?: BusySize;
   fullscreen?: boolean;
+  delay?: number;
 } & HTMLAttributes<HTMLElement> &
   PropsWithChildren;
 
@@ -22,6 +23,7 @@ export const Busy = ({
   isBusy,
   size = BusySize.Small,
   fullscreen = false,
+  delay = BusyDelayMs,
   children,
   className,
   ...rest
@@ -30,7 +32,7 @@ export const Busy = ({
 
   const triggerBusy = useDebouncedCallback(() => {
     setShowBusy(true);
-  }, BusyDelayMs);
+  }, delay);
 
   useEffect(() => {
     if (isBusy) {

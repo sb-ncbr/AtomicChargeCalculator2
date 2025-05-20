@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@acc2/components/ui/select";
 import { useControlsContext } from "@acc2/lib/hooks/contexts/use-controls-context";
-import MolstarPartialCharges from "molstar-partial-charges";
+import MolstarPartialCharges from "@acc2/lib/viewer/viewer";
 import { HTMLAttributes, useEffect, useRef } from "react";
 
 export const molstarColoringTypes = [

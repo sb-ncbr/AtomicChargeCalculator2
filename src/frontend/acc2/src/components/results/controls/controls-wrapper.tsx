@@ -1,7 +1,7 @@
 import { Busy } from "@acc2/components/shared/busy";
 import { Card } from "@acc2/components/ui/card";
 import { ControlsContextProvider } from "@acc2/lib/contexts/controls-context";
-import MolstarPartialCharges from "molstar-partial-charges";
+import MolstarPartialCharges from "@acc2/lib/viewer/viewer";
 import { HTMLAttributes, useState } from "react";
 
 import { MolstarColoringType } from "./coloring-controls";

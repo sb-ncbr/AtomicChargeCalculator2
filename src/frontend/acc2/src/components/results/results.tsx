@@ -1,14 +1,14 @@
 import { handleApiError } from "@acc2/api/base";
-import { MolStarWrapper } from "@acc2/components/results/molstar";
 import { ScrollArea } from "@acc2/components/ui/scroll-area";
 import { useComputationMutations } from "@acc2/lib/hooks/mutations/use-calculations";
-import MolstarPartialCharges from "molstar-partial-charges";
+import MolstarPartialCharges from "@acc2/lib/viewer/viewer";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { Busy } from "../shared/busy";
 import { ControlsWrapper } from "./controls/controls-wrapper";
+import { MolstarWrapper } from "./molstar-wrapper";
 
 export type ResultsProps = {
   computationId: string;
@@ -51,7 +51,7 @@ export const Results = ({ computationId }: ResultsProps) => {
             molstar={molstar}
           />
         )}
-        <MolStarWrapper setMolstar={setMolstar} />
+        <MolstarWrapper setMolstar={setMolstar} />
       </ScrollArea>
     </main>
   );

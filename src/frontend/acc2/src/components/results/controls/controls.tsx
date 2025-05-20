@@ -8,7 +8,7 @@ import {
   useAvailableParametersQuery,
 } from "@acc2/lib/hooks/queries/use-calculations";
 import { downloadBlob } from "@acc2/lib/utils";
-import MolstarPartialCharges from "molstar-partial-charges";
+import MolstarPartialCharges from "@acc2/lib/viewer/viewer";
 import { HTMLAttributes, useEffect, useState } from "react";
 import { toast } from "sonner";
 

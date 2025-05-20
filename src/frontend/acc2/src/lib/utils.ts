@@ -1,5 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
-import { formatBytes as format } from "molstar/lib/mol-util";
+import { formatBytes as format } from "molstar/lib/commonjs/mol-util";
 import { twMerge } from "tailwind-merge";
 
 export const cn = (...inputs: ClassValue[]): string => {

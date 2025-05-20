@@ -3,8 +3,8 @@ import { deleteCalculation } from "@acc2/api/calculations/calculations";
 import { compute, getMolecules, setup } from "@acc2/api/compute/compute";
 import { AdvancedSettings, ComputationConfig } from "@acc2/api/compute/types";
 import { downloadCalculation } from "@acc2/api/files/files";
+import MolstarPartialCharges from "@acc2/lib/viewer/viewer";
 import { useMutation } from "@tanstack/react-query";
-import MolstarPartialCharges from "molstar-partial-charges";
 
 type SetupMutationData = {
   fileHashes: string[];
