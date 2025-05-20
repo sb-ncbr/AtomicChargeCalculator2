@@ -4,6 +4,7 @@
 - [database](./db/)
 - [examples](./examples/)
 - [integrations](./integrations/)
+- [life-science](./life-science/)
 - [services](./services/)
 
 # Environment variables

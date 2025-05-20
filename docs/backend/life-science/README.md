@@ -18,7 +18,7 @@ New service can be registered [here](https://services.aai.lifescience-ri.eu/spre
 The full configured form is shown in the [Registry Form section](#registry-form).
 
 ## Life Science AAI SP Registry
-After the application was successfuly registered, you can set the  *Client ID* (`OIDC_CLIENT_ID`) and *Client Secret* (`OIDC_CLIENT_SECRET`) in the [.env file](../../../src/backend/app/.env). These values are located [here](https://services.aai.lifescience-ri.eu/spreg/auth) under the *My Services -> service name -> SAML/OIDC* section.
+After the application was successfuly registered, you can set the  *Client ID* (`OIDC_CLIENT_ID`) and *Client Secret* (`OIDC_CLIENT_SECRET`) environment variables. The deployment pipeline pulls these variables from *GitHub Secrets*. You can find *Client ID* and *Client Secret* [here](https://services.aai.lifescience-ri.eu/spreg/auth) under the *My Services -> service name -> SAML/OIDC* section.
 
 ![client id and secret](./images/id-secret.png)
 
