@@ -491,6 +491,29 @@ async def setup(
     """Prepares input for computation so it can be run later."""
 
     user_id = str(request.state.user.id) if request.state.user is not None else None
+
+    if user_id is not None:
+        _, available_b, quota_b = io_service.get_quota(user_id)
+        if available_b <= 0:
+            quota_mb = quota_b / 1024 / 1024
+            raise BadRequestError(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Unable to set up calculation. Quota would be exceeded. "
+                + f"Maximum storage space is {quota_mb} MB.",
+            )
+
+    total_size = sum(
+        io_service.get_file_size(file_hash, user_id) or 0 for file_hash in config.file_hashes
+    )
+
+    if total_size > io_service.max_file_size:
+        max_file_size_mb = io_service.max_file_size / 1024 / 1024
+        raise BadRequestError(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Unable to set up calculation. Calculation is too large. "
+            + f"Maximum allowed size is {max_file_size_mb} MB.",
+        )
+
     computation_id = str(uuid.uuid4())
 
     if config.settings is None:

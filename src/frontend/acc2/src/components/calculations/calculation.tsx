@@ -10,6 +10,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { InfoTooltip } from "../setup/info-tooltip";
+import { Busy } from "../shared/busy";
 import { ConfirmAction } from "../shared/confirm-action";
 import { HoverDetailsList } from "../shared/hover-details";
 import { Badge } from "../ui/badge";
@@ -170,9 +171,11 @@ export const Calculation = ({
         <Button
           type="button"
           variant={"secondary"}
-          className="self-end w-full xs:w-28"
+          className="self-end w-full xs:w-28 relative"
           onClick={onDownload}
+          disabled={downloadMutation.isPending}
         >
+          <Busy isBusy={downloadMutation.isPending} className="text-black" />
           Download
         </Button>
         <ConfirmAction

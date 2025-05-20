@@ -8,9 +8,10 @@ declare module "molstar-partial-charges" {
     atomName?: string;
   }
 
-  export interface Extensions {
-    [key: string]: any;
-  }
+  export type Extensions = {
+    MAQualityAssessment?: boolean;
+    SbNcbrPartialCharges?: boolean;
+  };
 
   export type TargetWebApp = string;
 
