@@ -3,11 +3,11 @@ name: Frontend CI
 on:
   push:
     branches:
-      - architecture-redesign # TODO: change to main when merged to upstream
+      - master
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - architecture-redesign # TODO: change to main when merged to upstream
+      - master
   workflow_dispatch:
 
 jobs:

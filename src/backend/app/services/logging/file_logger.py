@@ -25,7 +25,7 @@ class FileLogger(LoggerBase):
             filename=os.path.join(self.logdir, self.file_name),
             level=logging.INFO,
             filemode="a+",
-            format="%(asctime)s [%(levelname)s] %(message)s",  # TODO: what format should be used?
+            format="%(asctime)s [%(levelname)s] %(message)s",
         )
 
         self.logger = logging.getLogger(__name__)
