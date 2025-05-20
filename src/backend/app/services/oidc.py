@@ -11,8 +11,6 @@ from jose import JWTError, jwt
 
 from services.logging.base import LoggerBase
 
-load_dotenv()
-
 
 class OIDCService:
     """Service for handling OIDC operations."""
@@ -22,6 +20,8 @@ class OIDCService:
 
         self.config_cache = TTLCache(maxsize=1, ttl=3600)
         self.jwks_cache = TTLCache(maxsize=1, ttl=3600)
+
+        load_dotenv()
 
         self.base_url = os.environ.get("OIDC_BASE_URL", "")
         self.discovery_url = os.environ.get("OIDC_DISCOVERY_URL", "")

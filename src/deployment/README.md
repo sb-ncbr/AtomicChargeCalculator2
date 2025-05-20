@@ -15,6 +15,13 @@ $ certbot --nginx -d <url>
 ## Setup Using Docker
 A quicker way of running ACC II locally is to use `docker compose`. This will start up 3 containers for API, web and database.
 
+*Note:* If you are using Windows, you might encounter the following error during `api` container startup:
+```
+exec /acc2/entrypoint.sh: no such file or directory
+```
+
+This is because of line endings and can be fixed by running `dos2unix` on the `src/backend/entrypoint.sh` file.
+
 ### Prepare base ChargeFW2 image
 We firstly need to build the base ChargeFW2 image which is used by the api container:
 ```bash

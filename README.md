@@ -6,7 +6,7 @@
     <br>
 </div>
 
-[Atomic Charge Calculator II](https://acc2-dev.biodata.ceitec.cz/) (ACC II) is an application for fast calculation of partial atomic charges.
+[Atomic Charge Calculator II](https://acc2.ncbr.muni.cz/) (ACC II) is an application for fast calculation of partial atomic charges.
 
 The computations are carried by the [ChargeFW2](https://github.com/sb-ncbr/ChargeFW2). It features [20 empirical methods](https://github.com/sb-ncbr/AtomicChargeCalculator2/blob/f22e774b1d73a365a00f1307ff101b698b9987b5/app/static/assets/methods.pdf) along with parameters from literature.
 

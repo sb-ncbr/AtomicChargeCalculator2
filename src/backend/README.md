@@ -2,6 +2,9 @@
 
 You can find additional information in [docs](../../docs/backend/).
 
+## Docker Setup
+Simplest way to run the application locally is via Docker. More information is available in the [Setup Using Docker section](../deployment/README.md#setup-using-docker) in the deployment documentation.
+
 ## Manual Setup
 
 ### Prerequisites

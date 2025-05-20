@@ -2,8 +2,6 @@ services:
   nginx:
     container_name: acc2-nginx
     image: nginx
-    ports:
-      - "80:80"
     volumes:
       - ./nginx/nginx-dev.conf:/etc/nginx/nginx.conf
       - ./nginx/snippets:/etc/nginx/snippets

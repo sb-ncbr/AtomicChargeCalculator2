@@ -1,4 +1,7 @@
 services:
+  nginx:
+    ports:
+      - "80:80"
   db:
     ports:
       - "5432:5432"
@@ -13,11 +16,12 @@ services:
     environment:
       ACC2_DB_URL: postgresql://postgres:password_dev@db:5432/postgres_dev
       CHARGEFW2_INSTALL_DIR: /ChargeFW2/build
-
+      OIDC_CLIENT_SECRET: client-secret
+      OIDC_CLIENT_ID: client-id
   web:
     build:
       args:
-        - VITE_BASE_API_URL=http://localhost:8000/v1
+        - VITE_BASE_API_URL=http://localhost/api
     environment:
       NODE_ENV: development
     ports:
