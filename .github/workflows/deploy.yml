@@ -1,0 +1,133 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      services_to_deploy:
+        description: "Select services to deploy"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - api
+          - api including chargefw2
+          - web
+          - nginx
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          command_timeout: 60m
+          script: |
+            DEPLOY_TARGET="${{ github.event.inputs.services_to_deploy }}"
+            BRANCH_NAME="${{ github.ref_name }}"
+            
+            echo "Deployment target: [$DEPLOY_TARGET] from branch [$BRANCH_NAME]"
+
+            echo "Setting up environment variables ..."
+            export PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+            export OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+            export OIDC_CLIENT_SECRET=${{ secrets.OIDC_CLIENT_SECRET }}
+
+            cd /home/ubuntu/AtomicChargeCalculator2/
+            echo "Changed directory to $(pwd)"
+
+            echo "Pulling latest changes ..."
+            sudo git checkout $BRANCH_NAME
+            sudo git fetch origin
+            sudo git reset --hard origin/$BRANCH_NAME
+
+            if [ $? -ne 0 ]; then echo "Git pull failed"; exit 1; fi;
+
+            cd ./src/deployment
+            echo "Changed directory to $(pwd)"
+
+            COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+
+            if [ "$DEPLOY_TARGET" = "api" ]; then
+              echo "Deploying API only ..."
+              
+              docker compose $COMPOSE_FILES down api
+              docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate api              
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+                          
+              echo "API service deployment finished."
+
+            elif [ "$DEPLOY_TARGET" = "api including chargefw2" ]; then
+              echo "Deploying API including chargefw2 ..."
+              
+              docker compose $COMPOSE_FILES down api
+              
+              echo "Building chargefw2 base image ..."
+              cd ../../
+              docker build -t chargefw2-base:local -f ./src/backend/Dockerfile.chargefw2 .
+              cd ./src/deployment
+
+              docker compose $COMPOSE_FILES build --no-cache api
+              if [ $? -ne 0 ]; then echo "Docker compose build failed!"; exit 1; fi
+              
+              docker compose $COMPOSE_FILES up -d --no-deps --force-recreate api
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+              
+              echo "API service deployment with ChargeFW2 finished."
+
+            elif [ "$DEPLOY_TARGET" = "nginx" ]; then
+              echo "Deploying nginx ..."
+              
+              docker compose $COMPOSE_FILES down nginx
+              
+              docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate nginx
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+              
+              echo "Nginx service deployment finished."
+
+            elif [ "$DEPLOY_TARGET" = "web" ]; then
+              echo "Deploying web ..."
+              
+              docker compose $COMPOSE_FILES down web
+              
+              docker compose $COMPOSE_FILES up -d --no-deps --build --force-recreate web
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+              
+              echo "Web service deployment finished."
+
+            elif [ "$DEPLOY_TARGET" = "all" ]; then
+              echo "Deploying all services ..."
+              
+              docker compose $COMPOSE_FILES down --remove-orphans
+              
+              echo "Building chargefw2 base image ..."
+              cd ../../
+              docker build -t chargefw2-base:local -f ./src/backend/Dockerfile.chargefw2 . --no-cache
+              cd ./src/deployment
+
+              docker compose $COMPOSE_FILES build --no-cache
+              if [ $? -ne 0 ]; then echo "Docker compose build failed!"; exit 1; fi
+
+              docker compose $COMPOSE_FILES up -d --force-recreate
+              if [ $? -ne 0 ]; then echo "Docker compose up failed!"; exit 1; fi
+              
+              echo "All services deployment finished."
+
+            else
+              echo "Error: Invalid deployment target: $DEPLOY_TARGET"
+              exit 1
+            fi
+
+            echo "Pruning old untagged and unused Docker images..."
+            docker image prune -f
+
+            echo "Deployment finished successfully."

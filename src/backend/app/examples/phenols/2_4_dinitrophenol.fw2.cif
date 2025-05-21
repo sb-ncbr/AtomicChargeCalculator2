@@ -1,0 +1,85 @@
+data_2_4_dinitrophenol
+loop_
+_atom_site.group_PDB
+_atom_site.id
+_atom_site.type_symbol
+_atom_site.label_atom_id
+_atom_site.label_comp_id
+_atom_site.label_seq_id
+_atom_site.label_asym_id
+_atom_site.label_entity_id
+_atom_site.Cartn_x
+_atom_site.Cartn_y
+_atom_site.Cartn_z
+ATOM 1 O 1 UNL 0 . 1 -2.432 -1.753 0.001
+ATOM 2 O 2 UNL 0 . 1 -1.941 2.296 0.001
+ATOM 3 O 3 UNL 0 . 1 -3.288 0.562 0.000
+ATOM 4 O 4 UNL 0 . 1 3.680 -0.339 0.002
+ATOM 5 O 5 UNL 0 . 1 2.827 1.684 -0.000
+ATOM 6 N 6 UNL 0 . 1 -2.136 1.057 0.000
+ATOM 7 N 7 UNL 0 . 1 2.693 0.437 0.000
+ATOM 8 C 8 UNL 0 . 1 -1.013 0.184 -0.001
+ATOM 9 C 9 UNL 0 . 1 1.385 -0.115 -0.001
+ATOM 10 C 10 UNL 0 . 1 0.272 0.727 -0.001
+ATOM 11 C 11 UNL 0 . 1 -1.186 -1.200 -0.000
+ATOM 12 C 12 UNL 0 . 1 1.212 -1.499 -0.001
+ATOM 13 C 13 UNL 0 . 1 -0.074 -2.041 -0.000
+ATOM 14 H 14 UNL 0 . 1 0.410 1.806 -0.001
+ATOM 15 H 15 UNL 0 . 1 2.055 -2.185 -0.000
+ATOM 16 H 16 UNL 0 . 1 -0.194 -3.122 0.000
+ATOM 17 H 17 UNL 0 . 1 -2.349 -2.722 0.001
+
+loop_
+_chem_comp.id
+UNL
+
+loop_
+_chem_comp_bond.comp_id
+_chem_comp_bond.atom_id_1
+_chem_comp_bond.atom_id_2
+_chem_comp_bond.value_order
+UNL 1 11 SING
+UNL 1 17 SING
+UNL 2 6 SING
+UNL 3 6 DOUB
+UNL 4 7 SING
+UNL 5 7 DOUB
+UNL 6 8 SING
+UNL 7 9 SING
+UNL 8 10 SING
+UNL 8 11 DOUB
+UNL 9 10 DOUB
+UNL 9 12 SING
+UNL 10 14 SING
+UNL 11 13 SING
+UNL 12 13 DOUB
+UNL 12 15 SING
+UNL 13 16 SING
+
+loop_
+_sb_ncbr_partial_atomic_charges_meta.id
+_sb_ncbr_partial_atomic_charges_meta.type
+_sb_ncbr_partial_atomic_charges_meta.method
+1 'empirical' 'sqeqp/SQEqp_10_Schindler2021_CCD_gen'
+
+loop_
+_sb_ncbr_partial_atomic_charges.type_id
+_sb_ncbr_partial_atomic_charges.atom_id
+_sb_ncbr_partial_atomic_charges.charge
+1 1 -0.6449
+1 2 -0.2908
+1 3 -0.3051
+1 4 -0.2777
+1 5 -0.3373
+1 6  0.4410
+1 7  0.4345
+1 8 -0.0362
+1 9  0.0296
+1 10 -0.1204
+1 11  0.3293
+1 12 -0.1444
+1 13 -0.2387
+1 14  0.2364
+1 15  0.2264
+1 16  0.2230
+1 17  0.4754

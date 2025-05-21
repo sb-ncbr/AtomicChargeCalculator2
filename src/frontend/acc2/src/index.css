@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body,
+#root {
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+@font-face {
+  font-family: "Muni";
+  src:
+    local("Muni"),
+    url("assets/fonts/muni-regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Muni";
+  font-weight: 900;
+  src:
+    local("Muni"),
+    url("assets/fonts/muni-bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Muni";
+  font-weight: 400;
+  src:
+    local("Muni"),
+    url("assets/fonts/muni-medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Muni";
+  font-weight: 100;
+  src:
+    local("Muni"),
+    url("assets/fonts/muni-light.ttf") format("truetype");
+}
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: lighter;
+  color-scheme: light dark;
+  color: var(--foreground);
+  background-color: white;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  :root {
+    --background: 142 100% 100%;
+    --foreground: 142 5% 10%;
+    --card: 142 50% 100%;
+    --card-foreground: 142 5% 15%;
+    --popover: 142 100% 100%;
+    --popover-foreground: 142 100% 10%;
+    --primary: 142 100% 34.3%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 30% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 104 30% 95%;
+    --muted-foreground: 142 5% 40%;
+    --accent: 104 30% 90%;
+    --accent-foreground: 142 5% 15%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 142 5% 100%;
+    --border: 142 30% 82%;
+    --input: 142 30% 50%;
+    --ring: 142 100% 34.3%;
+    --radius: 0rem;
+  }
+  .dark {
+    --background: 142 50% 10%;
+    --foreground: 142 5% 100%;
+    --card: 142 50% 10%;
+    --card-foreground: 142 5% 100%;
+    --popover: 142 50% 5%;
+    --popover-foreground: 142 5% 100%;
+    --primary: 142 100% 34.3%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 30% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 104 30% 25%;
+    --muted-foreground: 142 5% 65%;
+    --accent: 104 30% 25%;
+    --accent-foreground: 142 5% 95%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 142 5% 100%;
+    --border: 142 30% 50%;
+    --input: 142 30% 50%;
+    --ring: 142 100% 34.3%;
+    --radius: 0rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Overriding z-index so that fullscreen molstar covers page header. */
+.msp-plugin .msp-layout-expanded {
+  z-index: 60;
+}
