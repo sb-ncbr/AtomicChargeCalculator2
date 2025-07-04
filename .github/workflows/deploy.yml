@@ -49,6 +49,7 @@ jobs:
             sudo git checkout $BRANCH_NAME
             sudo git fetch origin
             sudo git reset --hard origin/$BRANCH_NAME
+            sudo git submodule update --recursive
 
             if [ $? -ne 0 ]; then echo "Git pull failed"; exit 1; fi;
 
